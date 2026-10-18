@@ -220,3 +220,64 @@ test('every action x lang x {none, each seed}: never starts with newline, never 
   }
   assert.ok(n > 500);
 });
+
+/* ---------- round 3: stages, edit helpers, set bubble overrides ---------- */
+test('STAGES: exactly the 5 stages in sales-flow order with the founder labels', () => {
+  const { C } = mk();
+  assert.deepEqual(C.STAGES.map(g => g.id), ['greet', 'size', 'info', 'order', 'out']);
+  assert.deepEqual(C.STAGES.map(g => g.lab[0].join(' ')), ['Chào hỏi', 'Tư vấn size', 'Xin thông tin', 'Tạo đơn', 'Check out']);
+});
+test('STAGES: every referenced message exists, primary cards 2-5 (composer stage has one), no id in two stages', () => {
+  const { C } = mk(); const seen = {};
+  for (const g of C.STAGES) {
+    assert.ok(g.id === 'order' ? g.cards.length === 1 && g.cards[0].kind === 'composer' : g.cards.length >= 2 && g.cards.length <= 5, g.id);
+    for (const c of g.cards.concat(g.more)) {
+      for (const id of [c.id, ...(c.alts || []).map(a => a[0])].filter(Boolean)) { assert.ok(C.FM[id], 'missing ' + id); assert.ok(!seen[id] || seen[id] === g.id, 'dup ' + id); seen[id] = g.id; }
+    }
+  }
+});
+test('STAGES: required items sit in the right stage', () => {
+  const { C } = mk();
+  const at = { 'open-first': 'greet', 'open-returning': 'greet', 'ask-measurements': 'size', 'fit-size': 'size', 'between-sizes': 'size', 'over-size-has-option': 'size', 'over-size-no-option': 'size', 'too-small-size': 'size', 'will-think': 'size',
+    'shipping-info': 'info', 'shipping-fee': 'info', 'paid-ack': 'out', 'paid-thanks': 'out', 'thanks-custom': 'out', 'tracking-note': 'out', 'tracking-code': 'out', 'ask-feedback': 'out', 'return-policy': 'out', 'thanks-generic': 'out' };
+  for (const [id, g] of Object.entries(at)) assert.equal(C.stageOf(id), g, id);
+});
+test('ask-measurements is the IG02 sentence verbatim', () => {
+  assert.equal(SEED.flow.find(e => e.id === 'ask-measurements').vi, 'Nếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕');
+});
+test('isEdited ignores whitespace-only differences', () => {
+  const { C } = mk();
+  assert.equal(C.isEdited('abc', 'abc  \n'), false); assert.equal(C.isEdited('abc', undefined), false); assert.equal(C.isEdited('abc', 'abd'), true);
+});
+test('stripLead / stripEnd', () => {
+  const { C } = mk();
+  assert.equal(C.stripLead('Xin chào\n\nNội dung', 'Xin chào'), 'Nội dung'); assert.equal(C.stripLead('Nội dung', 'Xin chào'), 'Nội dung');
+  assert.equal(C.stripEnd('Nội dung\n\nhttps://x', 'https://x'), 'Nội dung'); assert.equal(C.stripEnd('abc', ''), 'abc');
+});
+test('untemplate turns values back into tokens, longest first, and reports lost tokens', () => {
+  const { C } = mk();
+  const r = C.untemplate('Mẫu Lace Top: Lace Top 🦢\nGiá 1', [['item', 'Lace Top'], ['itemInfo', 'Lace Top 🦢\nGiá 1']]);
+  assert.equal(r.tpl, 'Mẫu {{item}}: {{itemInfo}}'); assert.deepEqual(r.lost, []);
+  const r2 = C.untemplate('chỉ lời chào', [['itemInfo', 'dài']]); assert.deepEqual(r2.lost, ['itemInfo']); assert.equal(r2.tpl, 'chỉ lời chào');
+});
+test('order template round trip: edit -> untemplate -> composeCopy gives the edited text again', () => {
+  const { st, C } = mk(); st.draft.lines = [{ pid: 'lace-top', size: 'M', qty: 2 }];
+  const t = C.composeCopy('order', {}, 'vi').text + '\nCảm ơn nhé';
+  const u = C.untemplate(t, [['orderLines', C.linesText('vi')], ['total', C.totalStr('vi')]]);
+  assert.ok(u.tpl.includes('{{orderLines}}') && u.tpl.includes('{{total}}'));
+  st.ov.__ord = { vi: u.tpl };
+  assert.equal(C.composeCopy('order', {}, 'vi').text, C.clean(t));
+  st.draft.lines[0].qty = 3; assert.ok(/ x3/.test(C.composeCopy('order', {}, 'vi').text));
+});
+test('set bubble override (bov) replaces b/c/d text per language; a uses set.ov; others untouched', () => {
+  const { st, C } = mk(); const set = { id: 's', items: ['lace-top', 'lace-skirt-cream'], price: null, name: '', postUrl: '', checked: true, ov: { vi: null, en: null }, bov: { c: { vi: 'Xin số đo nhen' } } };
+  assert.equal(C.composeCopy('set', { set, bubble: 'c' }, 'vi').text, 'Xin số đo nhen');
+  assert.equal(C.setBubble(set, 'c', 'vi').auto, false);
+  assert.equal(C.composeCopy('set', { set, bubble: 'c' }, 'en').missing, 'en', 'EN has no bubble c text, the VI override is not used');
+  assert.ok(C.composeCopy('set', { set, bubble: 'b' }, 'vi').text.startsWith('Lace Top'));
+  set.bov.d = { vi: 'https://x.y/z' }; assert.equal(C.composeCopy('set', { set, bubble: 'd' }, 'vi').text, 'https://x.y/z');
+});
+test('no brown token left in the sources (Liver #5F3E31 and its tints)', () => {
+  const css = readFileSync(new URL('../src/app.css', import.meta.url), 'utf8') + readFileSync(new URL('../src/index.src.html', import.meta.url), 'utf8') + readFileSync(new URL('../build.py', import.meta.url), 'utf8');
+  assert.ok(!/5F3E31|95,\s*62,\s*49|#5E5048|#6F635B|#4A3E37|20,\s*14,\s*10|#181716/i.test(css));
+});

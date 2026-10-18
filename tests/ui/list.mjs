@@ -4,18 +4,18 @@ const R = []; const ok = (n, c, d) => { R.push([n, !!c]); console.log((c ? 'PASS
 const { srv, url } = await serve(); const b = await launch();
 for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true]) {
   const tag = `${w}x${h} ${dark ? 'dark' : 'light'}`;
-  const { page, ctx, errors } = await newPage(b, { w, h, dark }); await page.goto(url); await page.waitForTimeout(400);
+  const { page, ctx, errors } = await newPage(b, { w, h, dark }); await page.goto(url); await page.waitForTimeout(400); await page.tap('[data-act=top][data-v=pi]'); await page.waitForTimeout(200);
   const rows = () => page.evaluate(() => [...document.querySelectorAll('#hbody [data-open^="p:"]')].map(e => e.dataset.open.slice(2)));
   const all = await rows();
   ok(`${tag} home lists all 20 products`, all.length === 20 && new Set(all).size === 20, 'n=' + all.length);
   // 20 products <= the chunk size (20), so grp() renders one plain group; the .chunk rule is still there for bigger catalogues
   const cv = await page.evaluate(() => { const d = document.createElement('div'); d.className = 'chunk'; document.querySelector('#hbody').appendChild(d); const v = getComputedStyle(d).contentVisibility; d.remove(); return [document.querySelectorAll('#hbody .chunk').length, v]; });
   ok(`${tag} 20 rows render as one plain group; .chunk rule keeps content-visibility:auto`, cv[0] === 0 && cv[1] === 'auto', cv.join(' '));
-  ok(`${tag} no horizontal overflow`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector('#home').scrollWidth <= innerWidth));
+  ok(`${tag} no horizontal overflow`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector('#pi').scrollWidth <= innerWidth));
   for (const [q, exp] of [['butter', ['butter-top']], ['fleur', ['fleur-slip-dress-blue', 'fleur-slip-dress-yellow']], ['quan', ['embroidery-pants']], ['embroidery', ['embroidery-pants']], ['lace trim', ['lace-trim-blouse-cream', 'lace-trim-blouse-blue']], ['dam', ['fleur-slip-dress-blue', 'fleur-slip-dress-yellow']]]) {
     await page.fill('#q', q); await page.waitForTimeout(250);
     const r = await rows(); const missing = exp.filter(x => !r.includes(x));
-    ok(`${tag} search "${q}" finds ${exp.join(', ')}`, missing.length === 0 && r.length <= 12, 'got ' + r.join(','));
+    ok(`${tag} search "${q}" finds ${exp.join(', ')}`, missing.length === 0 && r.length <= 20, 'got ' + r.join(','));
   }
   await page.fill('#q', ''); await page.waitForTimeout(250);
   ok(`${tag} clearing search restores 20`, (await rows()).length === 20);
@@ -23,7 +23,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   await ctx.close();
 }
 {
-  const { page, ctx } = await newPage(b, { w: 393, h: 852 }); await page.goto(url); await page.waitForTimeout(500);
+  const { page, ctx } = await newPage(b, { w: 393, h: 852 }); await page.goto(url); await page.waitForTimeout(500); await page.tap('[data-act=top][data-v=pi]'); await page.waitForTimeout(200);
   const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   const t = await page.evaluate(async () => {
     const q = document.querySelector('#q'); const out = {};

@@ -19,7 +19,7 @@ export function serve(port = 0) {
   return new Promise(r => srv.listen(port, '127.0.0.1', () => r({ srv, url: 'http://127.0.0.1:' + srv.address().port + '/' })));
 }
 export async function launch() { return chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] }); }
-export async function newPage(browser, { w = 393, h = 852, dark = false, reduced = false, storage = null, stubClip = true } = {}) {
+export async function newPage(browser, { w = 393, h = 852, dark = false, reduced = false, storage = null, stubClip = true, fakeVV = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, colorScheme: dark ? 'dark' : 'light', reducedMotion: reduced ? 'reduce' : 'no-preference', locale: 'vi-VN', serviceWorkers: 'block',
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
   const page = await ctx.newPage();
@@ -32,6 +32,11 @@ export async function newPage(browser, { w = 393, h = 852, dark = false, reduced
     window.__clip = [];
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: t => { window.__clip.push(t); return Promise.resolve(); }, readText: () => Promise.resolve('') }, configurable: true });
     window.__clicks = 0; document.addEventListener('click', e => { if (e.isTrusted && e.target.id !== 'hap' && !e.target.closest('.hap')) window.__clicks++; }, true);
+  });
+  if (fakeVV) await page.addInitScript(() => {   // emulate the iOS keyboard: a visualViewport that shrinks, plus a 'resize' event
+    const vv = new EventTarget(); vv.width = innerWidth; vv.height = innerHeight; vv.offsetTop = 0; vv.offsetLeft = 0; vv.scale = 1;
+    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
+    window.__setKb = px => { vv.height = innerHeight - px; vv.dispatchEvent(new Event('resize')); };
   });
   return { page, ctx, errors };
 }

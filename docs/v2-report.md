@@ -2,6 +2,7 @@
 
 Build: `python3 build.py` -> `dist/`. Implemented per `design-v2.md`, plus the lead's follow-up from `docs/ig-reference/` (real lead-in phrases, bubble-by-bubble sets, post link, order total).
 Tests: Node unit table (`node --test tests/compose.test.mjs`, 28 pass) and headless Chromium iPhone emulation at 393x852 and 430x932, light and dark (`tests/ui/ui.mjs`, 125 checks pass, scripts shipped in `tests/ui/`).
+Note: Round 3 (end of file) replaces the v2 home, replies sheet and order sheet described in the tables below (no home list, no "Câu trả lời khác" sheet, no order sheet, tab bar and stage switcher are back by the founder's request).
 Screenshots in `shots/` are v2 only (25 per size).
 
 ## Acceptance criteria (design-v2 G.6 and follow-ups)
@@ -146,3 +147,104 @@ Dark buttons: Jet on accent 5.19, on pressed #DDA39E 6.64; accent on its tint (7
 
 ### Needs a real device
 Home Screen icon crispness at 60/29 px and the apple-touch-icon corner masking, the splash on iPhone 15/16 sizes, Liver icon against her other apps, dark-mode accent on an OLED, and the 18 px greeting logomark.
+
+
+## Round 3
+
+Scope: founder feedback A (editable, internally scrolling boxes), B (new information architecture with 5 stages), C (brown removed from the brand colours). No commit made. Superseded screens in `shots/` are replaced; the shots show the current app only (27 per size plus `icon-preview.png`).
+
+### A. Editable preview boxes
+- Every box that shows text before copying is now a `<textarea>` (16 px so iOS does not zoom, `spellcheck/autocorrect/autocapitalize` off): product info, size chart, info + size, the 4 set bubbles, every quick-reply message, and the order message. No "Xem hết" expander exists any more.
+- Fixed `max-height: min(36vh, 300px)`; the box grows with its text up to that height, then scrolls inside. The sheet and the page never grow (asserted with 40 extra lines).
+- The clipboard gets exactly what is in the box (the same `composeCopy` text when untouched, the typed text otherwise). Collapsed product rows ("Chép" next to Bảng size, Thông tin + bảng size) also copy typed text. Preview == clipboard is still asserted for every lead combination, VI and EN, sets and order.
+- Under each box a quiet 44 pt row. Before an edit it only says "Chạm vào khung để sửa trực tiếp". After an edit it shows "Đã sửa", "Khôi phục" and "Lưu làm mẫu". The row has a fixed height, so nothing jumps when it changes.
+- Khôi phục drops the typed text. Lưu làm mẫu persists it for that item and language: product info / size chart become `descVi/descEn/sizeVi/sizeEn` overrides (so it also resolves a truncation flag); a quick reply becomes `ov[id].vi/en` and placeholders that are still in the text are turned back into `{{item}}`, `{{size}}`, `{{itemInfo}}`... (`untemplate`); the order message becomes the order template with `{{orderLines}}` and `{{total}}` restored, so it still follows quantity and shipping (tested); set bubble 1 uses the existing set override, bubbles 2-4 use new per-set `bov`. The lead-in and the appended receiver/bank/link parts are stripped before saving, so they are not baked into the template.
+- Typing never re-renders anything: the input handler only updates the edit flag and the textarea height (rAF-throttled). 4x CPU: median 1.0 ms, max 4.7 ms per keystroke; copy handler median 1.7 ms (first click 8.7 ms), message sheet copy 0.2 ms.
+- Keyboard: `visualViewport` resize sets `--kb` on the root and `body.kb`. The app and the sheet layer shrink to the area above the keyboard, the dock is hidden while it is open, and every primary Chép button is outside the scrolling body: product sheet and message sheet in a sticky footer, set sheet in a footer that follows "next bubble" plus a Chép button next to each bubble title, order composer in a sticky footer with the total. Sheets are all full-height and fixed (no detent change on focus), so the sheet does not jump. Tested with a fake `visualViewport` (336 px): Chép bottom stays above the keyboard, sheet top unchanged, copy works while "typing".
+
+### B. Information architecture
+- Top-level: a two-tab bar at the bottom ("Câu trả lời nhanh" | "Thông tin sản phẩm", 48 pt), thumb reachable at 393 and 430; first screen is always Câu trả lời nhanh. Above it, only on Câu trả lời nhanh, the stage switcher: 5 equal 56 pt buttons with a step number, labels exactly "Chào hỏi", "Tư vấn size", "Xin thông tin", "Tạo đơn", "Check out" (words wrap as whole units, so no scrolling is needed at 393 or 430). The last used stage is remembered (`st.ui.stage`); a badge on "Tạo đơn" shows the item count.
+- Header: logomark + "Soft Embrace", VI/EN switch (44 pt each) and one text button "Tuỳ chỉnh". First-run hint is one line.
+- Only the selected stage's content is shown, as large cards. One tap opens a full-height message sheet with the editable box and Chép.
+
+| Stage | Primary cards | Behind "Thêm" |
+|---|---|---|
+| Chào hỏi | Khách mới, Khách cũ, Gửi thông tin mẫu (chip row of all 20 products; tap opens the product sheet on Thông tin) | none |
+| Tư vấn size | Xin số đo (IG02 sentence), Gửi bảng size (chip row, opens on Bảng size), Vừa size, Giữa 2 size | Khách cần cân nhắc, Quá size có/không có mẫu khác, Quá nhỏ |
+| Xin thông tin | Xin thông tin giao hàng, Hỏi địa chỉ để báo phí ship | Gửi thêm hình / link |
+| Tạo đơn | The order composer (below) | none |
+| Check out | Đã nhận thanh toán (IG03), Cảm ơn · gói đơn (IG04, with Có sẵn / May đo variants, default by the order's made-to-order flag), Gửi mã vận đơn tin 1 (IG05), Mã vận đơn tin 2 (code only, copy blocked until typed), Xin hình feedback (IG06) | Lời chúc kèm (tuỳ chọn), Nhắc chính sách đổi trả (attachment reminder), Đã nhận (ngắn), Cảm ơn gộp 1 tin |
+
+- Tạo đơn is a first-class stage, not a sheet: 1 · items (lines with size chips, quantity, delete; search + the 4 most recent products with size chips), 2 · shipping, 3 · receiver info (optional, paste button), bank switch, 4 · the generated "Dạ vậy đơn của bạn 🌷 …" message in an editable scrolling box with lead-in chips, a line confirming the transfer-note instruction is in the text, and a sticky footer with the live total and Chép đơn. After copying, a card offers to jump to Check out. The order bar (after "Thêm vào đơn") stays and jumps to this stage; it hides while you are on the stage.
+- Thông tin sản phẩm: "Theo mẫu" (20 products, accent-insensitive search) and "Theo set" (saved sets, "Tạo set mới", 9 suggested pairs). Set sheets keep separate bubbles with custom "giá set".
+- Greeting product slot: the greeting sheets have an optional "Kèm thông tin mẫu" row ("Không kèm" by default = greeting only, as before); choosing a product appends its info after the greeting.
+- Placeholders in a reply (`{{size}}` etc.) now show as `[size]` in the box; Chép stays disabled ("Điền n chỗ nữa") while a marker is still in the text, filled by the chips below or by typing over it.
+
+### C. Colour (brown removed)
+No Liver (#5F3E31) and no brown-derived tint, grey or shadow remains in the UI, icons, splash, manifest or meta tags (unit test greps for the old values). Used: Dun #C5B9A8 (surfaces only), Jet #2A2B2A, Baby powder #FCFBF5, Old Rose #CC8C87 (darkened to #A84E47 for text/buttons, pressed #93443E, same hue). Greys are Jet at fixed opacity (light: label-2 #545553, label-3 #666765, fills rgba(42,43,42,.06-.20)); light surfaces are Baby powder mixed with Dun (grouped #EEEAE2, sheet #F6F4ED). Dark is Jet-based: bg #202020, cell Jet #2A2B2A, sheet #252625, paper #343534, text Baby powder, accent Old Rose with Jet button text. Shadows and scrims are black or Jet.
+
+Contrast (WCAG, text on surface):
+
+| Light token | bg #FCFBF5 | grouped #EEEAE2 | sheet #F6F4ED | paper #FEFDFA |
+|---|---|---|---|---|
+| label #2A2B2A | 13.71 | 11.85 | 12.92 | 13.97 |
+| label-2 #545553 | 7.23 | 6.25 | 6.81 | 7.37 |
+| label-3 #666765 | 5.49 | 4.74 | 5.17 | 5.59 |
+| accent text #A84E47 | 5.27 | 4.55 | 4.96 | 5.37 |
+| destructive #B3261E | 6.31 | 5.45 | 5.94 | 6.43 |
+| success #4A6B47 | 5.81 | 5.02 | 5.48 | 5.92 |
+
+Light buttons: Baby powder on accent 5.27, on pressed 6.46; accent on accent-tint 4.58.
+
+| Dark token | bg #202020 | cell #2A2B2A | sheet #252625 | paper #343534 |
+|---|---|---|---|---|
+| label #FCFBF5 | 15.72 | 13.71 | 14.65 | 11.88 |
+| label-2 #C4C4C0 | 9.31 | 8.13 | 8.68 | 7.04 |
+| label-3 #A2A29E | 6.36 | 5.55 | 5.93 | 4.81 |
+| accent #CC8C87 | 5.95 | 5.19 | 5.55 | 4.50 |
+| destructive #F08A80 | 6.71 | 5.86 | 6.26 | 5.08 |
+| success #9CB898 | 7.54 | 6.58 | 7.03 | 5.70 |
+
+Dark buttons: Jet on accent 5.19, on pressed 6.64; accent on its 7 percent tint 4.64 (cell), 4.97 (sheet). label-4 (placeholders, disabled) is decorative and below 4.5 by design.
+
+Icons and splash: rebuilt by `tools/make_icons.py` from `brand/logomark-FA.png`, Jet background, Baby powder logomark (home-screen 180 px with no alpha, 192, 512, maskable 512 at 62 percent, favicon 64, splash 1179x2556 and 1290x2796). Contact sheet at 180/120/60/29 px, maskable, favicon, splash and on a dark wallpaper: `shots/icon-preview.png` (viewed: the double ring stays legible down to 60 px; at 29 px it reads as a ring with the S). The 18 px header logomark is now an alpha mask coloured by `--label`, so it is Jet in light and Baby powder in dark with one image. Manifest: `background_color` Jet (matches the splash and icons), `theme_color` Baby powder; `theme-color` meta Baby powder (light) and #202020 (dark).
+
+Product swatch dots keep each product's real colour (taupe #A8968A in `compose.js` is the garment colour "Taupe"; the beige cream/shimmer dots are product colours too). They are data, not UI colour. A hue/saturation scan of every hex in `src/` and `build.py` finds only that taupe.
+
+### Tap counts (asserted, 393 and 430)
+| Action | Taps |
+|---|---|
+| Greeting (Khách mới/cũ) from app open | 2 (card, Chép) |
+| Product info from app open | 2 (chip in Chào hỏi, Chép) |
+| Size chart | 2 once on Tư vấn size (chip, Chép), 3 from app open including the stage tap; from Theo mẫu 2 on the row (+1 for the tab) |
+| Theo mẫu product info | row, Chép = 2 (+1 to switch tab) |
+| Size-advice script with context | 2 on the stage (+1 stage tap) |
+| Order: stage open, first item added, message "Dạ vậy đơn của bạn" generated | 2 from app open; Chép đơn is the 3rd |
+| Add to order from product, jump to order | Theo mẫu: tab, row, size chip, close, "Xem đơn" |
+| Set created and bubble 1 copied from a product sheet | 3 |
+
+### Results
+- Node unit tests: 39 pass (new: STAGES shape and placement, IG02 phrase, isEdited, strip/untemplate, order template round trip, set `bov`, brown grep).
+- `tests/ui/ui.mjs` (Playwright, 393x852 and 430x932, light and dark where relevant): 335 of 335 pass (393x852 and 430x932, light and dark: stage switcher, one stage at a time, order in 2 taps, editable boxes, internal scroll, Khôi phục, Lưu làm mẫu, keyboard emulation, tap counts, copy and typing handler at 4x CPU); zero console errors, no horizontal overflow, service worker installs and controls.
+- `tests/ui/list.mjs`: 46 of 46 pass (list and search now behind the tab).
+- dist/index.html about 173 KB raw (css 35 KB, js 94 KB, data 29 KB). The G.8 size budgets are still missed (same reason as before).
+
+### Deviations and decisions made for the founder
+1. Reply search was dropped: the stages replace it. Search exists only in Theo mẫu (products).
+2. Stage and tab bar sit at the bottom (thumb reach); the order bar sits above them.
+3. Size chart is 2 taps once on Tư vấn size, not 2 from app open (the stage must be selected first). Product info is 2 from app open because Chào hỏi is the first stage.
+4. An upstream change (lead chip, language, fills, order lines or receiver info) regenerates the text and drops what she typed, with a "Hoàn tác" toast. Edits are kept only for the open sheet or stage session, not stored.
+5. "Lưu làm mẫu" is not offered for "Thông tin + bảng size" (it cannot be split reliably); the row says to open Thông tin or Bảng size.
+6. A saved set bubble no longer follows product text or set price; a "Dùng bản tự soạn" link resets it.
+7. "Xin ảnh/link": the data has no customer-facing request for photos or links, so "Gửi thêm hình / link" sits under Xin thông tin > Thêm and "Xin hình feedback" under Check out.
+8. Thank-you lead chips and the "Khách đã chuyển khoản?" card of the old order sheet are replaced by the Check out stage; the lead-in data and `thanks` compose action are kept.
+9. Ask-measurements text in `data.json` is now the IG02 sentence verbatim (it matches the set bubble 3 and size lead-in 2).
+10. Message sheets still close 0.6 s after a successful copy (unchanged).
+
+### Needs a real iPhone
+- Caret placement, selection handles, autocorrect off and the Vietnamese IME (telex) inside the textareas; whether iOS scrolls the focused box far enough above the keyboard (the layout is tested only with an emulated `visualViewport`).
+- `visualViewport` offsetTop behaviour when Safari pans the page on focus, and the 80 px threshold that separates the keyboard from the toolbar.
+- Nested scrolling (box inside sheet, sheet drag) feel; the sticky order footer inside the scrolling stage.
+- The 5-button stage switcher with Dynamic Type larger text; the stage badge.
+- Home-screen icon on Jet, the splash, and the header mask logomark at 18 px in dark mode.
+- Haptics, clipboard permission in standalone mode, service worker update and offline start (unchanged from earlier rounds).

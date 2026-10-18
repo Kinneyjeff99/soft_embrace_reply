@@ -114,6 +114,8 @@
   /* -> {id, text, missing, trunc, leadKey, auto} or null when the bubble does not apply */
   function setBubble(set, b, l) {
     var ps = setItems(set), vi = l === 'vi', o = { id: b, text: '', missing: null, trunc: false, leadKey: b === 'a' ? 'info' : b === 'b' ? 'size' : null, auto: true }, parts = [], miss = false;
+    var bo = b !== 'a' && set.bov && set.bov[b] && set.bov[b][l];   /* a text she saved as this bubble's own wording (Lưu làm mẫu) */
+    if (bo && String(bo).trim()) { o.text = clean(bo); o.auto = false; return o; }
     if (b === 'a') {
       var ov = set.ov && set.ov[l];
       if (ov && String(ov).trim()) { o.text = clean(ov); o.auto = false; return o; }
@@ -209,7 +211,39 @@
     return finish();
   }
 
+  /* ---------- stages of the sales flow (round 3): what each stage shows ----------
+     cards: {id} = a message from SEED.flow, {kind:'info'|'size'} = product chooser, {kind:'composer'} = the order composer.
+     more = secondary items behind "Thêm". alts = variants of one card (greeting after payment: ready-to-wear vs custom). */
+  var STAGES = [
+    { id: 'greet', lab: [['Chào hỏi']], desc: 'Khách vừa nhắn lần đầu hoặc quay lại.', cards: [{ id: 'open-first', t: 'Khách mới' }, { id: 'open-returning', t: 'Khách cũ' }, { kind: 'info', t: 'Gửi thông tin mẫu', s: 'Chạm một mẫu rồi chạm Chép' }], more: [] },
+    { id: 'size', lab: [['Tư vấn', 'size']], desc: 'Khách hỏi về size, form dáng, số đo.', cards: [{ id: 'ask-measurements', t: 'Xin số đo' }, { kind: 'size', t: 'Gửi bảng size', s: 'Chạm một mẫu rồi chạm Chép' }, { id: 'fit-size', t: 'Vừa size' }, { id: 'between-sizes', t: 'Giữa 2 size' }],
+      more: [{ id: 'will-think', t: 'Khách cần cân nhắc' }, { id: 'over-size-has-option', t: 'Quá size · có mẫu khác' }, { id: 'over-size-no-option', t: 'Quá size · không có mẫu khác' }, { id: 'too-small-size', t: 'Quá nhỏ' }] },
+    { id: 'info', lab: [['Xin', 'thông tin']], desc: 'Xin tên, số điện thoại, địa chỉ để lên đơn.', cards: [{ id: 'shipping-info', t: 'Xin thông tin giao hàng' }, { id: 'shipping-fee', t: 'Hỏi địa chỉ để báo phí ship' }], more: [{ id: 'extra-photos', t: 'Gửi thêm hình / link' }] },
+    { id: 'order', lab: [['Tạo đơn']], desc: 'Chọn món, phí ship, rồi chép tin chốt đơn.', cards: [{ kind: 'composer' }], more: [] },
+    { id: 'out', lab: [['Check out']], desc: 'Sau khi khách chuyển khoản.', cards: [{ id: 'paid-ack', t: 'Đã nhận thanh toán' }, { id: 'paid-thanks', t: 'Cảm ơn · gói đơn', alts: [['paid-thanks', 'Có sẵn'], ['thanks-custom', 'May đo']] }, { id: 'tracking-note', t: 'Gửi mã vận đơn · tin 1' }, { id: 'tracking-code', t: 'Mã vận đơn · tin 2' }, { id: 'ask-feedback', t: 'Xin hình feedback' }],
+      more: [{ id: 'thanks-generic', t: 'Lời chúc kèm (tuỳ chọn)' }, { id: 'return-policy', t: 'Nhắc chính sách đổi trả' }, { id: 'order-confirm', t: 'Đã nhận (ngắn)' }, { id: 'thanks-rtw', t: 'Cảm ơn · gộp 1 tin' }] }
+  ];
+  function stageOf(id) {
+    var r = '';
+    STAGES.forEach(function (g) { g.cards.concat(g.more).forEach(function (c) { if (c.id === id || (c.alts && c.alts.some(function (a) { return a[0] === id; }))) r = g.id; }); });
+    return r;
+  }
+  /* editable boxes: text she typed over the generated text */
+  function isEdited(gen, cur) { return cur !== undefined && cur !== null && clean(cur) !== clean(gen); }
+  function stripLead(text, lead) { text = String(text); lead = clean(lead || ''); if (lead && text.indexOf(lead) === 0) return text.slice(lead.length).replace(/^\s+/, ''); return text; }
+  function stripEnd(text, tail) { text = String(text).replace(/\s+$/, ''); tail = clean(tail || ''); if (tail && text.length >= tail.length && text.slice(-tail.length) === tail) return text.slice(0, -tail.length).replace(/\s+$/, ''); return text; }
+  /* turn a filled-in text back into a template: pairs = [[token, value]]; returns {tpl, lost:[tokens whose value is no longer in the text]} */
+  function untemplate(text, pairs) {
+    var lost = [], out = String(text);
+    pairs.filter(function (x) { return x[1]; }).sort(function (a, b) { return b[1].length - a[1].length; }).forEach(function (x) {
+      var i = out.indexOf(x[1]);
+      if (i < 0) lost.push(x[0]); else out = out.slice(0, i) + '{{' + x[0] + '}}' + out.slice(i + x[1].length);
+    });
+    return { tpl: out, lost: lost };
+  }
+
   return {
+    STAGES: STAGES, stageOf: stageOf, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
     VAR: VAR, PL: PL, PM: PM, FL: FL, FM: FM, nfV: nfV, nfE: nfE,
     pv: pv, clean: clean, other: other, money: money, moneyP: moneyP, colorOf: colorOf, colorEn: colorEn, pname: pname, pitem: pitem, psizes: psizes,
     ptext: ptext, ptrunc: ptrunc, normEn: normEn, entryText: entryText, calc: calc, totalStr: totalStr, linesText: linesText, shipLine: shipLine, orderText: orderText,

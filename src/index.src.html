@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#FCFBF5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#181716" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#202020" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,23 +43,30 @@
 
 <div id="app" class="app">
   <header id="nav">
-    <div class="bg"></div>
     <div class="bar">
-      <span class="ttl" id="nttl">Khách đang hỏi gì?</span>
+      <span class="brand"><i class="logo" aria-hidden="true"></i>Soft Embrace</span>
+      <div class="lsw" role="group" aria-label="Ngôn ngữ" id="lsw"><button data-act="lang" data-v="vi" aria-pressed="true"><span>VI</span></button><button data-act="lang" data-v="en" aria-pressed="false"><span>EN</span></button></div>
       <button class="nbtn" data-act="settings">Tuỳ chỉnh</button>
     </div>
   </header>
   <main>
-    <section id="home" class="tab" aria-label="Trang chính">
-      <p class="greet" id="greet"></p>
-      <h1 class="lt">Khách đang hỏi gì?</h1>
-      <div class="sent"></div>
-      <div class="sfield"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu hoặc câu trả lời…" aria-label="Tìm mẫu hoặc câu trả lời"><button class="iconbtn" data-act="qclear" aria-label="Xoá" style="margin-right:-4px"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
-      <div class="hint" id="hint" hidden><span>Chạm vào mẫu khách hỏi để chép thông tin, bảng size hoặc thêm vào đơn.</span><button class="iconbtn" data-act="hintx" aria-label="Ẩn gợi ý"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
+    <section id="qr" class="tab" aria-label="Câu trả lời nhanh">
+      <div class="hint" id="hint" hidden><span>Chọn bước, chạm tin nhắn, rồi chạm Chép.</span><button class="iconbtn" data-act="hintx" aria-label="Ẩn gợi ý"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
+      <div id="stage"></div>
+    </section>
+    <section id="pi" class="tab" aria-label="Thông tin sản phẩm" hidden>
+      <div class="pitop">
+        <div class="sub2" role="group" aria-label="Xem theo"><button data-act="pview" data-v="p">Theo mẫu</button><button data-act="pview" data-v="s">Theo set</button></div>
+        <div class="sfield" id="sfield"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu…" aria-label="Tìm mẫu"><button class="iconbtn" data-act="qclear" aria-label="Xoá" style="margin-right:-4px"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
+      </div>
       <div id="hbody"></div>
     </section>
+    <div id="obar" hidden></div>
   </main>
-  <div id="obar" hidden></div>
+  <nav id="dock" aria-label="Điều hướng">
+    <div id="stages" role="group" aria-label="Các bước trò chuyện"></div>
+    <div id="tabs" role="group"><button class="tbb" data-act="top" data-v="qr" aria-pressed="true">Câu trả lời nhanh</button><button class="tbb" data-act="top" data-v="pi" aria-pressed="false">Thông tin sản phẩm</button></div>
+  </nav>
 </div>
 <div id="sheets"></div>
 <div id="menu"></div>

@@ -404,9 +404,10 @@
    "stage": "2 Size",
    "titleVi": "Hỏi số đo để tư vấn size",
    "labelVi": "Xin số đo",
-   "vi": "Nếu bạn cần tư vấn thêm, cho mình xin số đo để tư vấn size phù hợp với bạn nha",
+   "vi": "Nếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕",
    "en": "We’d be happy to help with sizing too. Could you send us your [bust / waist / hip] measurements and height? We’ll take a look and suggest the best fit.",
-   "attach": null
+   "attach": null,
+   "seed": "sheet"
   },
   {
    "id": "will-think",
