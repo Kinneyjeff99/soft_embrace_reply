@@ -1,0 +1,322 @@
+{
+ "at": "2026-10-18T19:46:31.616Z",
+ "runs": 8,
+ "rate": 4,
+ "seconds": 102,
+ "res": [
+  {
+   "rate": 1,
+   "boot": {
+    "scriptBoot": 26.699999999254942,
+    "dcl": 81.69999999925494,
+    "load": 83.39999999850988,
+    "fcp": 108
+   },
+   "wall": 809,
+   "rows": [
+    {
+     "name": "Home > Chào hỏi (stage switch)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 28.6,
+     "paintMax": 28.6,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "open \"Tất cả mẫu\" picker",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 33.6,
+     "paintMax": 33.6,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "pick a product (cell)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 24.7,
+     "paintMax": 24.7,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "picker \"Xong\" (commit context)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 32.9,
+     "paintMax": 32.9,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY greeting card (2 products)",
+     "clipMed": 3.4,
+     "clipMax": 4.5,
+     "paintMed": 27.4,
+     "paintMax": 34,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Tư vấn size",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 31.1,
+     "paintMax": 31.1,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY size charts (2 products, labelled)",
+     "clipMed": 4.7,
+     "clipMax": 5.2,
+     "paintMed": 23.6,
+     "paintMax": 32.4,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "COPY Vừa size card",
+     "clipMed": 4.1,
+     "clipMax": 5.2,
+     "paintMed": 28,
+     "paintMax": 31.6,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Tạo đơn",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 32.7,
+     "paintMax": 32.7,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY order (dock \"Chép đơn\")",
+     "clipMed": 3.9,
+     "clipMax": 4.5,
+     "paintMed": 22.7,
+     "paintMax": 32.3,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Check out",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 24.7,
+     "paintMax": 24.7,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY Check-out bubble 1 (IG03)",
+     "clipMed": 3.8,
+     "clipMax": 4.6,
+     "paintMed": 22,
+     "paintMax": 33.2,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "open product sheet (row tap)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 33.9,
+     "paintMax": 33.9,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY product sheet \"Chép thông tin\"",
+     "clipMed": 4.1,
+     "clipMax": 5,
+     "paintMed": 24.1,
+     "paintMax": 28.4,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "open set sheet (suggestion row)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 24.3,
+     "paintMax": 24.3,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY set bubble 1 (info of both + price)",
+     "clipMed": 4.3,
+     "clipMax": 5.2,
+     "paintMed": 29.5,
+     "paintMax": 32.7,
+     "writes": 8,
+     "n": 8
+    }
+   ],
+   "errors": []
+  },
+  {
+   "rate": 4,
+   "boot": {
+    "scriptBoot": 131.90000000223517,
+    "dcl": 328.6000000014901,
+    "load": 343.80000000074506,
+    "fcp": 324
+   },
+   "wall": 1863,
+   "rows": [
+    {
+     "name": "Home > Chào hỏi (stage switch)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 57.6,
+     "paintMax": 57.6,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "open \"Tất cả mẫu\" picker",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 69.9,
+     "paintMax": 69.9,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "pick a product (cell)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 48.2,
+     "paintMax": 48.2,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "picker \"Xong\" (commit context)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 98.5,
+     "paintMax": 98.5,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY greeting card (2 products)",
+     "clipMed": 13.8,
+     "clipMax": 25.5,
+     "paintMed": 23.4,
+     "paintMax": 43,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Tư vấn size",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 61,
+     "paintMax": 61,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY size charts (2 products, labelled)",
+     "clipMed": 16.6,
+     "clipMax": 26,
+     "paintMed": 30.3,
+     "paintMax": 41.9,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "COPY Vừa size card",
+     "clipMed": 13.9,
+     "clipMax": 30.1,
+     "paintMed": 29.1,
+     "paintMax": 50.2,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Tạo đơn",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 62.7,
+     "paintMax": 62.7,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY order (dock \"Chép đơn\")",
+     "clipMed": 12.2,
+     "clipMax": 19.1,
+     "paintMed": 29.4,
+     "paintMax": 35,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "stage switch > Check out",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 54.4,
+     "paintMax": 54.4,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY Check-out bubble 1 (IG03)",
+     "clipMed": 17.9,
+     "clipMax": 43.3,
+     "paintMed": 28.9,
+     "paintMax": 52.8,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "open product sheet (row tap)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 77.7,
+     "paintMax": 77.7,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY product sheet \"Chép thông tin\"",
+     "clipMed": 14.6,
+     "clipMax": 31.8,
+     "paintMed": 27.2,
+     "paintMax": 40.8,
+     "writes": 8,
+     "n": 8
+    },
+    {
+     "name": "open set sheet (suggestion row)",
+     "clipMed": null,
+     "clipMax": null,
+     "paintMed": 126,
+     "paintMax": 126,
+     "writes": 0,
+     "n": 1
+    },
+    {
+     "name": "COPY set bubble 1 (info of both + price)",
+     "clipMed": 17.3,
+     "clipMax": 20.5,
+     "paintMed": 31.3,
+     "paintMax": 35,
+     "writes": 8,
+     "n": 8
+    }
+   ],
+   "errors": []
+  }
+ ]
+}
