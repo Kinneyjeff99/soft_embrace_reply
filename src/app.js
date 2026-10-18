@@ -11,8 +11,9 @@ var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var STR = {
   tokl: { trackingCode: 'mã vận đơn', item: 'mẫu', size: 'size', sizeA: 'size 1', sizeB: 'size 2', otherItem: 'mẫu thay thế', fitStyle: 'kiểu dáng', imageLinks: 'link hình', orderLines: 'đơn hàng', total: 'tổng tiền' },
   fail: 'Chưa chép được. Chạm giữ đoạn văn để chép tay nhé.',
-  acts: { info: 'Thông tin', size: 'Bảng size', both: 'Thông tin + bảng size' },
-  lacts: { info: 'Thông tin', size: 'Bảng size', order: 'Đơn hàng', thanks: 'Lời cảm ơn' }
+  acts: { info: 'Thông tin', size: 'Bảng size', both: 'Cả hai' },
+  lacts: { info: 'Thông tin', size: 'Bảng size', order: 'Đơn hàng', thanks: 'Lời cảm ơn' },
+  tip: 'Mở Instagram và dán vào ô tin nhắn nhé.'
 };
 var SW = { 'noir-dotty-top': '#1E1B1A', 'ivory-dot-blouse': '#EFE7D6', 'ivory-dot-midi-skirt': '#EFE7D6', 'noir-midi-skirt': '#1E1B1A', 'shimmer-top': '#D9CBB5', 'lace-top': '#EDE3CF', 'embroidery-pants': '#F1ECE0', 'butter-top': '#F0DE9A' };
 
@@ -26,6 +27,7 @@ st.set = Object.assign({ lang: 'vi', fee: 25000, bank: { name: '', no: '', holde
 st.lead = Object.assign({ sel: {}, custom: [], edits: {}, hidden: [] }, st.lead || {});
 st.sets = st.sets || [];
 st.ui = Object.assign({ stage: 'greet' }, st.ui || {});
+st.tips = Object.assign({ copy: 0, lead: false }, st.tips || {});
 var saveT;
 function save() { clearTimeout(saveT); saveT = setTimeout(flush, 300); }
 function flush() { try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) { /* storage blocked: stay in memory */ } }
@@ -106,17 +108,19 @@ function resolve(tpl, l, fills, html, mark) {
 /* ---------- toast ---------- */
 var toastEl = $('#toast'), toastT, toastAt = 0;
 function dismissToast() { if (toastEl.firstChild && performance.now() - toastAt > 300) { clearTimeout(toastT); toastEl.innerHTML = ''; } }
+/* o: {sub, bad, icon, undo, act:{label,fn}, ms}. The action button ("Hoàn tác", "Xem đơn") runs fn once. */
 function toast(msg, o) {
   o = o || {};
+  var act = o.act || (o.undo ? { label: 'Hoàn tác', fn: o.undo } : null);
   clearTimeout(toastT); toastAt = performance.now();
   var el = document.createElement('div');
   el.className = 'toast' + (o.bad ? ' bad' : '');
-  el.innerHTML = ic(o.icon || (o.bad ? 'warn' : 'checkc')) + '<span class="tx">' + esc(msg) + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</span>' + (o.undo ? '<button class="undo" data-act="undo">Hoàn tác</button>' : '');
+  el.innerHTML = ic(o.icon || (o.bad ? 'warn' : 'checkc')) + '<span class="tx">' + esc(msg) + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</span>' + (act ? '<button class="tact" data-act="toastact">' + esc(act.label) + '</button>' : '');
   if (o.bad) el.setAttribute('role', 'alert');
   toastEl.innerHTML = ''; toastEl.appendChild(el);
-  if (o.undo) toast.undoFn = o.undo;
+  toast.fn = act ? act.fn : null;
   requestAnimationFrame(function () { el.classList.add('in'); });
-  toastT = setTimeout(function () { el.classList.remove('in'); el.classList.add('out'); setTimeout(function () { if (el.parentNode) el.remove(); }, 260); }, o.ms || (o.undo ? 5000 : 1700));
+  toastT = setTimeout(function () { el.classList.remove('in'); el.classList.add('out'); setTimeout(function () { if (el.parentNode) el.remove(); }, 260); }, o.ms || (act ? 5000 : o.sub ? 2800 : 1700));
 }
 
 /* ---------- haptics + clipboard ---------- */
@@ -148,7 +152,9 @@ function copy(text, o) {
   var l = o.lang || lang;
   seal(o.btn);
   var ok = function () {
-    toast(o.msg || ('Đã chép · ' + short(o.label || 'Văn bản') + ' · ' + l.toUpperCase()), { sub: o.sub, icon: o.icon });
+    var n = st.tips.copy || 0;
+    toast(o.msg || ('Đã chép · ' + short(o.label || 'Văn bản') + ' · ' + l.toUpperCase()), { sub: o.sub || (n < 3 ? STR.tip : undefined), icon: o.icon });
+    if (n < 3) { st.tips.copy = n + 1; save(); }
     if (o.rec) afterPaint(function () { commitRecent(o.rec, l); });
     if (!st.hintDone) afterPaint(hintDone);
     if (o.done) o.done(true);
@@ -186,12 +192,49 @@ function guardPass(s, key, btn, msg) {
   }
   clearGuard(s);
   s.state.guard = { key: key, at: now, btn: btn, html: btn.innerHTML, t: setTimeout(function () { clearGuard(s); }, 3000) };
-  btn.classList.add('guard'); btn.textContent = btn.classList.contains('tint') || btn.closest('.arow') ? 'Chạm lại để chép' : (msg || 'Chưa sửa — chạm lần nữa để chép');
+  btn.classList.add('guard'); btn.textContent = 'Chạm lại để chép';
+  if (msg) toast(msg, { icon: 'info', ms: 2600 });
   return false;
 }
 
-/* ---------- shell: header, dock (stages + two top-level views), pages ---------- */
-var UI = { top: 'home', view: 'p', more: {}, ordOpen: -1, oq: '', filt: 'all' };
+/* ---------- insets: ONE source for the bottom/top edge (design-v5 section 4) ----------
+   JS measures the platform insets once, decides whether anything outside the app already owns the edge
+   (a host frame, or a host that shrank our box) and writes --inset-t / --inset-b. No CSS rule reads the platform insets except this probe. */
+var INS = { sat: 0, sab: 0, framed: false, shrunk: false, b: 0, t: 0 };
+function measureInsets() {
+  if (document.body.classList.contains('kb')) return;   /* the keyboard shrinks .app on purpose: keep the last measurement */
+  var probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:0;top:0;width:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';
+  document.body.appendChild(probe);
+  var cs = getComputedStyle(probe), sat = parseFloat(cs.paddingTop) || 0, sab = parseFloat(cs.paddingBottom) || 0;
+  probe.remove();
+  var q = new URLSearchParams(location.hash.slice(1));          /* host override: #inset-b=0&inset-t=0 */
+  var framed = false; try { framed = window.self !== window.top; } catch (e) { framed = true; }
+  var kb = parseFloat(document.documentElement.style.getPropertyValue('--kb')) || 0;
+  var shrunk = $('#app').getBoundingClientRect().bottom < window.innerHeight - kb - 1;   /* a host shrank our box: it owns the edge */
+  var b = framed || shrunk ? 0 : sab, t = framed ? 0 : sat;
+  if (q.has('inset-b')) b = Math.max(0, +q.get('inset-b') || 0);
+  if (q.has('inset-t')) t = Math.max(0, +q.get('inset-t') || 0);
+  var r = document.documentElement.style;
+  r.setProperty('--inset-b', b + 'px'); r.setProperty('--inset-t', t + 'px');
+  document.body.dataset.ctx = framed ? 'frame' : matchMedia('(display-mode: standalone)').matches || navigator.standalone ? 'pwa' : 'tab';
+  INS = { sat: sat, sab: sab, framed: framed, shrunk: shrunk, b: b, t: t };
+  paintDebug();
+}
+function insetT() { return INS.t; }
+function paintDebug() {
+  var on = new URLSearchParams(location.hash.slice(1)).get('debug') === 'insets', el = $('#dbg');
+  if (!on) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'dbg'; document.body.appendChild(el); }
+  var vv = window.visualViewport;
+  el.textContent = 'sat ' + INS.sat + '  sab ' + INS.sab + '\nframed ' + INS.framed + '  shrunk ' + INS.shrunk + '\ninnerHeight ' + innerHeight + '  screen ' + screen.height + '\nvisualViewport ' + (vv ? Math.round(vv.height) : '-') + '\n--inset-b ' + INS.b + '  --inset-t ' + INS.t + '\n--bar-y ' + Math.max(INS.b - 10, 12) + '  ctx ' + document.body.dataset.ctx;
+}
+measureInsets();
+addEventListener('resize', measureInsets); addEventListener('orientationchange', function () { setTimeout(measureInsets, 60); }); addEventListener('hashchange', measureInsets);
+if (window.visualViewport) visualViewport.addEventListener('resize', function () { var a = document.activeElement; if (!(a && a.matches && a.matches('input,textarea'))) measureInsets(); });
+
+/* ---------- shell: header, floating bar, pages ---------- */
+var UI = { top: 'home', view: 'p', more: {}, oq: '', filt: 'all', lastSeg: null };
 var PAGE = { kind: 'page', state: { ed: {}, sel: {}, edit: null }, el: $('#stage') };
 var homeEl = $('#home'), qrEl = $('#qr'), piEl = $('#pi');
 var PS = C.PS;
@@ -200,36 +243,62 @@ var TILEDESC = { greet: 'Khách mới hoặc cũ', size: 'Số đo, bảng size'
 function entryHidden(e) { return !entryText(e, 'vi').text.trim() && !entryText(e, 'en').text.trim(); }
 function groupOf(id) { return GLBL[C.stageOf(id)] || ''; }
 function stageDef(id) { return C.STAGES.filter(function (g) { return g.id === id; })[0] || C.STAGES[0]; }
-/* product photo: fixed-size box with a content colour behind it, so nothing shifts when the image decodes */
+function stageNo(id) { return C.STAGES.indexOf(stageDef(id)) + 1; }
+/* product photo: always a circle (32 / 44 / 56 / 72), a content colour behind it so nothing shifts when the image decodes */
 function avatar(p, sz, big) {
   var u = C.imgOf(p, big);
   return '<span class="av" style="width:' + sz + 'px;height:' + sz + 'px;background:' + (p && p.tint || 'var(--fill-3)') + '">' + (u ? '<img src="' + u + '" width="' + sz + '" height="' + sz + '" alt="" loading="lazy" decoding="async">' : '') + '</span>';
 }
-function pairHtml(ps, sz) { return '<span class="pair">' + ps.map(function (p) { return avatar(p, sz); }).join('') + '</span>'; }
-function paintStages() {
-  $('#stseg').innerHTML = C.STAGES.map(function (g) {
-    var n = g.id === 'order' ? calc().qty : 0;
-    return '<button class="sg" data-act="stage" data-v="' + g.id + '" aria-pressed="' + (g.id === st.ui.stage) + '"' + (n ? ' data-n="' + n + '" aria-label="' + esc(g.lab[0].join(' ')) + ', ' + n + ' món"' : '') + '>' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
-  }).join('');
+function pairHtml(ps, sz) { return '<span class="pair' + (sz >= 72 ? ' l72' : '') + '">' + ps.map(function (p) { return avatar(p, sz); }).join('') + '</span>'; }
+/* segmented control: items = [value, html]; tab = switches a view (aria-selected), otherwise a value (aria-pressed) */
+function segHtml(items, cur, act, o) {
+  o = o || {};
+  var i = Math.max(0, items.findIndex(function (x) { return x[0] === cur; })), sel = o.tab ? 'aria-selected' : 'aria-pressed';
+  return '<div class="seg ' + (o.cls || '') + '"' + (o.id ? ' id="' + o.id + '"' : '') + ' role="' + (o.tab ? 'tablist' : 'group') + '"' + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + ' style="--n:' + items.length + ';--i:' + i + '"><span class="th"></span>' +
+    items.map(function (x) { return '<button ' + (o.tab ? 'role="tab" ' : '') + 'data-act="' + act + '" ' + (o.attr || '') + ' data-v="' + x[0] + '" ' + sel + '="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join('') + '</div>';
 }
-function paintDock() { paintStages(); updateOrderBar(); }
-function paintLang() { $$('#lsw button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === lang); }); }
+function placeThumb(el) {
+  if (!el) return;
+  var b = $$('button', el), i = b.findIndex(function (x) { return x.getAttribute('aria-pressed') === 'true' || x.getAttribute('aria-selected') === 'true'; });
+  el.style.setProperty('--i', Math.max(0, i));
+}
+function paintStages() {
+  var box = $('#stseg'), seg = box.firstChild;
+  if (!seg) {
+    box.innerHTML = '<div class="seg stg" role="tablist" aria-label="Các bước trò chuyện" style="--n:5;--i:0"><span class="th"></span>' + C.STAGES.map(function (g, i) {
+      return '<button class="sg" role="tab" data-act="stage" data-v="' + g.id + '" data-i="' + (i + 1) + '" aria-selected="false">' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
+    }).join('') + '</div>';
+    seg = box.firstChild;
+  }
+  $$('.sg', seg).forEach(function (b) {
+    var g = b.dataset.v, n = g === 'order' ? calc().qty : 0;
+    b.setAttribute('aria-selected', g === st.ui.stage);
+    if (n) { b.dataset.n = n; b.setAttribute('aria-label', GLBL[g] + ', ' + n + ' món'); } else { delete b.dataset.n; b.removeAttribute('aria-label'); }
+  });
+  placeThumb(seg);
+}
+function paintDock() { paintStages(); updateOrderBar(); if (UI.top === 'home') paintHomeOrder(); }
+function paintLang() { var el = $('#lsw'); $$('button', el).forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === lang); }); placeThumb(el); }
 function greetWord() { var h = new Date().getHours(); return h < 11 ? 'Chào buổi sáng' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'; }
+function tileDesc(id) { var n = calc().qty; return id === 'order' && n ? TILEDESC.order + ' · ' + n + ' món' : TILEDESC[id]; }
+function paintHomeOrder() { var t = $('#home [data-v=order] .td'); if (t) t.textContent = tileDesc('order'); }
 function renderHomeScreen() {
   var tiles = C.STAGES.map(function (g, i) {
-    return '<button class="tile' + (i === 4 ? ' wide' : '') + '" data-act="stage" data-v="' + g.id + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(g.lab[0].join(' ')) + '</span><span class="td">' + esc(TILEDESC[g.id]) + '</span></button>';
+    var nm = esc(g.lab[0].join(' '));
+    if (i === 4) return '<button class="tile wide" data-act="stage" data-v="' + g.id + '"><span class="tn">' + (i + 1) + '</span><span class="tcol"><span class="tt">' + nm + '</span><span class="td">' + esc(tileDesc(g.id)) + '</span></span>' + ic('chev', 's13') + '</button>';
+    return '<button class="tile" data-act="stage" data-v="' + g.id + '"><span class="th1"><span class="tn">' + (i + 1) + '</span>Bước ' + (i + 1) + ic('chev', 's13') + '</span><span class="tt">' + nm + '</span><span class="td">' + esc(tileDesc(g.id)) + '</span></button>';
   }).join('');
   var sg = suggestions()[0];
-  homeEl.innerHTML = '<div class="ttl"><h1 id="hgreet">' + greetWord() + '</h1><p class="sub" id="hsub">Chạm một ô để bắt đầu nhé.</p></div>' +
+  homeEl.innerHTML = '<div class="ttl"><h1 id="hgreet">' + greetWord() + '</h1><p class="sub" id="hsub">Khách đang ở bước nào? Chạm để mở câu trả lời.</p></div>' +
     '<h2 class="cap">Trả lời khách</h2><div class="tiles">' + tiles + '</div>' +
     '<h2 class="cap">Thông tin sản phẩm</h2><div class="tiles">' +
-    '<button class="tile pt" data-act="pgo" data-v="p"><span class="pc">' + pairHtml(PS.slice(0, 3), 40) + '</span><span class="tt">Theo mẫu</span><span class="td">Giá, mô tả, bảng size</span></button>' +
-    '<button class="tile pt" data-act="pgo" data-v="s"><span class="pc">' + pairHtml(sg ? [PM[sg[0]], PM[sg[1]]] : PS.slice(3, 5), 40) + '</span><span class="tt">Theo set</span><span class="td">Ghép 2 món thành set</span></button></div>';
+    '<button class="tile pt" data-act="pgo" data-v="p"><span class="pc">' + pairHtml(PS.slice(0, 3), 40) + '</span><span class="tt">Theo mẫu' + ic('chev', 's13') + '</span><span class="td">Giá, mô tả, bảng size</span></button>' +
+    '<button class="tile pt" data-act="pgo" data-v="s"><span class="pc">' + pairHtml(sg ? [PM[sg[0]], PM[sg[1]]] : PS.slice(3, 5), 40) + '</span><span class="tt">Theo set' + ic('chev', 's13') + '</span><span class="td">Ghép 2 món thành set</span></button></div>';
 }
 function setTop(v) {
   UI.top = v; homeEl.hidden = v !== 'home'; qrEl.hidden = v !== 'qr'; piEl.hidden = v !== 'pi';
   document.body.dataset.top = v;
-  $$('#fbar .fb').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === v); });
+  $$('#fbar .fb').forEach(function (b) { b.setAttribute('aria-current', b.dataset.v === v ? 'page' : 'false'); });
   if (v === 'pi') renderPI(); else if (v === 'qr') renderStage(); else { var g = $('#hgreet'); if (g) g.textContent = greetWord(); }
   paintDock();
 }
@@ -239,27 +308,32 @@ function gotoStage(id) {
   qrEl.scrollTop = 0;
 }
 function entrySub(e) {
-  if (entryHidden(e)) return 'Gửi kèm tệp: ' + (e.attach || eLabel(e));
+  if (entryHidden(e)) return '';
   var tx = mtext(e, lang).text, x = tx.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
   return x || entryText(e, 'vi').text.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
 }
-/* product chips: a short wrapping grid (no sideways scrolling) and "Mẫu khác…" that opens the picker with photos */
+/* a message card is ONE tap target; a product card is a short list of rows (photo + name + ›) and a search row */
 function qcard(c) {
   if (c.kind === 'info' || c.kind === 'size') {
-    return '<div class="qc chipc"><span class="qt"><span class="t">' + esc(c.t) + '</span><span class="s">' + esc(c.s) + '</span></span><div class="chips">' + candidates().slice(0, 3).map(function (id) { return '<button class="chip" data-act="pchip" data-id="' + id + '" data-v="' + c.kind + '">' + esc(pname(PM[id], 'vi')) + '</button>'; }).join('') + '<button class="chip ghost" data-act="pchoose" data-v="' + c.kind + '">Mẫu khác…</button></div></div>';
+    var ids = candidates().slice(0, 3);
+    return '<div class="qc pcard" data-card="' + c.kind + '"><span class="qh" style="padding:0 16px"><span class="t">' + esc(c.t) + '</span></span><span class="q">Chọn mẫu khách hỏi</span><div class="qlst">' + ids.map(function (id) {
+      var p = PM[id];
+      return '<button class="prw" data-act="pchip" data-id="' + id + '" data-v="' + c.kind + '" aria-label="Mở ' + (c.kind === 'size' ? 'bảng size ' : 'thông tin ') + esc(pname(p, 'vi')) + '">' + avatar(p, 32) + '<span class="nm">' + esc(pname(p, 'vi')) + ' <span class="pp num">· ' + money(pv(p, 'price'), 'vi') + '</span></span>' + ic('chev', 's13') + '</button>';
+    }).join('') + '<button class="prw find" data-act="pchoose" data-v="' + c.kind + '"><span class="fico">' + ic('search', 's20') + '</span><span class="nm">Tìm mẫu khác…</span>' + ic('chev', 's13') + '</button></div></div>';
   }
   var e = FM[c.id]; if (!e) return '';
-  return '<button class="qc" data-open="f:' + c.id + '"><span class="qt"><span class="t">' + esc(c.t) + '</span><span class="s">' + esc(entrySub(e)) + '</span></span>' + ic('chev', 's13') + '</button>';
+  var hid = entryHidden(e), sub = entrySub(e);
+  return '<button class="qc" data-open="f:' + c.id + '"><span class="qh"><span class="t">' + esc(c.t) + '</span>' + ic('chev', 's13') + '</span><span class="q">' + (hid ? 'Gửi kèm tệp: ' + esc(e.attach || eLabel(e)) : '“' + esc(sub) + '”') + '</span><span class="qf">' + (hid ? ic('clip', 's15') + 'Xem lời nhắc đính kèm' : ic('copy', 's15') + 'Mở để xem và chép') + '</span></button>';
 }
 function renderStage() {
   var g = stageDef(st.ui.stage), h = '';
-  $('#qrsub').textContent = g.desc;
+  $('#qreb').textContent = 'Trả lời nhanh · Bước ' + stageNo(g.id) + '/5'; $('#qrtitle').textContent = GLBL[g.id]; $('#qrsub').textContent = g.desc;
   if (g.id === 'order') h += orderStageHtml();
   else {
     h += '<div class="qlist">' + g.cards.map(qcard).join('') + '</div>';
     if (g.more.length) {
       var on = !!UI.more[g.id];
-      h += '<button class="morebtn" data-act="stmore" aria-expanded="' + on + '">' + ic('chev', 's13') + 'Thêm</button>' + (on ? '<div class="qlist">' + g.more.map(qcard).join('') + '</div>' : '');
+      h += '<button class="morebtn" data-act="stmore" aria-expanded="' + on + '">Câu khác (' + g.more.length + ')' + ic(on ? 'chevd' : 'chevd', 's13') + '</button>' + (on ? '<div class="qlist">' + g.more.map(qcard).join('') + '</div>' : '');
     }
   }
   PAGE.el.innerHTML = h; qrEl.classList.toggle('o', g.id === 'order');
@@ -269,10 +343,11 @@ function renderStage() {
 /* product tab */
 var homeHtml = '';
 function renderPI() {
-  $$('.sub2 button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === UI.view); });
-  var isP = UI.view === 'p';
+  var isP = UI.view === 'p', pv0 = $('#pview');
+  $$('button', pv0).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.v === UI.view); }); placeThumb(pv0);
   $('#sfield').style.display = isP ? '' : 'none'; $('#pfilt').style.display = isP ? '' : 'none';
-  $('#pisub').textContent = isP ? 'Chọn mẫu, rồi chạm Chép thông tin hoặc size.' : 'Ghép hai món thành một set cho khách.';
+  $('#pititle').textContent = isP ? 'Theo mẫu' : 'Theo set';
+  $('#pisub').textContent = isP ? 'Chọn mẫu khách hỏi để chép thông tin hoặc size.' : 'Ghép hai món thành một set cho khách.';
   if (isP) renderList(); else $('#hbody').innerHTML = setsViewHtml();
 }
 function setRow(items, attrs, sub) {
@@ -281,17 +356,17 @@ function setRow(items, attrs, sub) {
     '<span class="rtxt"><span class="t">' + ps.map(function (p, i) { return (i ? '+ ' : '') + esc(pname(p, 'vi')); }).join('</span><span class="t">') + '</span><span class="sub s13 num">' + esc(sub) + '</span></span>' + ic('chev', 's13') + '</button>';
 }
 function setsViewHtml() {
-  var h = '<h2 class="cap">Set đã lưu</h2><div class="grp">' + st.sets.map(function (x) {
+  var h = '<h2 class="cap">Set đã lưu</h2><div class="grp"><button class="row newset" data-act="setnew"><span class="plus">' + ic('plus', 's20') + '</span><span class="rtxt"><span class="t">Tạo set mới</span><span class="sub s13">' + (st.sets.length ? 'Chọn 2 mẫu' : 'Chưa có set nào. Chọn 2 mẫu để ghép') + '</span></span>' + ic('chev', 's13') + '</button>' + st.sets.map(function (x) {
     return setRow(x.items, 'data-open="s:' + x.id + '"', money(C.setPrice(x), 'vi') + (x.checked === false ? ' · chưa kiểm giá' : ''));
-  }).join('') + '<button class="row plain" data-act="setnew"><span class="rtxt"><span class="t">Tạo set mới</span><span class="sub s13">Chọn 2 mẫu</span></span>' + ic('plus', 's15') + '</button></div>';
+  }).join('') + '</div>';
   var sg = suggestions();
-  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return setRow(x, 'data-act="setsugg" data-a="' + x[0] + '" data-b="' + x[1] + '"', money(C.setSum({ items: x }), 'vi') + ' · gợi ý'); }).join('') + '</div>';
+  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return setRow(x, 'data-act="setsugg" data-a="' + x[0] + '" data-b="' + x[1] + '"', 'Gợi ý · ' + money(C.setSum({ items: x }), 'vi') + ' · chưa kiểm giá'); }).join('') + '</div>';
   return h;
 }
 function pRow(p) {
-  var c = colorOf(p);
+  var c = colorOf(p), cat = C.CATL[p.category] || '';
   return '<button class="row prow" data-open="p:' + p.id + '" aria-label="' + esc(pname(p) + ', ' + money(pv(p, 'price'), 'vi')) + '">' + avatar(p, 56) +
-    '<span class="rtxt"><span class="t">' + esc(pv(p, 'name')) + '</span><span class="sub"><span class="num" style="flex:none">' + money(pv(p, 'price'), 'vi') + '</span>' + (c ? '<span class="st2">&nbsp;· ' + esc(c) + '</span>' : '') + '</span></span><span class="ctag">' + esc(C.CATL[p.category] || '') + '</span>' + ic('chev', 's13') + '</button>';
+    '<span class="rtxt"><span class="t">' + esc(pv(p, 'name')) + '</span><span class="sub"><span class="num" style="flex:none">' + money(pv(p, 'price'), 'vi') + '</span><span class="st2">&nbsp;· ' + (c ? esc(c) + ' · ' : '') + esc(cat) + '</span></span></span>' + ic('chev', 's13') + '</button>';
 }
 function grp(items, fn) {
   if (items.length <= 20) return '<div class="grp">' + items.map(fn).join('') + '</div>';
@@ -299,19 +374,18 @@ function grp(items, fn) {
   for (var i = 0; i < items.length; i += 20) out += '<div class="chunk">' + items.slice(i, i + 20).map(fn).join('') + '</div>';
   return out + '</div>';
 }
-function paintFilt() {
+function catSeg(cur, act, id) {
   var cc = C.catCounts(PS);
-  $('#pfilt').innerHTML = ['all'].concat(C.CATS.filter(function (c) { return cc[c]; })).map(function (c) {
-    return '<button class="fc" data-act="pfilt" data-v="' + c + '" aria-pressed="' + (UI.filt === c) + '">' + (c === 'all' ? 'Tất cả' : C.CATL[c]) + ' <span class="n">' + cc[c] + '</span></button>';
-  }).join('');
+  return segHtml(['all'].concat(C.CATS.filter(function (c) { return cc[c]; })).map(function (c) { return [c, (c === 'all' ? 'Tất cả' : C.CATL[c]) + '<span class="n">' + cc[c] + '</span>']; }), cur, act, { tab: true, cls: 'sm5', label: 'Loại sản phẩm', id: id });
 }
+function paintFilt() { $('#pfilt').innerHTML = catSeg(UI.filt, 'pfilt'); }
 function renderList() {
   paintFilt();
   homeHtml = C.collections(C.byCat(PS, UI.filt)).map(function (g) { return '<h2 class="cap">' + esc(g.name) + ' · ' + g.items.length + '</h2>' + grp(g.items, pRow); }).join('');
   if ($('#q').value.trim()) doSearch(); else $('#hbody').innerHTML = homeHtml;
 }
 
-/* ---------- order bar: shortcut to the "Tạo đơn" stage ---------- */
+/* ---------- order button: shortcut to the "Tạo đơn" stage ---------- */
 function updateOrderBar() {
   var c = calc(), b = $('#obtn2'), bd = b.querySelector('.bd');
   bd.hidden = !c.qty; bd.textContent = c.qty;
@@ -325,55 +399,54 @@ function addLine(pid, size, qty) {
   setCtxQuiet(pid, size); save(); orderChanged(); bump();
 }
 function lineQty(pid, size) { var f = st.draft.lines.filter(function (L) { return L.pid === pid && L.size === size; })[0]; return f ? f.qty : 0; }
+function inOrderText(pid) { return st.draft.lines.filter(function (L) { return L.pid === pid; }).map(function (L) { return L.size + ' × ' + L.qty; }).join(', '); }
+function addedToast(pid, size) { toast('Đã thêm ' + pname(PM[pid], 'vi') + ' · ' + size + ' vào đơn', { act: { label: 'Xem đơn', fn: function () { closeAllSheets(); gotoStage('order'); } } }); }
 function orderChanged() { paintDock(); if (UI.top === 'qr' && st.ui.stage === 'order') redrawOrder(); }
 
 /* ---------- order composer (stage "Tạo đơn") ---------- */
 function oresHtml() {
   var q = norm(UI.oq || ''), ids = q ? PS.filter(function (p) { return norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1; }).map(function (p) { return p.id; }).slice(0, 8) : candidates().slice(0, 4);
-  if (!ids.length) return '<p class="foot">Chưa tìm thấy mẫu nào.</p>';
-  return (q ? '' : '<h3 class="h2" style="margin-top:4px">Mẫu gần đây</h3>') + '<div class="grp">' + ids.map(function (id) {
-    var p = PM[id];
-    return '<div class="row orow"><span class="rtxt" style="padding:0">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></span><span class="chips">' + psizes(p).map(function (z) {
-      var n = lineQty(id, z);
-      return '<button class="chip tall" data-act="oadd" data-id="' + id + '" data-v="' + z + '" aria-label="Thêm ' + esc(pname(p, 'vi')) + ' size ' + z + '">' + z + (n ? '<span class="n"> · ' + n + '</span>' : '') + '</button>';
-    }).join('') + '</span></div>';
+  if (!ids.length) return '<div class="empty" style="padding-top:12px"><p>Chưa tìm thấy “' + esc(UI.oq) + '”. Thử một tên ngắn hơn nhé.</p><button class="btn tonal" data-act="oqclear">Xoá tìm kiếm</button></div>';
+  var fresh = !ctx() && !st.recents.length;
+  return (q ? '' : '<div class="secH"><h3 class="cap sm">' + (fresh ? 'Mẫu mới nhất' : 'Mẫu gần đây') + '</h3></div>') + '<div class="grp">' + ids.map(function (id) {
+    var p = PM[id], io = inOrderText(id);
+    return '<div class="oit" data-pid="' + id + '"><div class="oh">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></div><div class="addrow">' + psizes(p).map(function (z) {
+      return '<button class="btn tonal" data-act="oadd" data-id="' + id + '" data-v="' + z + '" aria-label="Thêm ' + esc(pname(p, 'vi')) + ' size ' + z + ' vào đơn">' + ic('plus', 's15') + z + '</button>';
+    }).join('') + '<span class="inord">' + (io ? 'Trong đơn: ' + esc(io) : '') + '</span></div></div>';
   }).join('') + '</div>';
 }
 function olinesHtml() {
   var d = st.draft, rows = '';
   d.lines.forEach(function (L, i) {
     var p = PM[L.pid]; if (!p) return;
-    rows += '<div class="row lrow' + (UI.ordOpen === i ? ' open' : '') + '" data-act="lineopen" data-i="' + i + '"><div class="lm">' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">Size ' + L.size + ' · SL ' + L.qty + '</span></span><span class="pr">' + money(pv(p, 'price') * L.qty, 'vi') + '</span></div>' +
-      '<div class="lexp"><div class="chips wrapc">' + psizes(p).map(function (z) { return '<button class="chip" data-act="linesize" data-i="' + i + '" data-v="' + z + '" aria-pressed="' + (z === L.size) + '">' + z + '</button>'; }).join('') + '</div>' +
-      '<span class="step"><button data-act="qty" data-i="' + i + '" data-d="-1" aria-label="Giảm">' + ic('minus') + '</button><span class="v num">' + L.qty + '</span><button data-act="qty" data-i="' + i + '" data-d="1" aria-label="Tăng">' + ic('plus') + '</button></span>' +
-      '<button class="txtbtn dest" data-act="linedel" data-i="' + i + '">Xoá</button></div></div>';
+    rows += '<button class="row lrow" data-act="lineopen" data-i="' + i + '" aria-label="Sửa món ' + esc(pname(p, 'vi')) + ', size ' + L.size + ', số lượng ' + L.qty + '">' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">Size ' + L.size + ' · SL ' + L.qty + '</span></span><span class="pr">' + money(pv(p, 'price') * L.qty, 'vi') + '</span>' + ic('chev', 's13') + '</button>';
   });
-  return rows ? '<div class="grp" style="margin-bottom:10px">' + rows + '</div>' : '<p class="foot" style="margin:0 0 8px">Chưa có món nào. Chạm size bên dưới để thêm.</p>';
+  return rows ? '<div class="grp">' + rows + '</div>' : '<div class="oempty"><p class="tt">Đơn còn trống</p><p>Chạm ＋ size bên dưới để thêm món nhé.</p></div>';
 }
 function oshipHtml() {
-  var d = st.draft, labels = [['courier', 'Trả shipper'], ['fee', money(st.set.fee, 'vi')], ['free', 'Freeship'], ['custom', 'Khác']], idx = labels.findIndex(function (x) { return x[0] === d.ship; });
-  return '<div class="seg full" role="group" aria-label="Phí ship" style="--n:4"><span class="th" style="--n:4;width:calc((100% - 4px)/4);transform:translateX(' + (idx * 100) + '%)"></span>' + labels.map(function (x) { return '<button data-act="ship" data-v="' + x[0] + '" aria-pressed="' + (d.ship === x[0]) + '" style="min-width:0;padding:0 4px">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
+  var d = st.draft, labels = [['courier', 'Trả shipper'], ['fee', money(st.set.fee, 'vi')], ['free', 'Freeship'], ['custom', 'Khác']];
+  return segHtml(labels.map(function (x) { return [x[0], esc(x[1])]; }), d.ship, 'ship', { label: 'Phí ship', cls: 'full' }) +
     (d.ship === 'custom' ? '<input class="fld" style="margin-top:8px" inputmode="numeric" data-in="custom" placeholder="Nhập phí ship (đ)" value="' + (d.custom ? nfV.format(d.custom) : '') + '" aria-label="Phí ship khác">' : '');
 }
 function ofootHtml() {
   var c = calc();
-  return '<div><div class="tl">' + (c.count ? 'Tổng · ' + c.qty + ' món' : 'Chưa có món') + '</div><div class="tv num">' + money(c.total, lang) + '</div></div><button class="btn" id="obtn" data-act="copyorder"' + (c.count ? '' : ' disabled') + '>' + lblBtn('Chép đơn · ' + lu()) + '</button>';
+  return '<div><div class="tl">' + (c.count ? 'Tổng · ' + c.qty + ' món' : 'Chưa có món') + '</div><div class="tv num">' + money(c.total, lang) + '</div></div><button class="btn m" id="obtn" data-act="copyorder"' + (c.count ? '' : ' disabled') + '>' + lblBtn('Chép đơn · ' + lu()) + '</button>';
 }
 function tnoteHtml() {
   var t = ebVal(PAGE, 'order'), has = /chuyển khoản|transfer note/i.test(t) && /instagram/i.test(t);
-  return has ? '<div class="tnote">' + ic('check', 's15') + 'Đã kèm hướng dẫn ghi tên Instagram khi chuyển khoản</div>' : '<div class="tnote" style="color:var(--destructive)">' + ic('warn', 's15') + 'Tin chưa có hướng dẫn nội dung chuyển khoản</div>';
+  return has ? '<div class="notice row2">' + ic('check', 's15') + '<span class="nb">Đã kèm hướng dẫn ghi tên Instagram khi chuyển khoản</span></div>' : '<div class="notice row2">' + ic('info', 's15') + '<span class="nb">Tin chưa có hướng dẫn nội dung chuyển khoản</span></div>';
 }
 function postCardHtml() {
-  return st.draft.copiedAt && Date.now() - st.draft.copiedAt < 864e5 ? '<button class="qc postcard" data-act="stage" data-v="out"><span class="qt"><span class="t">Khách đã chuyển khoản?</span><span class="s">Sang Check out để cảm ơn và gửi mã vận đơn</span></span>' + ic('chev', 's13') + '</button>' : '';
+  return st.draft.copiedAt && Date.now() - st.draft.copiedAt < 864e5 ? '<button class="qc postcard" data-act="stage" data-v="out"><span class="qh"><span class="t">Khách đã chuyển khoản?</span>' + ic('chev', 's13') + '</span><span class="q">Sang Check out để cảm ơn và gửi mã vận đơn</span></button>' : '';
 }
 function orderStageHtml() {
   var d = st.draft, h = '<div class="ostage">';
-  h += '<div class="hrow"><h3 class="h2">1 · Món trong đơn</h3><button class="txtbtn" data-act="neworder">Đơn mới</button></div><div id="olines">' + olinesHtml() + '</div>';
+  h += '<div class="secH"><h3 class="cap sm">1 · Món trong đơn</h3><button class="txtbtn" data-act="neworder">' + ic('undo', 's15') + 'Đơn mới</button></div><div id="olines">' + olinesHtml() + '</div>';
   h += '<div class="oadd">' + ic('search') + '<input id="oq" data-oq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu để thêm…" aria-label="Tìm mẫu để thêm" value="' + esc(UI.oq) + '"></div><div class="ores" id="ores">' + oresHtml() + '</div>';
-  h += '<h3 class="h2">2 · Phí ship</h3><div id="oship">' + oshipHtml() + '</div>';
-  h += '<h3 class="h2">3 · Thông tin nhận (tuỳ chọn)</h3><div style="position:relative"><textarea class="ta sel" data-in="info" placeholder="Dán tên, SĐT, địa chỉ khách gửi…" aria-label="Thông tin nhận" style="padding-right:48px">' + esc(d.info) + '</textarea><button class="iconbtn" data-act="pasteinfo" aria-label="Dán" style="position:absolute;right:2px;top:2px"><span class="c bare">' + ic('paste', 's20') + '</span></button></div>';
-  h += st.set.bank.no ? '<div class="swrow"><span>Kèm thông tin chuyển khoản</span><label class="sw"><input type="checkbox" switch data-in="bank" aria-label="Kèm thông tin chuyển khoản"' + (d.bank ? ' checked' : '') + '><i></i></label></div>' : '<button class="swrow" data-act="bankset"><span>Thêm STK để kèm vào đơn</span>' + ic('chev', 's13') + '</button>';
-  h += '<h3 class="h2">4 · Tin nhắn chốt đơn</h3>' + ebHtml(PAGE, 'order', { label: 'Tin nhắn chốt đơn — chạm để sửa' }) + leadZone(PAGE, 'order') + '<div id="tnote">' + tnoteHtml() + '</div><div id="opost">' + postCardHtml() + '</div>';
+  h += '<div class="secH"><h3 class="cap sm">2 · Phí ship</h3></div><div id="oship">' + oshipHtml() + '</div>';
+  h += '<div class="secH"><h3 class="cap sm">3 · Thông tin nhận (tuỳ chọn)</h3><button class="btn tonal" data-act="pasteinfo">' + ic('paste', 's15') + 'Dán</button></div><textarea class="ta sel" data-in="info" placeholder="Dán tên, SĐT, địa chỉ khách gửi…" aria-label="Thông tin nhận">' + esc(d.info) + '</textarea>';
+  h += '<div style="margin-top:12px">' + (st.set.bank.no ? '<label class="swrow"><span class="sl"><span class="t">Kèm thông tin chuyển khoản</span></span><span class="sw"><input type="checkbox" switch data-in="bank" aria-label="Kèm thông tin chuyển khoản"' + (d.bank ? ' checked' : '') + '><i></i></span></label>' : '<button class="swrow" data-act="bankset"><span class="sl"><span class="t">Thêm STK để kèm vào đơn</span></span>' + ic('chev', 's13') + '</button>') + '</div>';
+  h += '<div class="eb" style="margin-top:16px"><div class="ebh"><h3 class="cap sm">4 · Tin chốt đơn</h3>' + editBtn('order') + '</div><div style="margin-bottom:12px">' + leadRow(PAGE, 'order', 'Câu mở đầu') + '</div>' + boxHtml(PAGE, 'order', { label: 'Tin chốt đơn', lead: 'order', leadLab: 'Câu mở đầu' }) + '' + estBlock(PAGE, 'order') + '</div><div id="tnote">' + tnoteHtml() + '</div><div id="opost">' + postCardHtml() + '</div>';
   h += '<div class="ofoot" id="ofoot">' + ofootHtml() + '</div></div>';
   return h;
 }
@@ -382,11 +455,8 @@ function redrawOrder() {
   $('#olines').innerHTML = olinesHtml(); $('#ores').innerHTML = oresHtml(); $('#oship').innerHTML = oshipHtml(); $('#ofoot').innerHTML = ofootHtml();
   refreshPreview(PAGE);
 }
-
 /* ---------- sheets ---------- */
-var SH = [], sheetsEl = $('#sheets'), appEl = $('#app'), SAFE_TOP = null;
-function measureSafe() { var d = document.createElement('div'); d.style.cssText = 'position:absolute;visibility:hidden;width:0;height:var(--safe-top)'; document.body.appendChild(d); SAFE_TOP = d.getBoundingClientRect().height; d.remove(); }
-addEventListener('resize', function () { SAFE_TOP = null; });
+var SH = [], sheetsEl = $('#sheets'), appEl = $('#app');
 function syncSheetBody() {
   var top = SH[SH.length - 1];
   document.body.classList.toggle('sheet-open', !!top);
@@ -400,8 +470,7 @@ function pushSheet(o) {
   var s = { wrap: wrap, el: wrap.lastChild, det: o.det || 'm', fixed: !!o.fixed, render: o.render, state: o.state || {}, kind: o.kind, opener: document.activeElement, onClose: o.onClose };
   s.el.innerHTML = o.render(s);
   SH.push(s); growAll(s.el);
-  if (SAFE_TOP == null) measureSafe();
-  s.H = innerHeight - SAFE_TOP - 10;
+  s.H = innerHeight - insetT() - 10;
   s.offMed = s.fixed ? 0 : Math.max(0, Math.round(s.H - 0.6 * innerHeight));
   s.off = s.det === 'l' ? 0 : s.offMed;
   s.el.style.setProperty('--off', s.off + 'px');
@@ -490,7 +559,7 @@ document.addEventListener('pointerdown', function (e) {
   var s = topS(); if (s && e.target.matches && e.target.matches('input,textarea') && s.el.contains(e.target)) setDetent(s, 'l');
 }, { passive: true });
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') { if ($('.dlg')) $('.dlg').remove(); else if ($('#menu.on')) closeMenu(); else if (SH.length) closeTop(); else if ($('#q').value) { $('#q').value = ''; doSearch(); } }
+  if (e.key === 'Escape') { if ($('.dlg')) $('.dlg').remove(); else if (SH.length) closeTop(); else if ($('#q').value) { $('#q').value = ''; doSearch(); } }
   if (e.key === 'Tab' && SH.length) {
     var s = topS(), f = $$('button,input,textarea,[tabindex="0"]', s.el).filter(function (x) { return !x.disabled && x.offsetParent; });
     if (!f.length) return; var i = f.indexOf(document.activeElement);
@@ -501,60 +570,63 @@ function shHead(title, sub, extra, lead) {
   return '<div class="drag"><i class="grab"></i><div class="shh">' + (lead || '') + '<div class="tw"><h2>' + esc(title) + '</h2>' + (sub ? '<div class="st">' + sub + '</div>' : '') + '</div>' + (extra || '') +
     '<button class="iconbtn" data-act="shclose" aria-label="Đóng"><span class="c">' + ic('x', 's15') + '</span></button></div></div>';
 }
-function segHtml(items, cur, act, cls) {
-  var i = Math.max(0, items.findIndex(function (x) { return x[0] === cur; })), n = items.length;
-  return '<div class="seg ' + (cls || '') + '" role="group"><span class="th" style="width:calc((100% - 4px)/' + n + ');transform:translateX(' + (i * 100) + '%)"></span>' + items.map(function (x) { return '<button data-act="' + act + '" data-v="' + x[0] + '" aria-pressed="' + (x[0] === cur) + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>';
-}
-function langSeg() { return '<div class="seg lang" role="group" aria-label="Ngôn ngữ"><span class="th" style="--n:2;width:calc((100% - 4px)/2);transform:translateX(' + (lang === 'en' ? 100 : 0) + '%)"></span><button data-act="lang" data-v="vi" aria-pressed="' + (lang === 'vi') + '">VI</button><button data-act="lang" data-v="en" aria-pressed="' + (lang === 'en') + '">EN</button></div>'; }
+function langSeg() { return '<div class="seg lang" role="group" aria-label="Ngôn ngữ" style="--n:2;--i:' + (lang === 'en' ? 1 : 0) + '"><span class="th"></span><button data-act="lang" data-v="vi" aria-pressed="' + (lang === 'vi') + '">VI</button><button data-act="lang" data-v="en" aria-pressed="' + (lang === 'en') + '">EN</button></div>'; }
 function setLang(l) {
   if (l === lang) return;
   lang = l; st.set.lang = l; save(); hap(); paintLang();
   PAGE.state.ed = {}; PAGE.state.edit = null;
   if (UI.top === 'qr') { var sc = qrEl.scrollTop; renderStage(); qrEl.scrollTop = sc; }
-  SH.forEach(function (s) { s.state.edit = null; s.state.ed = {}; if (s.kind === 'product' || s.kind === 'msg' || s.kind === 'set') { rerender(s); afterPaint(function () { growAll(s.el); }); } });
+  SH.forEach(function (s) { s.state.edit = null; s.state.ed = {}; if (s.kind === 'product' || s.kind === 'msg' || s.kind === 'set' || s.kind === 'lead') { rerender(s); afterPaint(function () { growAll(s.el); }); } });
   updateOrderBar();
 }
 function lblBtn(text, icon) {
   return '<span class="l1">' + (icon === false ? '' : ic('copy', 's20')) + esc(text) + '</span><span class="l2">' + ic('check', 's20') + 'Đã chép</span>';
 }
 
-/* ---------- lead-ins (câu đệm): chips, inline add / edit, long-press menu ---------- */
+/* ---------- lead-ins ("Câu mở đầu"): a dropdown row, a highlighted strip at the top of the box, a radio picker ----------
+   The strip is never inside the textarea: clipboard of a box = strip text + blank line + textarea. */
 function leadCur(s, a) {
   var key = a + ':' + lang, cur = Object.prototype.hasOwnProperty.call(s.state.sel, key) ? s.state.sel[key] : C.leadSel(a, lang);
   return C.leadList(a, lang).some(function (x) { return x.id === cur; }) ? cur : null;
 }
-function linkZone(s) {
-  var u = String(pv(PM[s.state.id], 'postUrl') || '').trim(), ed = s.state.edit;
-  if (ed && ed.a === 'link') return '<div class="lf" data-lead="link"><textarea rows="1" data-lfi="url" placeholder="Link bài viết Instagram…" aria-label="Link bài viết">' + esc(u) + '</textarea><div class="bs"><button class="txtbtn" data-act="leadcancel">Huỷ</button><button class="txtbtn pri" data-act="linksave">Lưu</button></div></div>';
-  return '<div class="lead" data-lead="link">' + (u ? '<button class="lchip" data-act="linktoggle" aria-pressed="' + !!s.state.link + '">Kèm link bài viết</button><button class="lchip add" data-act="linkedit">Sửa link</button>' : '<button class="lchip add" data-act="linkedit">+ Link bài viết</button>') + '</div>';
+function leadObj(s, a) { var id = leadCur(s, a); return id ? C.leadList(a, lang).filter(function (y) { return y.id === id; })[0] || null : null; }
+function leadText(s, a) { var x = leadObj(s, a); return x ? clean(x.text) : ''; }
+function leadRow(s, a, lab) {
+  var x = leadObj(s, a), first = !x && !st.tips.lead;
+  var val = x ? x.text : first ? 'Không kèm — chạm Đổi để thêm câu chào' : 'Không kèm';
+  return '<button class="ddrow" data-act="leadopen" data-a="' + a + '" data-lead="' + a + '" data-lab="' + esc(lab) + '" aria-haspopup="dialog" aria-label="' + esc(lab + ': ' + (x ? x.text : 'Không kèm') + '. Đổi') + '"><span class="dl"><span class="dc">' + esc(lab) + '</span><span class="dv' + (first ? ' hint2' : '') + '">' + esc(val) + '</span></span><span class="dx">Đổi' + ic('chevd', 's13') + '</span></button>';
 }
-function leadZone(s, a, cap) {
-  if (a === 'link') return linkZone(s);
-  var ed = s.state.edit;
-  if (ed && ed.a === a) {
-    var l = lang, cur = ed.id ? C.leadStore().custom.filter(function (x) { return x.id === ed.id; })[0] || C.leadStore().edits[ed.id] || {} : {}, seedx = ed.id && !C.leadStore().custom.some(function (x) { return x.id === ed.id; });
-    var base = {};
-    if (seedx) ((SEED.leadIns[a] || []).filter(function (x) { return x.id === ed.id; })).forEach(function (x) { base = x; });
-    var v = function (k) { return cur[k] !== undefined ? cur[k] : (base[k] || ''); };
-    return (cap ? '<h3 class="cap sm" style="padding-bottom:0">' + cap + '</h3>' : '') + '<div class="lf" data-lead="' + a + '">' +
-      (ed.id ? '<h3 class="cap sm">Tiếng Việt</h3><textarea rows="1" data-lfi="vi" aria-label="Câu đệm tiếng Việt">' + esc(v('vi')) + '</textarea><h3 class="cap sm">Bản tiếng Anh (tuỳ chọn)</h3><textarea rows="1" data-lfi="en" aria-label="Bản tiếng Anh">' + esc(v('en')) + '</textarea>'
-        : '<textarea rows="1" data-lfi="' + l + '" placeholder="Câu bạn hay nói trước khi gửi…" aria-label="Câu đệm mới"></textarea>') +
-      '<div class="bs"><button class="txtbtn" data-act="leadcancel">Huỷ</button><button class="txtbtn pri" data-act="leadsave" data-a="' + a + '">Lưu</button></div></div>';
-  }
-  var cur2 = leadCur(s, a), list = C.leadList(a, lang);
-  return (cap ? '<h3 class="cap sm" style="padding-bottom:0">' + cap + '</h3>' : '') + '<div class="lead" data-lead="' + a + '"><button class="lchip" data-act="lead" data-a="' + a + '" data-id="" aria-pressed="' + !cur2 + '">Không kèm</button>' +
-    list.map(function (x) { return '<button class="lchip" data-act="lead" data-a="' + a + '" data-id="' + x.id + '" data-menu="lead:' + x.id + ':' + a + '" aria-pressed="' + (x.id === cur2) + '" title="' + esc(x.text) + '">' + esc(x.text) + '</button>'; }).join('') +
-    '<button class="lchip add" data-act="leadadd" data-a="' + a + '">+ Thêm câu</button></div>';
+function stripHtml(s, a, lab) {
+  var t = leadText(s, a);
+  return t ? '<div class="lstrip" data-strip="' + a + '"><div class="lsb"><span class="lc">' + esc(lab || 'Câu mở đầu') + '</span><span class="lt">' + esc(t) + '</span></div><button class="lx" data-act="stripx" data-a="' + a + '" aria-label="Bỏ câu mở đầu">' + ic('x', 's15') + '</button></div>' : '';
 }
-function leadState(s, a) {
-  var id = leadCur(s, a), x = id ? C.leadList(a, lang).filter(function (y) { return y.id === id; })[0] : null;
-  return x ? '“' + short(x.text, 30) + '”' : '';
+function slotHtml(s, key, a, lab) { return a ? '<div class="lslot" data-slot="' + key + '" data-a="' + a + '" data-lab="' + esc(lab || 'Câu mở đầu') + '">' + stripHtml(s, a, lab) + '</div>' : ''; }
+/* a box's lead action: product info/size, set bubbles a/b, the order message */
+function leadKeyOf(s, key) {
+  if (s.kind === 'product') return key;
+  if (s.kind === 'set') return key === 'sa' ? 'info' : key === 'sb' ? 'size' : null;
+  if (s.kind === 'page') return 'order';
+  return null;
 }
-function refreshLeadZone(s, a) {
-  var el = s.el.querySelector('[data-lead="' + a + '"]'); if (!el) return;
-  var tmp = document.createElement('div'); tmp.innerHTML = leadZone(s, a, null);
-  el.replaceWith(tmp.firstChild);
-  var ta = s.el.querySelector('[data-lead="' + a + '"] textarea'); if (ta) { ta.focus(); grow(ta); }
+function leadSet(s, a, id) {
+  s.state.sel[a + ':' + lang] = id;
+  if (id && !st.tips.lead) { st.tips.lead = true; save(); }
+  refreshLeadUi(s, a, true);
+}
+/* repaint every dropdown row and strip of lead action `a` in a scope; the strip that just arrived expands and flashes */
+function refreshLeadUi(s, a, flash) {
+  var root = s.el;
+  $$('[data-lead="' + a + '"]', root).forEach(function (el) { var t = document.createElement('div'); t.innerHTML = leadRow(s, a, el.dataset.lab); el.replaceWith(t.firstChild); });
+  $$('.lslot[data-a="' + a + '"]', root).forEach(function (slot) {
+    var old = slot.querySelector('.lt'), was = old ? old.textContent : '';
+    slot.innerHTML = stripHtml(s, a, slot.dataset.lab);
+    var strip = slot.querySelector('.lstrip'), box = slot.parentNode;
+    if (strip && flash && strip.querySelector('.lt').textContent !== was) {
+      strip.classList.add('arrive');
+      var ta = box.querySelector('textarea'); if (ta) ta.scrollTop = 0;
+    }
+    $$('textarea', box).forEach(growTa);
+  });
 }
 function grow(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight + 2) + 'px'; }
 /* the single compose call for a sheet, used by preview and clipboard alike */
@@ -565,8 +637,8 @@ function sheetCompose(s, a) {
   if (k === 'page') return C.composeCopy('order', { sel: s.state.sel }, lang);
   return null;
 }
-/* ---------- editable boxes (round 3) ----------
-   Every preview is a <textarea>: it starts as the generated text, she can type over it, and the clipboard gets exactly what is in the box.
+/* ---------- editable boxes ----------
+   Every preview is a <textarea>: it starts as the generated BODY, she can type over it, and the clipboard gets strip + box exactly as shown.
    scope.state.ed[key] holds the typed text only while it differs from the generated text; "Khôi phục" drops it, "Lưu làm mẫu" persists it. */
 function scopeOf(el) {
   var sh = el && el.closest && el.closest('.sheet');
@@ -574,23 +646,31 @@ function scopeOf(el) {
   return PAGE;
 }
 function ebGen(s, key) {
-  var k = s.kind;
-  if (k === 'product') return sheetCompose(s, key).text;
+  var k = s.kind, r;
+  if (k === 'product') { r = sheetCompose(s, key); return C.stripLead(r.text, r.lead); }
   if (k === 'msg') return msgGen(s).text;
-  if (k === 'set') return C.composeCopy('set', { set: SM(s.state.id), sel: s.state.sel, bubble: key.slice(1) }, lang).text;
-  if (k === 'page') return C.composeCopy('order', { sel: s.state.sel }, lang).text;
+  if (k === 'set') { r = C.composeCopy('set', { set: SM(s.state.id), sel: s.state.sel, bubble: key.slice(1) }, lang); return C.stripLead(r.text, r.lead); }
+  if (k === 'page') { r = C.composeCopy('order', { sel: s.state.sel }, lang); return C.stripLead(r.text, r.lead); }
   return '';
 }
 function ebVal(s, key) { var e = s.state.ed[key]; return e !== undefined ? e : ebGen(s, key); }
-function ebCanSave(s, key) { return !(s.kind === 'product' && key === 'both'); }
+/* what the box shows in full (strip + text) = what Chép copies */
+function fullText(s, key) { var a = leadKeyOf(s, key), t = a ? leadText(s, a) : '', body = ebVal(s, key); return clean(t ? t + '\n\n' + body : body); }
 function estHtml(s, key, edited) {
-  if (!edited) return '<span>Chạm vào khung để sửa trực tiếp</span>';
-  return '<span class="ed"><b>Đã sửa</b><button class="txtbtn" data-act="ebreset" data-k="' + key + '">Khôi phục</button>' + (ebCanSave(s, key) ? '<button class="txtbtn sv" data-act="ebsave" data-k="' + key + '">Lưu làm mẫu</button>' : '<span class="nosave">Mở Thông tin hoặc Bảng size để lưu mẫu</span>') + '</span>';
+  if (!edited) return '';
+  return '<span class="ed"><b>Đã sửa</b><button class="txtbtn" data-act="ebreset" data-k="' + key + '">' + ic('undo', 's15') + 'Khôi phục</button><button class="txtbtn" data-act="ebsave" data-k="' + key + '">Lưu làm mẫu</button></span>';
 }
+function estBlock(s, key) { var ed = s.state.ed[key] !== undefined; return '<div class="est" data-est="' + key + '" data-on="' + (ed ? 1 : '') + '">' + estHtml(s, key, ed) + '</div>'; }
+function editBtn(key) { return '<button class="txtbtn" data-act="ebedit" data-k="' + key + '">' + ic('pencil', 's15') + 'Sửa</button>'; }
+function taHtml(s, key, o) {
+  return '<textarea class="eta" data-eta="' + key + '" lang="' + (o.lang || lang) + '" rows="3" spellcheck="false" autocorrect="off" autocapitalize="off" aria-label="' + esc(o.label || 'Nội dung tin nhắn') + '">\n' + esc(ebVal(s, key)) + '</textarea>';
+}
+function boxHtml(s, key, o) { o = o || {}; return '<div class="ebox" data-box="' + key + '">' + slotHtml(s, key, o.lead, o.leadLab) + taHtml(s, key, o) + '</div>'; }
+/* o: {cap, label, lead, leadLab, lang, ddFirst} -> [dropdown?] [caption + Sửa] [dropdown?] box [edited row] */
 function ebHtml(s, key, o) {
   o = o || {};
-  var ed = s.state.ed[key] !== undefined;
-  return '<div class="eb" data-eb="' + key + '"><textarea class="eta" data-eta="' + key + '" lang="' + (o.lang || lang) + '" rows="3" spellcheck="false" autocorrect="off" autocapitalize="off" aria-label="' + esc(o.label || 'Nội dung tin nhắn — chạm để sửa') + '">\n' + esc(ebVal(s, key)) + '</textarea><div class="est" data-est="' + key + '" data-on="' + (ed ? 1 : '') + '">' + estHtml(s, key, ed) + '</div></div>';
+  var dd = o.lead ? '<div class="ddw">' + leadRow(s, o.lead, o.leadLab) + '</div>' : '', head = o.cap ? '<div class="ebh"><h3 class="cap sm">' + esc(o.cap) + '</h3>' + editBtn(key) + '</div>' : '';
+  return '<div class="eb" data-eb="' + key + '">' + (o.ddFirst ? dd + head : head + dd) + boxHtml(s, key, o) + estBlock(s, key) + '</div>';
 }
 function growTa(ta) {
   if (!ta.offsetParent) return;
@@ -624,17 +704,11 @@ function syncBoxes(s) {
   if (s.kind === 'page') { var tn = $('#tnote'); if (tn) tn.innerHTML = tnoteHtml(); }
   if (s.kind === 'set') { var set = SM(s.state.id), pl = s.el.querySelector('#pline'); if (pl) pl.textContent = setLine(set); var sub = s.el.querySelector('.shh .st'); if (sub) sub.textContent = 'Set · ' + money(C.setPrice(set), 'vi'); }
 }
-/* an upstream choice (lead chip, language, fill, order line...) changed: the generated text is new, the typed text of the old one is dropped (with undo) */
+/* an upstream choice (link, language, fill, order line...) changed: the generated text is new, the typed text of the old one is dropped (with undo) */
 function takeEdits(s, only) {
   var snap = {}, any = false;
   Object.keys(s.state.ed).forEach(function (k) { if (!only || only.indexOf(k) > -1) { snap[k] = s.state.ed[k]; delete s.state.ed[k]; any = true; } });
   return any ? snap : null;
-}
-function leadKeys(s, a) {
-  if (s.kind === 'product') return a === 'info' ? ['info', 'both'] : a === 'size' ? ['size', 'both'] : [a];
-  if (s.kind === 'set') return a === 'info' ? ['sa'] : a === 'size' ? ['sb'] : [];
-  if (s.kind === 'page') return ['order'];
-  return null;
 }
 function editsToast(s, snap) {
   if (!snap) return;
@@ -650,12 +724,16 @@ function onEta(t) {
   if (!t._g) t._g = requestAnimationFrame(function () { t._g = 0; growTa(t); });
 }
 function ebReset(s, key) { delete s.state.ed[key]; syncBoxes(s); }
+function ebFocus(s, key) {
+  var ta = s.el.querySelector('[data-eta="' + key + '"]'); if (!ta) return;
+  ta.focus(); var n = ta.value.length; try { ta.setSelectionRange(n, n); } catch (e) { /* ignore */ } ta.scrollTop = ta.scrollHeight;
+}
 function ebSave(s, key) {
   var text = s.state.ed[key]; if (text === undefined) return;
-  var msg = null, sub = null, l = lang, r, body, f;
+  var msg = null, sub = null, l = lang, body, f;
   if (!clean(text)) { toast('Khung đang trống, chưa lưu được', { bad: true }); return; }
   if (s.kind === 'product') {
-    var p = PM[s.state.id]; r = sheetCompose(s, key); body = C.stripLead(text, r.lead);
+    var p = PM[s.state.id]; body = text;
     if (key === 'info' && s.state.link) body = C.stripEnd(body, pv(p, 'postUrl'));
     f = (key === 'size' ? 'size' : 'desc') + (l === 'en' ? 'En' : 'Vi');
     st.ov[p.id] = st.ov[p.id] || {}; st.ov[p.id][f] = clean(body); IDX = null;
@@ -666,13 +744,12 @@ function ebSave(s, key) {
     msg = 'Đã lưu làm mẫu · ' + short(eLabel(FM[id])) + ' · ' + cl.toUpperCase();
     if (u.lost.length) sub = 'Phần sửa thay chỗ tự điền, lần sau không tự điền nữa';
   } else if (s.kind === 'set') {
-    var set = SM(s.state.id), b = key.slice(1); r = C.composeCopy('set', { set: set, bubble: b, sel: s.state.sel }, l); body = clean(C.stripLead(text, r.lead));
+    var set = SM(s.state.id), b = key.slice(1); body = clean(text);
     if (b === 'a') { set.ov = set.ov || {}; set.ov[l] = body; } else { set.bov = set.bov || {}; set.bov[b] = set.bov[b] || {}; set.bov[b][l] = body; }
     msg = 'Đã lưu làm mẫu · ' + BLBL[b] + ' · ' + lu(); sub = 'Tin này không tự đổi theo mẫu và giá nữa';
   } else if (s.kind === 'page') {
-    var d = st.draft, bk = st.set.bank, lead = C.composeCopy('order', { sel: s.state.sel }, l).lead;
-    body = C.stripLead(text, lead);
-    body = C.stripEnd(body, d.bank && bk.no ? (l === 'en' ? 'Bank transfer: ' : 'Chuyển khoản: ') + [bk.name, bk.no, bk.holder].filter(Boolean).join(' · ') : '');
+    var d = st.draft, bk = st.set.bank;
+    body = C.stripEnd(text, d.bank && bk.no ? (l === 'en' ? 'Bank transfer: ' : 'Chuyển khoản: ') + [bk.name, bk.no, bk.holder].filter(Boolean).join(' · ') : '');
     body = C.stripEnd(body, d.info.trim() ? (l === 'en' ? 'Ship to:' : 'Giao đến:') + '\n' + d.info.trim() : '');
     var pairs = d.lines.length ? [['orderLines', C.linesText(l)], ['total', C.totalStr(l)]] : [], uo = C.untemplate(body, pairs);
     st.ov.__ord = st.ov.__ord || {}; st.ov.__ord[l] = uo.tpl;
@@ -701,79 +778,128 @@ function removeLead(id) {
   save();
   return function () { if (item) s.custom.splice(Math.min(i, s.custom.length), 0, item); else s.hidden = s.hidden.filter(function (x) { return x !== id; }); s.sel = JSON.parse(snapSel); save(); };
 }
-function leadClick(s, t) {
-  var a = t.dataset.a, key = a + ':' + lang, id = t.dataset.id || null;
-  if (id && leadCur(s, a) === id) id = null;   /* tapping the selected chip goes back to "Không kèm" */
-  s.state.sel[key] = id;
-  $$('[data-lead="' + a + '"] .lchip[data-act=lead]', s.el).forEach(function (b) { b.setAttribute('aria-pressed', (b.dataset.id || null) === id); });
-  refreshPreview(s, leadKeys(s, a));
+function leadVals(a, id) {
+  var ls = C.leadStore(), cu = ls.custom.filter(function (x) { return x.id === id; })[0], seed = (SEED.leadIns[a] || []).filter(function (x) { return x.id === id; })[0] || {}, ee = ls.edits[id] || {};
+  return cu ? { vi: cu.vi, en: cu.en, custom: true } : { vi: ee.vi !== undefined ? ee.vi : seed.vi || '', en: ee.en !== undefined ? ee.en : seed.en || '', custom: false };
 }
-function leadSave(s, t) {
-  var a = t.dataset.a, ed = s.state.edit, key = a + ':' + lang;
-  var tas = $$('[data-lead="' + a + '"] textarea', s.el);
-  if (ed && ed.id) {
-    var vals = {}; tas.forEach(function (x) { vals[x.dataset.lfi] = x.value; });
-    saveLeadEdit(ed.id, a, vals.vi || '', vals.en || '');
-    s.state.edit = null; toast('Đã lưu câu đệm');
-  } else {
-    var txt = tas[0] ? tas[0].value.trim() : '';
-    s.state.edit = null;
-    if (txt) { s.state.sel[key] = addLead(a, lang, txt); toast('Đã thêm câu đệm'); }
-  }
-  refreshLeadZone(s, a); refreshPreview(s, leadKeys(s, a));
+/* ---------- opening-line picker: medium sheet, radio rows, inline Sửa and Thêm ---------- */
+function leadTitle(a) { return a === 'size' ? 'Câu trước bảng size' : a === 'order' ? 'Câu mở đầu tin chốt đơn' : 'Câu mở đầu'; }
+function leadTarget(a) { return a === 'size' ? 'Bảng size' : a === 'order' ? 'Tin chốt đơn' : 'Thông tin'; }
+function openLeadPicker(scope, a) {
+  var s = pushSheet({ kind: 'lead', det: 'm', fixed: false, state: { scope: scope, a: a, edit: null, adding: false, sel: {}, ed: {} }, render: renderLead });
+  return s;
+}
+function renderLead(s) {
+  var a = s.state.a, sc = s.state.scope, cur = leadCur(sc, a), list = C.leadList(a, lang), h;
+  h = shHead(leadTitle(a), 'Đứng đầu tin ' + leadTarget(a) + ' · ' + lu()) + '<div class="shb pad"><div class="grp sheetgrp" role="radiogroup" aria-label="' + esc(leadTitle(a)) + '">';
+  var dot = '<span class="rd">' + ic('check') + '</span>';
+  h += '<div class="rrow" role="radio" aria-checked="' + !cur + '"><button class="rmain" data-act="leadpick" data-id="">' + dot + '<span class="rt">Không kèm câu</span></button></div>';
+  list.forEach(function (x) {
+    if (s.state.edit === x.id) {
+      var v = leadVals(a, x.id);
+      h += '<div class="rrow edit"><div class="lf"><h3 class="cap sm">Tiếng Việt</h3><textarea rows="1" data-lfi="vi" aria-label="Câu mở đầu tiếng Việt">' + esc(v.vi) + '</textarea><h3 class="cap sm">Bản tiếng Anh (tuỳ chọn)</h3><textarea rows="1" data-lfi="en" aria-label="Bản tiếng Anh">' + esc(v.en) + '</textarea>' +
+        '<div class="bs"><button class="txtbtn dest" data-act="leaddel" data-id="' + x.id + '">' + (v.custom ? 'Xoá câu này' : 'Ẩn câu này') + '</button><span style="flex:1"></span><button class="txtbtn" data-act="leadcancel">Huỷ</button><button class="btn tonal" data-act="leadsave" data-id="' + x.id + '">Lưu</button></div></div></div>';
+      return;
+    }
+    h += '<div class="rrow" role="radio" aria-checked="' + (x.id === cur) + '"><button class="rmain" data-act="leadpick" data-id="' + x.id + '">' + dot + '<span class="rt">' + esc(x.text) + (x.seed ? '' : '<small>Câu của bạn</small>') + '</span></button><button class="txtbtn" data-act="leadedit" data-id="' + x.id + '" aria-label="Sửa câu: ' + esc(short(x.text, 30)) + '">' + ic('pencil', 's15') + 'Sửa</button></div>';
+  });
+  h += '</div>';
+  if (s.state.adding) h += '<div class="lf addlead"><textarea rows="1" data-lfi="new" placeholder="Câu bạn hay nói trước khi gửi…" aria-label="Câu mở đầu mới"></textarea><div class="bs"><button class="txtbtn" data-act="leadcancel">Huỷ</button><button class="btn tonal" data-act="leadaddsave">Lưu và dùng</button></div></div>';
+  else h += '<button class="txtbtn addlead" data-act="leadadd">' + ic('plus', 's15') + 'Thêm câu mới</button>';
+  return h + '</div>';
 }
 
-/* ---------- product sheet: the action stack ---------- */
+/* ---------- product sheet: segmented "what to send", one box, one primary ---------- */
 function openProduct(id, open) {
-  var s = pushSheet({ kind: 'product', det: 'l', fixed: true, state: { id: id, open: open || 'info', sel: {}, ed: {}, edit: null, guard: null }, render: renderProd });
+  var seg = open || UI.lastSeg || 'info';
+  var s = pushSheet({ kind: 'product', det: 'l', fixed: true, state: { id: id, open: seg, sel: {}, ed: {}, edit: null, guard: null }, render: renderProd });
   afterPaint(function () { growAll(s.el); setCtx(id); });
 }
 function copyLabel(a) { return a === 'info' ? 'Chép thông tin' : a === 'size' ? 'Chép bảng size' : 'Chép cả hai'; }
-function altRow(a, id) {
-  var ol = other(lang);
-  return '<div class="alt"><button class="txtbtn" data-act="pcopyalt" data-a="' + a + '" data-id="' + id + '">Chép bản ' + ol.toUpperCase() + '</button><button class="txtbtn" data-act="editp" data-id="' + id + '">Thêm bản ' + lu() + '</button></div>';
+function segTitle(a) { return STR.acts[a]; }
+function partsOf(open) { return open === 'both' ? ['info', 'size'] : [open]; }
+function leadLabFor(open, k) { return open === 'both' ? (k === 'info' ? 'Câu trước thông tin' : 'Câu trước bảng size') : k === 'size' ? 'Câu trước bảng size' : 'Câu mở đầu'; }
+function missingNote(s, k) {
+  var id = s.state.id, nm = k === 'size' ? 'Bảng size' : 'Thông tin', ol = other(lang).toUpperCase();
+  return '<div class="notice card">' + ic('info', 's15') + '<div class="nb">Chưa có bản ' + lu() + ' của ' + nm + '<div class="acts"><button class="btn tonal" data-act="pcopyalt" data-a="' + k + '">' + ic('copy', 's15') + 'Chép bản ' + ol + '</button><button class="btn tonal" data-act="editp" data-id="' + id + '">' + ic('pencil', 's15') + 'Thêm bản ' + lu() + '</button></div></div></div>';
+}
+/* everything under the segmented control: the boxes, the extras, the sets */
+function prodDyn(s) {
+  var id = s.state.id, p = PM[id], l = lang, open = s.state.open, h = '', note = pv(p, 'noteVi');
+  var parts = partsOf(open), rs = {};
+  parts.forEach(function (k) { rs[k] = sheetCompose(s, k); });
+  if (open === 'both') {
+    var cap = 'Tin sẽ gửi · ' + segTitle('both');
+    h += '<div class="dd2 ddw">' + parts.map(function (k) { return rs[k].missing ? '' : leadRow(s, k, leadLabFor(open, k)); }).join('') + '</div>';
+    if (rs.info.missing) h += missingNote(s, 'info');
+    else {
+      h += '<div class="eb" data-eb="both"><div class="ebh"><h3 class="cap sm">' + cap + '</h3>' + editBtn('info') + '</div><div class="ebox both">' + slotHtml(s, 'info', 'info', leadLabFor(open, 'info')) + taHtml(s, 'info', { label: 'Thông tin' });
+      if (rs.size.missing) h += '</div>' + '<div class="notice">' + ic('info', 's15') + '<span class="nb">Chưa có bảng size ' + lu() + ': chỉ chép thông tin. <button class="txtbtn" style="min-height:32px;padding:0" data-act="pcopyalt" data-a="size">Chép bản ' + other(l).toUpperCase() + '</button></span></div>';
+      else h += '<div class="join">cùng một tin</div>' + slotHtml(s, 'size', 'size', leadLabFor(open, 'size')) + taHtml(s, 'size', { label: 'Bảng size' }) + '</div>';
+      h += estBlock(s, 'info') + estBlock(s, 'size') + '</div>';
+    }
+  } else {
+    var k = open;
+    if (rs[k].missing) h += missingNote(s, k);
+    else h += ebHtml(s, k, { cap: 'Tin sẽ gửi · ' + segTitle(k), label: segTitle(k), lead: k, leadLab: leadLabFor(open, k), ddFirst: true });
+  }
+  if (open !== 'size') {
+    var u = String(pv(p, 'postUrl') || '').trim(), ed = s.state.edit;
+    h += '<div class="sec"><div class="secH"><h3 class="cap sm">Gửi kèm</h3></div>';
+    if (ed && ed.a === 'link') h += '<div class="lf" style="margin-top:0" data-lead="link"><textarea rows="1" data-lfi="url" placeholder="Link bài viết Instagram…" aria-label="Link bài viết">' + esc(u) + '</textarea><div class="bs"><button class="txtbtn" data-act="leadcancel">Huỷ</button><button class="btn tonal" data-act="linksave">Lưu</button></div></div>';
+    else if (u) h += '<label class="swrow"><span style="color:var(--label-2)">' + ic('link', 's20') + '</span><span class="sl"><span class="t">Kèm link bài viết</span><span class="s">' + esc(u.replace(/^https?:\/\//, '')) + '</span></span><span class="sw"><input type="checkbox" switch data-act="linktoggle" aria-label="Kèm link bài viết"' + (s.state.link ? ' checked' : '') + '><i></i></span></label><button class="txtbtn" data-act="linkedit" style="margin-left:-8px">' + ic('pencil', 's15') + 'Sửa link</button>';
+    else h += '<div class="grp sheetgrp"><button class="navrow" data-act="linkedit"><span style="color:var(--label-2)">' + ic('link', 's20') + '</span><span class="nt acc">Thêm link bài viết</span></button></div>';
+    h += '</div>';
+  }
+  h += '<div class="sec"><div class="secH"><h3 class="cap sm">Thêm vào đơn</h3></div><div class="addrow">' + psizes(p).map(function (z) {
+    return '<button class="btn tonal" data-act="addline" data-id="' + id + '" data-v="' + z + '" aria-label="Thêm ' + esc(pname(p, 'vi')) + ' size ' + z + ' vào đơn">' + ic('plus', 's15') + z + '</button>';
+  }).join('') + '<span class="inord" id="pinord">' + (inOrderText(id) ? 'Trong đơn: ' + esc(inOrderText(id)) : '') + '</span></div></div>';
+  var mine = st.sets.filter(function (x) { return x.items.indexOf(id) > -1; }).slice(0, 2);
+  h += '<div class="sec"><div class="secH"><h3 class="cap sm">Set có mẫu này</h3></div><div class="grp sheetgrp">' + mine.map(function (x) {
+    var oth = x.items.filter(function (y) { return y !== id && PM[y]; }), names = oth.map(function (y) { return pv(PM[y], 'name'); }).join(' + ');
+    return '<button class="navrow" data-open="s:' + x.id + '">' + pairHtml(x.items.map(function (y) { return PM[y]; }).filter(Boolean), 32) + '<span class="nt">Set với ' + esc(names) + '</span><span class="ns num">' + money(C.setPrice(x), 'vi') + '</span>' + ic('chev', 's13') + '</button>';
+  }).join('') + (PL.length > 1 ? '<button class="navrow" data-act="setpick" data-id="' + id + '"><span style="color:var(--label-2)">' + ic('plus', 's20') + '</span><span class="nt">Ghép set với mẫu khác</span>' + ic('chev', 's13') + '</button>' : '') + '</div></div>';
+  if (note) h += '<div class="notice" style="margin-top:24px">' + ic('info', 's15') + '<span class="nb"><span class="vh">Ghi chú nội bộ: </span>Ghi chú nội bộ (không gửi cho khách): ' + esc(note) + '</span></div>';
+  return h;
+}
+function prodFoot(s) {
+  var open = s.state.open, miss = sheetCompose(s, 'info').missing && (open !== 'size') || sheetCompose(s, 'size').missing && open === 'size';
+  return miss ? '<button class="btn dis wide" aria-disabled="true">Chưa có bản ' + lu() + '</button>' : '<button class="btn wide" data-act="pcopy" data-a="' + open + '">' + lblBtn(copyLabel(open) + ' · ' + lu()) + '</button>';
 }
 function renderProd(s) {
-  var id = s.state.id, p = PM[id], l = lang, open = s.state.open, c = colorOf(p), note = pv(p, 'noteVi'), h = '', foot = '';
-  var dt = ptrunc(p, 'desc', l), zt = ptrunc(p, 'size', l);
-  h += shHead(pname(p, 'vi'), money(pv(p, 'price'), 'vi') + (c ? ' · ' + esc(c) : '') + ' · ' + psizes(p).join(' '), langSeg(), avatar(p, 48, true));
+  var id = s.state.id, p = PM[id], l = lang, c = colorOf(p);
+  var dt = ptrunc(p, 'desc', l), zt = ptrunc(p, 'size', l), h = '';
+  h += shHead(pname(p, 'vi'), money(pv(p, 'price'), 'vi') + (c ? ' · ' + esc(c) : '') + ' · ' + psizes(p).join(' '), langSeg(), avatar(p, 56, true));
   h += '<div class="shb ebody">';
-  if (dt || zt) h += '<div class="qwarn">' + (dt && zt ? 'Thông tin và bảng size' : dt ? 'Thông tin' : 'Bảng size') + ' bị cắt ở sheet gốc — <button class="txtbtn" data-act="editp" data-id="' + id + '">Sửa</button></div>';
-  ['info', 'size', 'both'].forEach(function (a) {
-    var r = sheetCompose(s, a), edited = s.state.ed[a] !== undefined;
-    if (a === open) {
-      h += '<div class="acard">' + (a === 'info' ? '' : '<div style="border-top:.5px solid var(--separator);margin-bottom:8px"></div>') + '<h3 class="cap sm">' + STR.acts[a] + '</h3>' +
-        (r.missing ? '<div class="paper" style="color:var(--label-2)">Chưa có bản ' + lu() + ' của phần này.</div>' : ebHtml(s, a, { lang: l, label: STR.acts[a] + ' — chạm để sửa' })) +
-        (a === 'both' ? leadZone(s, 'info', 'Trước thông tin') + leadZone(s, 'size', 'Trước bảng size') : leadZone(s, a)) + (a === 'size' ? '' : linkZone(s)) +
-        (r.partial ? '<div class="foot">Chưa có bảng size ' + lu() + ': chỉ chép thông tin.</div>' : '') +
-        (r.missing ? altRow(a, id) : '') + '</div>';
-      foot = r.missing ? '<button class="btn dis wide" aria-disabled="true">Chưa có bản ' + lu() + '</button>' : '<button class="btn wide" data-act="pcopy" data-a="' + a + '">' + lblBtn(copyLabel(a) + ' · ' + lu()) + '</button>';
-    } else {
-      var sub = a === 'both' ? [leadState(s, 'info'), leadState(s, 'size')].filter(Boolean).join(' · ') : leadState(s, a);
-      h += '<div class="arow"><button class="al" data-act="popen" data-a="' + a + '"><span class="t">' + STR.acts[a] + '</span><span class="s">' + (edited ? 'đã sửa · ' : '') + (sub ? 'kèm: ' + sub : 'không kèm câu') + '</span></button>' +
-        (r.missing ? '<button class="btn tint dis">Chưa có ' + lu() + '</button>' : '<button class="btn tint" data-act="pcopy" data-a="' + a + '">' + lblBtn('Chép · ' + lu(), false) + '</button>') + '</div>';
-    }
-  });
-  st.sets.filter(function (x) { return x.items.indexOf(id) > -1; }).slice(0, 2).forEach(function (x) {
-    var others = x.items.filter(function (y) { return y !== id && PM[y]; }).map(function (y) { return pv(PM[y], 'name'); }).join(' + '), r = C.composeCopy('set', { set: x, sel: s.state.sel, bubble: 'a' }, l);
-    h += '<div class="arow"><button class="al" data-open="s:' + x.id + '"><span class="t">Set với ' + esc(others) + '</span><span class="s">' + money(C.setPrice(x), 'vi') + '</span></button>' +
-      (r.missing ? '<button class="btn tint dis">Chưa có ' + lu() + '</button>' : '<button class="btn tint" data-act="pcopyset" data-id="' + x.id + '">' + lblBtn('Chép · ' + lu(), false) + '</button>') + '</div>';
-  });
-  h += '<div class="szrow"><span class="lb">Thêm vào đơn</span><div class="chips">' + psizes(p).map(function (z) {
-    var q = lineQty(id, z);
-    return '<button class="chip tall" data-act="addline" data-id="' + id + '" data-v="' + z + '">' + z + (q ? '<span class="n"> · ' + q + '</span>' : '') + '</button>';
-  }).join('') + '</div></div>';
-  if (PL.length > 1) h += '<button class="arow link" style="width:100%;text-align:left" data-act="setpick" data-id="' + id + '"><span class="al"><span class="t" style="font-size:15px;color:var(--label-2)">Khách hỏi set? Ghép với mẫu khác</span></span>' + ic('chev', 's13') + '</button>';
-  if (note) h += '<div class="note">' + ic('sparkle', 's15') + '<span><span class="vh">Ghi chú nội bộ: </span>' + esc(note) + '</span></div>';
-  return h + '</div><div class="shf">' + foot + '</div>';
+  if (dt || zt) h += '<div class="notice row2" style="margin:0 0 12px">' + ic('info', 's15') + '<span class="nb">' + (dt && zt ? 'Thông tin và bảng size' : dt ? 'Thông tin' : 'Bảng size') + ' bị cắt ở sheet gốc <button class="txtbtn" style="min-height:32px;padding:0 4px" data-act="editp" data-id="' + id + '">' + ic('pencil', 's15') + 'Sửa</button></span></div>';
+  h += '<div class="cap sm" style="padding:0 0 6px">Bạn muốn gửi</div>' + segHtml([['info', 'Thông tin'], ['size', 'Bảng size'], ['both', 'Cả hai']], s.state.open, 'pseg', { tab: true, label: 'Bạn muốn gửi', id: 'pseg' }) +
+    '<div id="pdyn" style="margin-top:16px">' + prodDyn(s) + '</div></div><div class="shf" id="pfoot">' + prodFoot(s) + '</div>';
+  return h;
 }
-function productCopy(s, a, btn, forceLang) {
-  var l = forceLang || lang, id = s.state.id, p = PM[id];
-  var r = C.composeCopy(a, { pid: id, sel: s.state.sel, link: s.state.link }, l), typed = !forceLang && s.state.ed[a] !== undefined;
-  if (r.missing) { toast('Chưa có bản ' + l.toUpperCase(), { bad: true }); return; }
-  if (r.trunc && !typed && !guardPass(s, a + l, btn)) return;
-  var label = pname(p, 'vi') + (a === 'size' ? ' · size' : '');
-  copy(typed ? s.state.ed[a] : r.text, { btn: btn, label: a === 'size' ? 'Bảng size ' + pname(p, 'vi') : pname(p, 'vi'), lang: l, rec: { k: 'p:' + id + ':' + a, label: label, ref: { t: 'p', id: id, w: a } }, done: function (ok) { if (ok) commitLeads(r.leadIds); } });
+/* switching the segment keeps the thumb, the footer position and every typed edit (edits live per part) */
+function prodSeg(s, v) {
+  if (s.state.open === v) return;
+  clearGuard(s); s.state.open = v; s.state.edit = null;
+  var seg = s.el.querySelector('#pseg'); $$('button', seg).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.v === v); }); placeThumb(seg);
+  var d = s.el.querySelector('#pdyn'); d.innerHTML = prodDyn(s); if (!reduce) { d.classList.remove('pfade'); void d.offsetWidth; d.classList.add('pfade'); }
+  s.el.querySelector('#pfoot').innerHTML = prodFoot(s); growAll(s.el);
+}
+function productCopy(s, open, btn, forceLang) {
+  var l = forceLang || lang, id = s.state.id, p = PM[id], parts = partsOf(open), rs = {}, typed = false, trunc = false, ids = {};
+  var shown = parts.filter(function (k) {
+    rs[k] = C.composeCopy(k, { pid: id, sel: s.state.sel, link: s.state.link }, l);
+    if (rs[k].missing) { if (open === 'both' && k === 'size') return false; return true; }
+    return true;
+  });
+  if (shown.some(function (k) { return rs[k].missing; })) { toast('Chưa có bản ' + l.toUpperCase(), { bad: true }); return; }
+  shown.forEach(function (k) {
+    Object.keys(rs[k].leadIds).forEach(function (x) { ids[x] = rs[k].leadIds[x]; });
+    if (rs[k].trunc && (forceLang || s.state.ed[k] === undefined)) trunc = true;
+  });
+  if (trunc && !guardPass(s, open + l, btn)) return;
+  var text = forceLang ? shown.map(function (k) { return rs[k].text; }).join('\n\n') : shown.map(function (k) { return fullText(s, k); }).join('\n\n');
+  var label = pname(p, 'vi') + (open === 'size' ? ' · size' : '');
+  copy(text, { btn: btn, label: open === 'size' ? 'Bảng size ' + pname(p, 'vi') : pname(p, 'vi'), lang: l, rec: { k: 'p:' + id + ':' + open, label: label, ref: { t: 'p', id: id, w: open } }, done: function (ok) { if (ok) { commitLeads(ids); UI.lastSeg = open; } } });
 }
 
 /* ---------- message sheet (quick replies) ---------- */
@@ -795,14 +921,14 @@ function renderMsg(s) {
   var id = s.state.id, e = FM[id], g = msgGen(s), et = g.et, fills = s.state.fills, keys = keysOf(et.text), isG = !!GREET[id];
   var fr = keys.map(function (k) { return fillRow(k, fills, s); }).join('') + (isG ? fillRow('item', fills, s, true) : '');
   var fromCtx = keys.some(function (k) { return (k === 'item' || k === 'size') && !fills[k] && fillVal(k, fills); });
-  var alts = s.state.alts ? '<div class="altv" role="group" aria-label="Loại đơn">' + s.state.alts.map(function (a) { return '<button class="chip" data-act="variant" data-v="' + a[0] + '" aria-pressed="' + (a[0] === id) + '">' + esc(a[1]) + '</button>'; }).join('') + '</div>' : '';
-  var n = msgPending(s);
-  return shHead(eLabel(e), groupOf(id), langSeg()) +
+  var alts = s.state.alts ? '<div class="altv">' + segHtml(s.state.alts.map(function (a) { return [a[0], esc(a[1])]; }), id, 'variant', { label: 'Loại đơn', tab: true }) + '</div>' : '';
+  var n = msgPending(s), stg = C.stageOf(id), sub = stg ? 'Bước ' + stageNo(stg) + ' · ' + GLBL[stg] : '';
+  return shHead(eLabel(e), sub, langSeg()) +
     '<div class="shb ebody">' +
-    (et.fell ? '<div class="note" style="margin:0 0 10px">' + ic('warn', 's15') + '<span><b style="color:var(--destructive)">Chưa có bản ' + lu() + '.</b> Bên dưới là bản ' + other(lang).toUpperCase() + ' — chỉ chép khi bạn muốn gửi tiếng ' + (other(lang) === 'vi' ? 'Việt' : 'Anh') + '.<br><button class="txtbtn" data-act="editf" data-id="' + id + '" style="min-height:32px;padding:0">Thêm bản ' + lu() + '</button></span></div>' : '') +
-    alts + ebHtml(s, 'msg', { lang: et.fell ? other(lang) : lang, label: eLabel(e) + ' — chạm để sửa' }) +
+    (et.fell ? '<div class="notice card" style="margin:0 0 12px">' + ic('info', 's15') + '<div class="nb">Chưa có bản ' + lu() + '. Bên dưới là bản ' + other(lang).toUpperCase() + ', chỉ chép khi bạn muốn gửi tiếng ' + (other(lang) === 'vi' ? 'Việt' : 'Anh') + '.<div class="acts"><button class="btn tonal" data-act="editf" data-id="' + id + '">' + ic('pencil', 's15') + 'Thêm bản ' + lu() + '</button></div></div></div>' : '') +
+    alts + ebHtml(s, 'msg', { lang: et.fell ? other(lang) : lang, label: eLabel(e), cap: 'Tin sẽ gửi' }) +
     (e.attach && !isG ? '<div class="att">' + ic('clip', 's15') + 'Nhớ đính kèm: ' + esc(e.attach) + '</div>' : '') +
-    (fr ? '<h3 class="h2">' + (isG ? 'Kèm thông tin mẫu (tuỳ chọn)' : 'Điền nhanh') + '</h3>' + fr + (fromCtx ? '<p class="foot">Lấy từ ' + esc(ctxLabel()) + '</p>' : '') : '') + '</div>' +
+    (fr ? '<div class="sec"><div class="secH"><h3 class="cap sm">' + (isG ? 'Kèm thông tin mẫu (tuỳ chọn)' : 'Điền vào tin') + '</h3></div><div class="dd2">' + fr + '</div>' + (fromCtx ? '<p class="foot">Lấy từ ' + esc(ctxLabel()) + '</p>' : '') + '</div>' : '') + '</div>' +
     '<div class="shf"><button class="btn wide" id="mcopy" data-act="msgcopy" data-n="' + n + '"' + (n ? ' disabled' : '') + '>' + (n ? 'Điền ' + n + ' chỗ nữa' : lblBtn(msgCopyLabel(et))) + '</button></div>';
 }
 function candidates() {
@@ -812,17 +938,18 @@ function candidates() {
   PS.forEach(function (p) { if (out.indexOf(p.id) < 0) out.push(p.id); });
   return out;
 }
+/* fills: product = dropdown row (opens the product picker), size = segmented, anything else = a field */
 function fillRow(k, fills, s, opt) {
-  var lb = '<span class="lb">' + esc((STR.tokl[k] || k).replace(/^./, function (x) { return x.toUpperCase(); })) + '</span>', cur = opt ? fills.item : fillVal(k, fills), c = '';
+  var cur = opt ? fills.item : fillVal(k, fills), lab = (STR.tokl[k] || k).replace(/^./, function (x) { return x.toUpperCase(); });
   if (k === 'item' || k === 'otherItem') {
-    var cur2 = k === 'item' ? cur : fills.otherItem, cands = candidates().slice(0, 4);
-    if (cur2 && cands.indexOf(cur2) < 0) cands.unshift(cur2);
-    c = '<div class="chips">' + (opt ? '<button class="chip" data-act="fill" data-k="item" data-v="" aria-pressed="' + !cur2 + '">Không kèm</button>' : '') + cands.map(function (id) { return '<button class="chip" data-act="fill" data-k="' + k + '" data-v="' + id + '" aria-pressed="' + (id === cur2) + '">' + esc(pname(PM[id], 'vi')) + '</button>'; }).join('') + '<button class="chip ghost" data-act="pickfill" data-k="' + k + '">Chọn…</button></div>';
-  } else if (/^size/.test(k)) {
+    var cur2 = k === 'item' ? cur : fills.otherItem, p = cur2 && PM[cur2];
+    return '<button class="ddrow" data-act="pickfill" data-k="' + k + '"' + (opt ? ' data-opt="1"' : '') + ' aria-haspopup="dialog" aria-label="' + esc((opt ? 'Kèm thông tin mẫu' : lab) + ': ' + (p ? pname(p, 'vi') : 'Chưa chọn') + '. Đổi') + '"><span class="dl"><span class="dc">' + (opt ? 'Kèm thông tin mẫu' : esc(lab)) + '</span><span class="dv' + (p ? '' : ' hint2') + '">' + (p ? esc(pname(p, 'vi')) : opt ? 'Không kèm' : 'Chọn mẫu') + '</span></span><span class="dx">' + (p ? 'Đổi' : 'Chọn') + ic('chevd', 's13') + '</span></button>';
+  }
+  if (/^size/.test(k)) {
     var pid = fillVal('item', fills), sizes = pid ? psizes(PM[pid]) : ['S', 'M', 'L', 'XL'];
-    c = '<div class="chips">' + sizes.map(function (z) { return '<button class="chip" data-act="fill" data-k="' + k + '" data-v="' + z + '" aria-pressed="' + (z === cur) + '">' + z + '</button>'; }).join('') + '</div>';
-  } else c = '<input class="fld" data-fill="' + k + '" enterkeyhint="done" value="' + esc(fills[k] || '') + '" placeholder="' + esc(STR.tokl[k] || k) + '" aria-label="' + esc(STR.tokl[k] || k) + '">';
-  return '<div class="frow">' + lb + c + '</div>';
+    return '<div><div class="dc" style="font-size:13px;line-height:18px;color:var(--label-2);padding:0 0 4px">' + esc(lab) + '</div>' + segHtml(sizes.map(function (z) { return [z, z]; }), cur, 'fill', { label: lab, attr: 'data-k="' + k + '"' }) + '</div>';
+  }
+  return '<div><div class="dc" style="font-size:13px;line-height:18px;color:var(--label-2);padding:0 0 4px">' + esc(lab) + '</div><input class="fld" data-fill="' + k + '" enterkeyhint="done" value="' + esc(fills[k] || '') + '" placeholder="' + esc(STR.tokl[k] || k) + '" aria-label="' + esc(STR.tokl[k] || k) + '"></div>';
 }
 function msgCopy(s, t) {
   var g = msgGen(s), et = g.et, ent = FM[s.state.id];
@@ -835,22 +962,19 @@ function msgCopy(s, t) {
   copy(text, { btn: t, label: eLabel(ent), lang: cl, rec: { k: 'f:' + ent.id, label: eLabel(ent), ref: { t: 'f', id: ent.id } }, done: function (ok) { if (ok) setTimeout(function () { closeSheet(s, true); }, 600); } });
 }
 
-/* ---------- picker ---------- */
+/* ---------- product picker ---------- */
 function openPicker(mode, cb, o) {
   o = o || {};
   pushSheet({
-    kind: 'picker', det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, sub: o.sub, from: o.from, skip: o.skip || [], first: null },
+    kind: 'picker', det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, sub: o.sub, from: o.from, skip: o.skip || [], first: null, cat: 'all', none: !!o.none, cur: o.cur || null },
     render: function (s) {
-      return shHead(s.state.title || (mode === 'order' ? 'Thêm món' : 'Chọn mẫu'), s.state.sub || (mode === 'order' ? 'Chạm size để thêm vào đơn' : 'Chạm một mẫu để chọn')) +
-        '<div style="padding:0 20px 8px"><div class="sfield" style="margin:0;height:36px;background:var(--fill-4)">' + ic('search') + '<input data-pq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu" style="height:36px" aria-label="Tìm mẫu"></div></div>' +
-        '<div class="fchips pkf" id="pkf">' + pkFilt(s) + '</div><div class="shb" id="plist" style="padding-bottom:calc(var(--safe-bottom) + 16px)">' + pickerList(s) + '</div>';
+      return shHead(s.state.title || 'Chọn mẫu', s.state.sub || 'Chạm một mẫu để chọn') +
+        '<div style="padding:0 20px 8px"><div class="sfield" style="margin:0">' + ic('search') + '<input data-pq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu" aria-label="Tìm mẫu"></div></div>' +
+        '<div class="pkf" id="pkf">' + pkFilt(s) + '</div><div class="shb pad" id="plist">' + pickerList(s) + '</div>';
     }
   });
 }
-function pkFilt(s) {
-  var cc = C.catCounts(PS), cur = s.state.cat || 'all';
-  return ['all'].concat(C.CATS.filter(function (c) { return cc[c]; })).map(function (c) { return '<button class="fc" data-act="pkfilt" data-v="' + c + '" aria-pressed="' + (cur === c) + '">' + (c === 'all' ? 'Tất cả' : C.CATL[c]) + '</button>'; }).join('');
-}
+function pkFilt(s) { return catSeg(s.state.cat || 'all', 'pkfilt'); }
 function pickerList(s) {
   var q = norm(s.state.q || ''), skip = s.state.skip, from = s.state.from && PM[s.state.from];
   var ps = PS.filter(function (p) { return skip.indexOf(p.id) < 0 && (!s.state.cat || s.state.cat === 'all' || p.category === s.state.cat) && (!q || norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1); });
@@ -858,10 +982,11 @@ function pickerList(s) {
     var sg = function (p) { return isSugg(from.id, p.id); };
     ps = ps.filter(sg).concat(ps.filter(function (p) { return !sg(p) && p.category !== from.category; }), ps.filter(function (p) { return !sg(p) && p.category === from.category; }));
   }
-  if (!ps.length) return '<div class="empty"><div class="tt">Chưa tìm thấy</div><p>Thử một tên ngắn hơn nhé.</p></div>';
-  return '<div class="grp" style="margin:0">' + ps.map(function (p) {
-    if (s.state.mode === 'order') return '<div class="row orow"><span class="rtxt" style="padding:0">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></span><span class="chips" style="padding:0">' + psizes(p).map(function (z) { return '<button class="chip tall" data-act="pickadd" data-id="' + p.id + '" data-v="' + z + '">' + z + '</button>'; }).join('') + '</span></div>';
-    return '<button class="row prow sm" data-act="pickone" data-id="' + p.id + '"' + (s.state.first === p.id ? ' style="background:var(--accent-tint)"' : '') + '>' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + (from && isSugg(from.id, p.id) ? ' · hay ghép' : '') + '</span></span></button>';
+  var none = s.state.none && !q && (s.state.cat === 'all') ? '<button class="row pickrow" data-act="pickone" data-id=""><span class="rtxt"><span class="t">Không kèm</span></span>' + (s.state.cur ? '' : ic('check', 's20').replace('class="i ', 'class="i chk ')) + '</button>' : '';
+  if (!ps.length) return '<div class="empty" style="padding-top:12px">' + ic('search', 's34') + '<div class="tt">Chưa tìm thấy' + (q ? ' “' + esc(s.state.q) + '”' : '') + '</div><p>Thử một tên ngắn hơn nhé.</p><button class="btn tonal" data-act="pkclear">Xoá tìm kiếm</button></div>';
+  return '<div class="grp sheetgrp">' + none + ps.map(function (p) {
+    var chosen = s.state.first === p.id || s.state.cur === p.id;
+    return '<button class="row pickrow" data-act="pickone" data-id="' + p.id + '">' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span>' + (from && isSugg(from.id, p.id) ? '<span class="tag">Hay ghép</span>' : '') + (chosen ? ic('check', 's20').replace('class="i ', 'class="i chk ') : '') + '</button>';
   }).join('') + '</div>';
 }
 
@@ -887,38 +1012,51 @@ function openSetPicker(fromPid) {
   openPicker('set', function (pid) { var set = createSet([fromPid, pid], true); openSet(set.id); }, { title: 'Ghép ' + pname(p, 'vi') + ' với…', from: fromPid, skip: [fromPid] });
 }
 function openSet(id) {
-  var s = pushSheet({ kind: 'set', det: 'l', fixed: true, state: { id: id, sel: {}, edit: null, ed: {}, guard: null, next: 'a' }, render: renderSet });
+  var s = pushSheet({ kind: 'set', det: 'l', fixed: true, state: { id: id, sel: {}, edit: null, ed: {}, guard: null, next: 'a', done: {} }, render: renderSet });
   afterPaint(function () { growAll(s.el); });
 }
 var BLBL = { a: 'Thông tin + giá set', b: 'Bảng size từng món', c: 'Xin số đo', d: 'Link bài viết' };
 function setLine(set) {
   var ps = C.setItems(set), sum = C.setSum(set), price = C.setPrice(set);
+  if (set.price == null || set.price === '') return 'Để trống = ' + money(sum, 'vi') + ' (tổng giá lẻ)';
   return price !== sum ? 'Giá lẻ ' + ps.map(function (p) { return money(pv(p, 'price'), 'vi'); }).join(' + ') + ' = ' + money(sum, 'vi') + ' → Giá set ' + money(price, 'vi') : 'Giá set ' + money(price, 'vi') + ' (= tổng giá lẻ)';
 }
-function nextLabel(s) { var vis = C.SETB.filter(function (b) { return C.setBubble(SM(s.state.id), b, lang); }), n = vis.indexOf(s.state.next) + 1; return 'Chép tin ' + (n || 1) + ' · ' + lu(); }
+function setVis(s) { var set = SM(s.state.id); return C.SETB.filter(function (b) { return C.setBubble(set, b, lang); }); }
+function setNext(s, from) {
+  var vis = setVis(s), done = s.state.done, i0 = from ? vis.indexOf(from) : -1, k;
+  for (k = 1; k <= vis.length; k++) { var b = vis[(i0 + k + vis.length) % vis.length]; if (!done[b]) return b; }
+  return null;
+}
+function setFoot(s) {
+  var vis = setVis(s), n = vis.length, nx = s.state.next, d = vis.filter(function (b) { return s.state.done[b]; }).length;
+  if (!nx) return '<button class="btn tonal wide" id="bnext" disabled>' + ic('check', 's20') + 'Đã chép đủ ' + n + ' tin</button>';
+  return '<button class="btn wide" id="bnext" data-act="bnext">' + lblBtn('Chép tin ' + (vis.indexOf(nx) + 1) + '/' + n + ' · ' + lu()) + '</button>';
+}
+function setProgress(s) { var vis = setVis(s); return 'Đã chép ' + vis.filter(function (b) { return s.state.done[b]; }).length + '/' + vis.length; }
 function renderSet(s) {
-  var set = SM(s.state.id), l = lang, h = '', i = 0, vis = C.SETB.filter(function (b) { return C.setBubble(set, b, l); });
-  var next = vis.indexOf(s.state.next) > -1 ? s.state.next : vis[0]; s.state.next = next;
-  h += shHead(C.setLabel(set), 'Set · ' + money(C.setPrice(set), 'vi'), langSeg()) + '<div class="shb pad ebody"><div class="setpic" aria-label="Các món trong set">' + C.setItems(set).map(function (p, i) { return (i ? '<span class="plus">+</span>' : '') + '<span class="sp">' + avatar(p, 96, true) + '<span class="n1">' + esc(pname(p, 'vi')) + '</span><span class="n2 num">' + money(pv(p, 'price'), 'vi') + '</span></span>'; }).join('') + '</div>';
-  if (set.checked === false) h += '<div class="qwarn">Gợi ý từ bài đăng, chưa kiểm tra giá — <button class="txtbtn" data-act="setok">Đã kiểm tra</button></div>';
-  h += '<div class="foot" id="pline" style="margin-top:0">' + esc(setLine(set)) + '</div>' +
-    '<h3 class="cap sm" style="padding-bottom:0">Giá set (để trống = tổng giá lẻ)</h3><div class="lf" style="margin-top:6px"><textarea rows="1" data-sprice inputmode="numeric" placeholder="' + nfV.format(C.setSum(set)) + '" aria-label="Giá set">' + (set.price != null && set.price !== '' ? set.price : '') + '</textarea></div>' +
-    '<h3 class="cap sm" style="padding-bottom:0">Link bài viết (tuỳ chọn)</h3><div class="lf" style="margin-top:6px"><textarea rows="1" data-spurl placeholder="Để trống = link bài của mẫu" aria-label="Link bài viết">' + esc(set.postUrl || '') + '</textarea></div>';
+  var set = SM(s.state.id), l = lang, h = '', i = 0, vis = setVis(s);
+  if (!s.state.next || vis.indexOf(s.state.next) < 0) s.state.next = setNext(s, null);
+  var next = s.state.next;
+  h += shHead(C.setLabel(set), 'Set · ' + money(C.setPrice(set), 'vi'), langSeg()) + '<div class="shb pad ebody"><div class="setpic" aria-label="Các món trong set">' + C.setItems(set).map(function (p, i) { return (i ? '<span class="plus">+</span>' : '') + '<span class="sp">' + avatar(p, 72, true) + '<span class="n1">' + esc(pname(p, 'vi')) + '</span><span class="n2 num">' + money(pv(p, 'price'), 'vi') + '</span></span>'; }).join('') + '</div>';
+  if (set.checked === false) h += '<div class="notice row2" style="margin:0 0 4px">' + ic('info', 's15') + '<span class="nb">Giá set lấy từ bài đăng, chưa kiểm tra.</span><button class="btn tonal" data-act="setok">Đã kiểm tra</button></div>';
+  h += '<div class="sec"><div class="secH"><h3 class="cap sm">Giá set</h3></div><input class="fld" data-sprice inputmode="numeric" placeholder="' + nfV.format(C.setSum(set)) + '" aria-label="Giá set" value="' + (set.price != null && set.price !== '' ? set.price : '') + '"><p class="helper" id="pline">' + esc(setLine(set)) + '</p></div>' +
+    '<div class="sec" style="margin-top:16px"><div class="secH"><h3 class="cap sm">Link bài viết (tuỳ chọn)</h3></div><input class="fld" data-spurl placeholder="Để trống = link bài của mẫu" aria-label="Link bài viết" value="' + esc(set.postUrl || '') + '"></div>';
+  h += '<div class="sec"><div class="secH"><h3 class="cap sm">Gửi lần lượt ' + vis.length + ' tin</h3><span class="cn" id="sprog">' + setProgress(s) + '</span></div>';
   vis.forEach(function (b) {
-    var sb = C.setBubble(set, b, l), r = C.composeCopy('set', { set: set, bubble: b, sel: s.state.sel }, l);
+    var sb = C.setBubble(set, b, l), r = C.composeCopy('set', { set: set, bubble: b, sel: s.state.sel }, l), done = !!s.state.done[b], isNext = b === next;
     i++;
-    h += '<div class="bub bcard' + (b === next ? ' next' : '') + '" data-b="' + b + '"><div class="bh"><h3 class="cap sm">' + i + ' · ' + BLBL[b] + '</h3>' +
-      (r.missing ? (b === 'c' ? '' : '<button class="btn dis sm" aria-disabled="true">Chưa có ' + lu() + '</button>') : '<button class="btn sm" data-act="bcopy" data-b="' + b + '">' + lblBtn('Chép · ' + lu(), false) + '</button>') + '</div>';
-    if (r.missing) h += '<div class="paper" style="color:var(--label-2)">Chưa có bản ' + lu() + ' của tin này.</div>' + (b === 'c' ? '' : '<div class="alt"><button class="txtbtn" data-act="bcopy" data-b="' + b + '" data-alt="1">Chép bản ' + other(l).toUpperCase() + '</button></div>');
+    h += '<div class="bcard' + (isNext ? ' next' : '') + (done ? ' done' : '') + '" data-b="' + b + '"><div class="bh"><span class="bdisc">' + (done ? ic('check', 's15') : i) + '</span><h3 class="bt cap sm" style="text-transform:none;letter-spacing:0;font-size:15px;color:var(--label)">Tin ' + i + ' · ' + BLBL[b] + '</h3>' + (isNext ? '<span class="btag">Tiếp theo</span>' : done ? '<span class="bdone">Đã chép</span>' : '') + '</div>';
+    if (r.missing) h += '<div class="notice card" style="margin:0">' + ic('info', 's15') + '<div class="nb">Chưa có bản ' + lu() + ' của tin này.' + (b === 'c' ? '' : '<div class="acts"><button class="btn tonal" data-act="bcopy" data-b="' + b + '" data-alt="1">' + ic('copy', 's15') + 'Chép bản ' + other(l).toUpperCase() + '</button></div>') + '</div></div>';
     else {
-      h += ebHtml(s, 's' + b, { lang: l, label: 'Tin ' + i + ' — chạm để sửa' });
-      if (!sb.auto) h += '<div class="foot">Đang dùng bản đã lưu · <button class="txtbtn" style="min-height:44px;padding:0" data-act="setovreset" data-b="' + b + '">Dùng bản tự soạn</button></div>';
-      if (b === 'a') h += leadZone(s, 'info'); else if (b === 'b') h += leadZone(s, 'size');
+      var lk = b === 'a' ? 'info' : b === 'b' ? 'size' : null;
+      h += (lk ? '<div class="ddw">' + leadRow(s, lk, lk === 'info' ? 'Câu mở đầu' : 'Câu trước bảng size') + '</div>' : '') + boxHtml(s, 's' + b, { lang: l, label: 'Tin ' + i, lead: lk, leadLab: lk === 'info' ? 'Câu mở đầu' : 'Câu trước bảng size' }) + estBlock(s, 's' + b);
+      if (!sb.auto) h += '<div class="foot">Đang dùng bản đã lưu · <button class="txtbtn" style="min-height:44px;padding:0" data-act="setovreset" data-b="' + b + '">' + ic('undo', 's15') + 'Dùng bản tự soạn</button></div>';
+      h += '<div class="bbtn"><button class="btn tonal" data-act="bcopy" data-b="' + b + '">' + lblBtn((done ? 'Chép lại tin ' : 'Chép tin ') + i, true) + '</button></div>';
     }
     h += '</div>';
   });
-  h += '<div style="margin-top:8px"><button class="txtbtn" data-act="setadd">+ Thêm mẫu vào set</button> <button class="txtbtn dest" data-act="setdel">Xoá set</button></div></div>' +
-    '<div class="shf"><button class="btn wide" id="bnext" data-act="bnext">' + lblBtn(nextLabel(s)) + '</button></div>';
+  h += '<div class="setbtns"><button class="txtbtn" data-act="setadd">' + ic('plus', 's15') + 'Thêm mẫu vào set</button><button class="txtbtn dest" data-act="setdel">Xoá set</button></div></div></div>' +
+    '<div class="shf" id="sfoot">' + setFoot(s) + '</div>';
   return h;
 }
 /* one Instagram bubble of a set: synchronous, guarded when the text is truncated or the set price was never checked */
@@ -927,69 +1065,40 @@ function bubbleCopy(s, t, b, forceLang, set) {
   var r = C.composeCopy('set', { set: set, bubble: b, sel: s.state.sel }, l), typed = s.kind === 'set' && !forceLang && s.state.ed['s' + b] !== undefined;
   if (r.missing) { toast('Chưa có bản ' + l.toUpperCase(), { bad: true }); return; }
   var unchecked = b === 'a' && set.checked === false;
-  if (((r.trunc && !typed) || unchecked) && !guardPass(s, 'set' + b + l, t, unchecked ? 'Kiểm tra giá set rồi chạm lại để chép' : 0)) return;
-  var vis = C.SETB.filter(function (x) { return C.setBubble(set, x, lang); });
-  copy(typed ? s.state.ed['s' + b] : r.text, { btn: t, label: C.setLabel(set), lang: l, done: function (ok) {
+  if (((r.trunc && !typed) || unchecked) && !guardPass(s, 'set' + b + l, t, unchecked ? 'Giá set chưa kiểm tra. Chạm lại để chép nếu giá đúng' : 0)) return;
+  var text = forceLang ? r.text : s.kind === 'set' ? fullText(s, 's' + b) : r.text;
+  copy(text, { btn: t, label: C.setLabel(set), lang: l, done: function (ok) {
     if (!ok) return;
-    commitLeads(r.leadIds); if (set.checked === false) { set.checked = true; var qw = s.el.querySelector('.qwarn'); if (qw) qw.remove(); } save();
-    if (s.kind === 'set') {
-      var nx = vis[vis.indexOf(b) + 1] || b; s.state.next = nx;
-      $$('.bub', s.el).forEach(function (x) { x.classList.toggle('next', x.dataset.b === nx); });
-      var nb = s.el.querySelector('#bnext .l1'); if (nb) nb.lastChild.textContent = nextLabel(s);
+    commitLeads(r.leadIds); if (set.checked === false) { set.checked = true; var qw = s.el.querySelector('.notice.row2 [data-act=setok]'); if (qw) qw.closest('.notice').remove(); } save();
+    if (s.kind === 'set' && !forceLang) {
+      s.state.done[b] = true; s.state.next = setNext(s, b);
+      var vis = setVis(s);
+      $$('.bcard', s.el).forEach(function (x) {
+        var bb = x.dataset.b, nx = bb === s.state.next, dn = !!s.state.done[bb], idx = vis.indexOf(bb) + 1;
+        x.classList.toggle('next', nx); x.classList.toggle('done', dn);
+        x.querySelector('.bdisc').innerHTML = dn ? ic('check', 's15') : idx;
+        var tg = x.querySelector('.btag, .bdone'); if (tg) tg.remove();
+        if (nx || dn) { var sp = document.createElement('span'); sp.className = nx ? 'btag' : 'bdone'; sp.textContent = nx ? 'Tiếp theo' : 'Đã chép'; x.querySelector('.bh').appendChild(sp); }
+        var cb = x.querySelector('.bbtn .l1'); if (cb) cb.lastChild.textContent = (dn ? 'Chép lại tin ' : 'Chép tin ') + idx;
+      });
+      var pg = s.el.querySelector('#sprog'); if (pg) pg.textContent = setProgress(s);
+      s.el.querySelector('#sfoot').innerHTML = setFoot(s);
+      var ni = s.state.next ? vis.indexOf(s.state.next) + 1 : 0;
+      toast('Đã chép tin ' + (vis.indexOf(b) + 1) + (ni ? ' · Tiếp theo: tin ' + ni : ' · Đã chép đủ ' + vis.length + ' tin'));
+      if (s.state.next) { var nc = s.el.querySelector('.bcard[data-b="' + s.state.next + '"]'), sb2 = s.el.querySelector('.shb'); if (nc && sb2) sb2.scrollTo({ top: Math.max(0, nc.offsetTop - sb2.offsetTop - 16), behavior: reduce ? 'auto' : 'smooth' }); }
     }
   } });
 }
 
-/* ---------- long-press menu (lead-in chips) ---------- */
-var menuEl = $('#menu'), suppress = 0, menuScope = null;
-function closeMenu() {
-  if (!menuEl.classList.contains('on')) return;
-  menuEl.classList.remove('in'); setTimeout(function () { menuEl.classList.remove('on'); menuEl.innerHTML = ''; }, 200);
+/* ---------- order line editor (medium sheet): Size, Số lượng, Xoá món ---------- */
+function openLine(i) { pushSheet({ kind: 'line', det: 'm', fixed: false, state: { i: i, sel: {}, ed: {} }, render: renderLine }); }
+function renderLine(s) {
+  var L = st.draft.lines[s.state.i], p = L && PM[L.pid]; if (!p) return shHead('Sửa món', '');
+  return shHead('Sửa món', esc(pname(p, 'vi')) + ' · ' + money(pv(p, 'price') * L.qty, 'vi'), '', avatar(p, 44)) + '<div class="shb pad">' +
+    '<div class="sec" style="margin-top:8px"><div class="secH"><h3 class="cap sm">Size</h3></div>' + segHtml(psizes(p).map(function (z) { return [z, z]; }), L.size, 'linesize', { label: 'Size' }) + '</div>' +
+    '<div class="sec"><div class="secH"><h3 class="cap sm">Số lượng</h3></div><div class="stepper"><button class="btn tonal" data-act="qty" data-d="-1" aria-label="Giảm số lượng">' + ic('minus', 's15') + '</button><span class="v num" id="lqty">' + L.qty + '</span><button class="btn tonal" data-act="qty" data-d="1" aria-label="Tăng số lượng">' + ic('plus', 's15') + '</button></div></div>' +
+    '<div class="sec"><button class="txtbtn dest" data-act="linedel" style="margin-left:-8px">Xoá món</button></div></div><div class="shf"><button class="btn wide" data-act="shclose">Xong</button></div>';
 }
-function openMenu(key, el) {
-  var parts = key.split(':'), id = parts[1], seed = !C.leadStore().custom.some(function (x) { return x.id === id; });
-  var rect = el.getBoundingClientRect(), items = [['Sửa', 'lead-edit'], [seed ? 'Ẩn' : 'Xoá', 'lead-del', 1]];
-  var top = innerHeight - rect.bottom > 130 ? rect.bottom + 8 : Math.max(8, rect.top - 96 - 8), left = Math.min(Math.max(12, rect.left), innerWidth - 212);
-  menuEl.innerHTML = '<div class="mdim" data-act="mclose"></div><div class="mpanel" role="menu" style="left:' + left + 'px;top:' + top + 'px;transform-origin:' + (top > rect.top ? 'top' : 'bottom') + ' left" data-k="' + key + '">' + items.map(function (it) {
-    return '<button class="mi' + (it[2] ? ' dest' : '') + '" role="menuitem" data-act="mi" data-m="' + it[1] + '">' + it[0] + '</button>';
-  }).join('') + '</div>';
-  menuEl.classList.add('on');
-  requestAnimationFrame(function () { menuEl.classList.add('in'); });
-  menuScope = scopeOf(el); hap(); suppress = Date.now() + 700;
-}
-function menuAct(m, key) {
-  var parts = key.split(':'), id = parts[1], a = parts[2], s = menuScope;
-  closeMenu(); if (!s) return;
-  if (m === 'lead-edit') { s.state.edit = { a: a, id: id }; refreshLeadZone(s, a); }
-  else if (m === 'lead-del') {
-    var undo = removeLead(id);
-    if (s.state.sel) Object.keys(s.state.sel).forEach(function (k) { if (s.state.sel[k] === id) delete s.state.sel[k]; });
-    refreshLeadZone(s, a); refreshPreview(s, leadKeys(s, a));
-    toast('Đã bỏ câu đệm', { undo: function () { undo(); refreshLeadZone(s, a); refreshPreview(s, leadKeys(s, a)); } });
-  }
-}
-(function () {
-  var timer, sx, sy, el, pressRow, pressT;
-  document.addEventListener('pointerdown', function (e) {
-    var r = e.target.closest('.row');
-    clearTimeout(pressT);
-    if (r && !e.target.closest('button:not(.row)')) { pressRow = r; pressT = setTimeout(function () { if (pressRow) pressRow.classList.add('press'); }, 70); }
-    var m = e.target.closest('[data-menu]');
-    if (!m || e.target.closest('#menu')) return;
-    sx = e.clientX; sy = e.clientY; el = m;
-    clearTimeout(timer);
-    timer = setTimeout(function () { clearTimeout(pressT); if (pressRow) pressRow.classList.remove('press'); openMenu(el.getAttribute('data-menu'), el); }, 450);
-  }, { passive: true });
-  document.addEventListener('pointermove', function (e) {
-    if (timer && (Math.abs(e.clientX - sx) > 8 || Math.abs(e.clientY - sy) > 8)) { clearTimeout(timer); timer = 0; }
-    if (pressRow && (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10)) { clearTimeout(pressT); pressRow.classList.remove('press'); pressRow = null; }
-  }, { passive: true });
-  function up() { clearTimeout(timer); clearTimeout(pressT); timer = 0; if (pressRow) { pressRow.classList.remove('press'); pressRow = null; } }
-  document.addEventListener('pointerup', up, { passive: true });
-  document.addEventListener('pointercancel', up, { passive: true });
-  document.addEventListener('contextmenu', function (e) { if (e.target.closest('[data-menu]')) e.preventDefault(); });
-})();
-
 /* ---------- dialogs ---------- */
 function dlgBox(msg, buttons) {
   var d = document.createElement('div'); d.className = 'dlg'; d.setAttribute('role', 'alertdialog');
@@ -1006,28 +1115,28 @@ function openSettings(path) {
   pushSheet({ kind: 'settings', det: 'l', fixed: true, state: { path: path || ['main'] }, render: function (s) { return settingsPage(s); } });
 }
 function sNav(title, back) {
-  return '<div class="drag"><i class="grab"></i><div class="sbar">' + (back ? '<button class="txtbtn" data-act="sback" style="display:flex;align-items:center;gap:2px;padding-left:0">' + ic('back', 's20') + 'Quay lại</button>' : '<span style="width:44px"></span>') + '<span class="tt">' + esc(title) + '</span><button class="txtbtn" data-act="shclose" style="font-weight:600">Xong</button></div></div>';
+  return '<div class="drag"><i class="grab"></i><div class="sbar">' + (back ? '<button class="txtbtn" data-act="sback" style="gap:2px;padding-left:0">' + ic('back', 's20') + 'Quay lại</button>' : '<span style="width:44px"></span>') + '<span class="tt">' + esc(title) + '</span><button class="txtbtn pri" data-act="shclose">Xong</button></div></div>';
 }
 function srow(act, data, label, val, chev) { return '<button class="srw" data-act="' + act + '" ' + data + '><span class="l">' + label + '</span>' + (val != null ? '<span class="v">' + esc(val) + '</span>' : '') + (chev === false ? '' : ic('chev', 's13')) + '</button>'; }
 function field(label, id, f, val, kind, tokens) {
   var isTa = kind === 'ta';
-  return '<h3 class="h2">' + esc(label) + '</h3>' + (isTa ? '<textarea class="fld sel" data-ov="' + id + '" data-f="' + f + '" aria-label="' + esc(label) + '" rows="5">' + esc(val) + '</textarea>' + (tokens ? '<div class="chips" style="padding:0;margin-top:8px">' + CHIPTOK.map(function (t) { return '<button class="chip" data-act="ins" data-t="' + t + '" style="height:32px;font-weight:500;font-size:13px">' + t + '</button>'; }).join('') + '</div>' : '') :
+  return '<h3 class="h2">' + esc(label) + '</h3>' + (isTa ? '<textarea class="fld sel" data-ov="' + id + '" data-f="' + f + '" aria-label="' + esc(label) + '" rows="5">' + esc(val) + '</textarea>' + (tokens ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + CHIPTOK.map(function (t) { return '<button class="btn tonal" data-act="ins" data-t="' + t + '" aria-label="Chèn ' + t + '" style="height:44px;font-size:13px;padding:0 12px">' + ic('plus', 's13') + t + '</button>'; }).join('') + '</div>' : '') :
     '<input class="fld sel" data-ov="' + id + '" data-f="' + f + '" ' + (kind === 'num' ? 'inputmode="numeric"' : '') + ' value="' + esc(val) + '" aria-label="' + esc(label) + '">');
 }
 function needCheck() { return PL.filter(function (p) { return p.truncated && p.truncated.some(function (f) { return !ov(p.id)[f]; }); }).length; }
 function leadRows(a) {
   var s = C.leadStore(), seeds = SEED.leadIns[a] || [], out = [];
-  s.custom.filter(function (x) { return x.action === a; }).forEach(function (x) { out.push(srow('spage', 'data-p="lead:' + a + ':' + x.id + '"', esc(short(x.vi || x.en || '(trống)', 34)), 'Của bạn')); });
-  seeds.forEach(function (x) { var e = s.edits[x.id] || {}, hid = s.hidden.indexOf(x.id) > -1; out.push(srow('spage', 'data-p="lead:' + a + ':' + x.id + '"', esc(short((e.vi !== undefined ? e.vi : x.vi) || '(trống)', 34)), hid ? 'Đã ẩn' : e.vi !== undefined || e.en !== undefined ? 'Đã sửa' : x.seed === 'draft' ? 'Nháp' : null)); });
+  s.custom.filter(function (x) { return x.action === a; }).forEach(function (x) { out.push(srow('spage', 'data-p="lead:' + a + ':' + x.id + '"', esc(x.vi || x.en || '(trống)'), 'Câu của bạn').replace('class="srw"', 'class="srw two"')); });
+  seeds.forEach(function (x) { var e = s.edits[x.id] || {}, hid = s.hidden.indexOf(x.id) > -1; out.push(srow('spage', 'data-p="lead:' + a + ':' + x.id + '"', esc((e.vi !== undefined ? e.vi : x.vi) || '(trống)'), hid ? 'Đã ẩn' : e.vi !== undefined || e.en !== undefined ? 'Đã sửa' : 'Câu gợi ý').replace('class="srw"', 'class="srw two"')); });
   return out;
 }
 function settingsPage(s) {
   var path = s.state.path, pg = path[path.length - 1], back = path.length > 1, body = '';
   var parts = pg.split(':');
   if (pg === 'main') {
-    body = '<h3 class="h2" style="margin-top:8px">Ngôn ngữ đang dùng</h3>' + segHtml([['vi', 'Tiếng Việt'], ['en', 'English']], lang, 'setlang', 'full') + '<p class="foot">App nhớ ngôn ngữ bạn chọn lần cuối.</p>' +
+    body = '<h3 class="h2" style="margin-top:8px">Ngôn ngữ đang dùng</h3>' + segHtml([['vi', 'Tiếng Việt'], ['en', 'English']], lang, 'setlang', { cls: 'full', label: 'Ngôn ngữ đang dùng' }) + '<p class="foot">App nhớ ngôn ngữ bạn chọn lần cuối.</p>' +
       '<h3 class="h2">Đơn hàng</h3><div class="slist">' + srow('spage', 'data-p="ship"', 'Phí ship', money(st.set.fee, 'vi')) + srow('spage', 'data-p="bank"', 'Chuyển khoản', st.set.bank.no ? st.set.bank.no : 'Chưa có') + '</div>' +
-      '<h3 class="h2">Nội dung</h3><div class="slist">' + srow('spage', 'data-p="list:p"', 'Mẫu', needCheck() ? needCheck() + ' cần kiểm tra' : PL.length) + srow('spage', 'data-p="leads"', 'Câu đệm') + srow('spage', 'data-p="sets"', 'Set', st.sets.length) + srow('spage', 'data-p="list:f"', 'Câu trả lời', FL.filter(function (e) { return !!groupOf(e.id); }).length) + srow('spage', 'data-p="ord"', 'Mẫu tóm tắt đơn') + '</div>' +
+      '<h3 class="h2">Nội dung</h3><div class="slist">' + srow('spage', 'data-p="list:p"', 'Mẫu', needCheck() ? needCheck() + ' cần kiểm tra' : PL.length) + srow('spage', 'data-p="leads"', 'Câu mở đầu') + srow('spage', 'data-p="sets"', 'Set', st.sets.length) + srow('spage', 'data-p="list:f"', 'Câu trả lời', FL.filter(function (e) { return !!groupOf(e.id); }).length) + srow('spage', 'data-p="ord"', 'Mẫu tóm tắt đơn') + '</div>' +
       '<h3 class="h2">Dữ liệu</h3><div class="slist">' + srow('export', '', 'Xuất bản sao lưu (.json)', null, false) + srow('import', '', 'Nhập bản sao lưu', null, false) + srow('resetall', '', 'Khôi phục nội dung gốc', null, false).replace('class="srw"', 'class="srw dest"') + '</div>' +
       '<p class="foot" style="text-align:center;margin-top:24px">Soft Embrace · 2.0<br>Làm bằng sự dịu dàng.</p>';
     return sNav('Tuỳ chỉnh', false) + '<div class="shb pad"><p class="foot csub">Chỉnh một lần, dùng mãi nhé.</p>' + body + '</div>';
@@ -1040,21 +1149,21 @@ function settingsPage(s) {
     var o = st.ov.__ord || {};
     body = field('Tóm tắt đơn · VI', '__ord', 'vi', o.vi !== undefined ? o.vi : SEED.orderTemplate.vi, 'ta') + field('Order recap · EN', '__ord', 'en', o.en !== undefined ? o.en : C.normEn(SEED.orderTemplate.en), 'ta') + '<p class="foot">Dùng {{orderLines}} và {{total}}. Dòng “• Shipping…” được thay theo mức phí đã chọn.</p><button class="txtbtn" data-act="resetitem" data-id="__ord">Khôi phục bản gốc</button>';
   } else if (pg === 'leads') {
-    title = 'Câu đệm';
-    body = '<p class="foot" style="margin-top:8px">Câu ngắn gửi trước nội dung. Thêm nhanh ngay trong màn hình chép; ở đây để sửa, ẩn hoặc khôi phục.</p><div class="slist">' + ['info', 'size', 'order', 'thanks'].map(function (a) { return srow('spage', 'data-p="leadlist:' + a + '"', STR.lacts[a], leadRows(a).length); }).join('') + '</div>';
+    title = 'Câu mở đầu';
+    body = '<p class="foot" style="margin-top:8px">Câu ngắn đứng đầu tin gửi. Thêm nhanh ngay trong màn hình chép; ở đây để sửa, ẩn hoặc khôi phục.</p><div class="slist">' + ['info', 'size', 'order', 'thanks'].map(function (a) { return srow('spage', 'data-p="leadlist:' + a + '"', STR.lacts[a], leadRows(a).length); }).join('') + '</div>';
   } else if (parts[0] === 'leadlist') {
     title = STR.lacts[parts[1]];
-    body = '<div class="slist" style="margin-top:8px">' + leadRows(parts[1]).join('') + srow('leadnew', 'data-a="' + parts[1] + '"', 'Thêm câu mới', null, false).replace('class="srw"', 'class="srw acc" style="color:var(--accent)"') + '</div><p class="foot">“Nháp” là câu do app soạn tạm, nên thay bằng câu bạn hay nói.</p>';
+    body = '<div class="slist" style="margin-top:8px">' + leadRows(parts[1]).join('') + srow('leadnew', 'data-a="' + parts[1] + '"', 'Thêm câu mới', null, false).replace('class="srw"', 'class="srw acc"') + '</div>';
   } else if (parts[0] === 'lead') {
     var a = parts[1], lid = parts[2], ls = C.leadStore(), cu = ls.custom.filter(function (x) { return x.id === lid; })[0], seedx = (SEED.leadIns[a] || []).filter(function (x) { return x.id === lid; })[0], ee = ls.edits[lid] || {}, hid = ls.hidden.indexOf(lid) > -1;
-    title = 'Sửa câu đệm';
+    title = 'Sửa câu mở đầu';
     var vi = cu ? cu.vi : ee.vi !== undefined ? ee.vi : seedx.vi, en = cu ? cu.en : ee.en !== undefined ? ee.en : seedx.en;
     body = '<h3 class="h2">Tiếng Việt</h3><textarea class="fld sel" data-lfs="vi" data-id="' + lid + '" data-a="' + a + '" rows="3" aria-label="Tiếng Việt">' + esc(vi) + '</textarea><h3 class="h2">Tiếng Anh (tuỳ chọn)</h3><textarea class="fld sel" data-lfs="en" data-id="' + lid + '" data-a="' + a + '" rows="3" aria-label="Tiếng Anh">' + esc(en) + '</textarea><p class="saved" id="saved" style="text-align:right">Đã lưu</p>' +
       (cu ? '<button class="txtbtn dest" data-act="leadrm" data-id="' + lid + '">Xoá câu này</button>' : hid ? '<button class="txtbtn" data-act="leadshow" data-id="' + lid + '">Khôi phục (hiện lại)</button>' : '<button class="txtbtn" data-act="leadhide" data-id="' + lid + '">Ẩn câu này</button>') +
       (seedx && (ls.edits[lid]) ? ' <button class="txtbtn" data-act="leadreset" data-id="' + lid + '">Khôi phục bản gốc</button>' : '');
   } else if (pg === 'sets') {
     title = 'Set';
-    body = st.sets.length ? '<div class="slist" style="margin-top:8px">' + st.sets.map(function (x) { return srow('setopen', 'data-id="' + x.id + '"', esc(C.setLabel(x)), money(C.setPrice(x), 'vi')); }).join('') + '</div>' : '<p class="foot" style="margin-top:8px">Chưa có set nào. Mở một mẫu rồi chạm “Ghép với mẫu khác”.</p>';
+    body = st.sets.length ? '<div class="slist" style="margin-top:8px">' + st.sets.map(function (x) { return srow('setopen', 'data-id="' + x.id + '"', esc(C.setLabel(x)), money(C.setPrice(x), 'vi')); }).join('') + '</div>' : '<div class="empty" style="padding-top:16px"><p>Chưa có set nào. Chọn 2 mẫu để ghép nhé.</p><button class="btn tonal" data-act="setnew">' + ic('plus', 's15') + 'Tạo set mới</button></div>';
   } else if (parts[0] === 'list') {
     title = parts[1] === 'p' ? 'Mẫu' : 'Câu trả lời';
     var list = parts[1] === 'p' ? PS.map(function (p) { return srow('spage', 'data-p="edit:p:' + p.id + '"', esc(pname(p, 'vi')), p.truncated && p.truncated.some(function (f) { return !ov(p.id)[f]; }) ? 'Cần kiểm tra' : null); }) :
@@ -1065,7 +1174,7 @@ function settingsPage(s) {
       var p = PM[parts[2]]; title = short(pname(p, 'vi'));
       body = field('Tên', p.id, 'name', pv(p, 'name')) + field('Emoji', p.id, 'emoji', pv(p, 'emoji')) + field('Giá (đ)', p.id, 'price', pv(p, 'price'), 'num') + field('Size (cách nhau dấu phẩy)', p.id, 'sizes', psizes(p).join(', ')) +
         field('Thông tin · VI', p.id, 'descVi', pv(p, 'descVi'), 'ta') + field('Thông tin · EN', p.id, 'descEn', pv(p, 'descEn'), 'ta') + field('Bảng size · VI', p.id, 'sizeVi', pv(p, 'sizeVi'), 'ta') + field('Bảng size · EN', p.id, 'sizeEn', pv(p, 'sizeEn'), 'ta') + field('Link bài viết Instagram', p.id, 'postUrl', pv(p, 'postUrl') || '') + field('Ghi chú nội bộ (không chép)', p.id, 'noteVi', pv(p, 'noteVi') || '', 'ta') +
-        (p.truncated ? '<p class="foot" style="color:var(--destructive)">Cần kiểm tra: ' + p.truncated.join(', ') + ' trong sheet bị cắt.</p>' : '') + '<button class="txtbtn" data-act="resetitem" data-id="' + p.id + '">Khôi phục bản gốc</button>';
+        (p.truncated ? '<div class="notice">' + ic('info', 's15') + '<span class="nb">Cần kiểm tra: ' + p.truncated.join(', ') + ' trong sheet bị cắt.</span></div>' : '') + '<button class="txtbtn" data-act="resetitem" data-id="' + p.id + '">Khôi phục bản gốc</button>';
     } else {
       var e2 = FM[parts[2]]; title = short(eLabel(e2));
       body = field('Tên hiển thị', e2.id, 'labelVi', pv(e2, 'labelVi')) + field('Tin nhắn · VI', e2.id, 'vi', pv(e2, 'vi'), 'ta', 1) + field('Tin nhắn · EN', e2.id, 'en', pv(e2, 'en'), 'ta', 1) +
@@ -1136,9 +1245,28 @@ function queueSearch() { if (!sq) sq = requestAnimationFrame(function () { sq = 
 $('#q').addEventListener('input', queueSearch);
 $('#q').addEventListener('compositionend', queueSearch);
 
+/* press highlight on list rows (the long-press menu of round 4 is gone: every action has a visible button) */
+(function () {
+  var sx, sy, pressRow, pressT;
+  document.addEventListener('pointerdown', function (e) {
+    var r = e.target.closest('.row'); clearTimeout(pressT); sx = e.clientX; sy = e.clientY;
+    if (r && !e.target.closest('button:not(.row)')) { pressRow = r; pressT = setTimeout(function () { if (pressRow) pressRow.classList.add('press'); }, 70); }
+  }, { passive: true });
+  document.addEventListener('pointermove', function (e) {
+    if (pressRow && (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10)) { clearTimeout(pressT); pressRow.classList.remove('press'); pressRow = null; }
+  }, { passive: true });
+  function up() { clearTimeout(pressT); if (pressRow) { pressRow.classList.remove('press'); pressRow = null; } }
+  document.addEventListener('pointerup', up, { passive: true });
+  document.addEventListener('pointercancel', up, { passive: true });
+})();
+function selectSeg(seg, v) {
+  if (!seg) return;
+  $$('button', seg).forEach(function (b) { b.setAttribute(b.hasAttribute('aria-selected') ? 'aria-selected' : 'aria-pressed', b.dataset.v === v); });
+  placeThumb(seg);
+}
+
 /* ---------- main click delegation ---------- */
 document.addEventListener('click', function (e) {
-  if (Date.now() < suppress && !e.target.closest('#menu')) { e.preventDefault(); return; }
   var t = e.target.closest('[data-act],[data-open]'); if (!t) return;
   var a = t.getAttribute('data-act'), id = t.getAttribute('data-id'), v = t.getAttribute('data-v');
   if (!a && t.hasAttribute('data-open')) {
@@ -1155,7 +1283,8 @@ document.addEventListener('click', function (e) {
     case 'pview': UI.view = v; renderPI(); break;
     case 'pgo': UI.view = v; setTop('pi'); piEl.scrollTop = 0; break;
     case 'pfilt': UI.filt = v; renderList(); break;
-    case 'pkfilt': s.state.cat = v; $('#pkf', s.el).innerHTML = pkFilt(s); $('#plist', s.el).innerHTML = pickerList(s); break;
+    case 'pkfilt': s.state.cat = v; selectSeg($('#pkf .seg', s.el), v); $('#plist', s.el).innerHTML = pickerList(s); break;
+    case 'pkclear': { s.state.q = ''; var pq = $('[data-pq]', s.el); if (pq) pq.value = ''; $('#plist', s.el).innerHTML = pickerList(s); break; }
     case 'pchoose': { var kind = v; openPicker('pick', function (pid) { openProduct(pid, kind); }, { title: 'Chọn mẫu', sub: kind === 'size' ? 'Chạm một mẫu để gửi bảng size' : 'Chạm một mẫu để gửi thông tin' }); break; }
     case 'pchip': openProduct(id, v); break;
     case 'variant': { var snap0 = takeEdits(s); s.state.id = v; rerender(s); editsToast(s, snap0); break; }
@@ -1167,37 +1296,69 @@ document.addEventListener('click', function (e) {
     case 'editp': editProduct(id); break;
     case 'bankset': openSettings(['main', 'bank']); break;
     case 'shclose': case 'shdim': closeTop(); break;
-    case 'mclose': closeMenu(); break;
-    case 'mi': menuAct(t.dataset.m, $('.mpanel', menuEl).dataset.k); break;
+    case 'toastact': { var tf = toast.fn; toast.fn = null; var te = $('.toast', toastEl); if (te) te.remove(); if (tf) tf(); break; }
     /* product sheet */
-    case 'popen': s.state.open = A; s.state.edit = null; rerender(s); afterPaint(function () { growAll(s.el); }); break;
+    case 'pseg': prodSeg(s, v); break;
     case 'pcopy': productCopy(s, A, t); break;
     case 'pcopyalt': productCopy(s, A, t, other(lang)); break;
-    case 'pcopyset': { var set = SM(id); bubbleCopy(s, t, 'a', null, set); break; }
+    case 'ebedit': ebFocus(s, t.dataset.k); break;
     case 'ebreset': ebReset(s, t.dataset.k); break;
     case 'ebsave': ebSave(s, t.dataset.k); break;
     case 'addline': {
-      addLine(id, v); toast('Đã thêm ' + pname(PM[id], 'vi') + ' · ' + v + ' vào đơn');
-      var q = lineQty(id, v); t.innerHTML = v + '<span class="n"> · ' + q + '</span>';
+      addLine(id, v); addedToast(id, v);
+      var io = s.el.querySelector('#pinord'); if (io) io.textContent = 'Trong đơn: ' + inOrderText(id);
       break;
     }
     case 'setpick': openSetPicker(id); break;
-    /* lead-ins */
-    case 'lead': leadClick(s, t); break;
-    case 'leadadd': s.state.edit = { a: A, id: null }; refreshLeadZone(s, A); break;
-    case 'leadcancel': { var ed = s.state.edit; s.state.edit = null; if (ed) refreshLeadZone(s, ed.a); break; }
-    case 'leadsave': leadSave(s, t); break;
+    case 'linktoggle': s.state.link = t.checked; refreshPreview(s, ['info']); break;
+    case 'linkedit': { s.state.edit = { a: 'link' }; $('#pdyn', s.el).innerHTML = prodDyn(s); var lt = $('[data-lead=link] textarea', s.el); if (lt) { lt.focus(); grow(lt); } break; }
+    case 'linksave': {
+      var pu = $('[data-lead=link] textarea', s.el).value.trim(); st.ov[s.state.id] = st.ov[s.state.id] || {}; st.ov[s.state.id].postUrl = pu; if (!pu) s.state.link = false;
+      s.state.edit = null; save(); var snapL = takeEdits(s, ['info']); $('#pdyn', s.el).innerHTML = prodDyn(s); growAll(s.el); editsToast(s, snapL); break;
+    }
+    /* opening lines */
+    case 'leadopen': openLeadPicker(s, A); break;
+    case 'stripx': leadSet(s, A, null); break;
+    case 'leadpick': {
+      var ls0 = s.state.scope, la = s.state.a;
+      $$('.rrow[role=radio]', s.el).forEach(function (r) { r.setAttribute('aria-checked', (r.querySelector('[data-act=leadpick]').dataset.id || '') === (id || '')); });
+      leadSet(ls0, la, id || null); setTimeout(function () { closeSheet(s); }, 200); break;
+    }
+    case 'leadedit': s.state.edit = id; s.state.adding = false; rerender(s); { var fe = $('[data-lfi=vi]', s.el); if (fe) { fe.focus(); grow(fe); } grow($('[data-lfi=en]', s.el)); } break;
+    case 'leadcancel':
+      if (s.kind === 'lead') { s.state.edit = null; s.state.adding = false; rerender(s); }
+      else { s.state.edit = null; $('#pdyn', s.el).innerHTML = prodDyn(s); growAll(s.el); }
+      break;
+    case 'leadsave': {
+      var lv = {}; $$('[data-lfi]', s.el).forEach(function (x) { lv[x.dataset.lfi] = x.value; });
+      saveLeadEdit(id, s.state.a, lv.vi || '', lv.en || ''); s.state.edit = null; toast('Đã lưu câu mở đầu'); refreshLeadUi(s.state.scope, s.state.a, false); rerender(s); break;
+    }
+    case 'leaddel': {
+      var undo = removeLead(id), sc1 = s.state.scope, a1 = s.state.a;
+      Object.keys(sc1.state.sel).forEach(function (k2) { if (sc1.state.sel[k2] === id) delete sc1.state.sel[k2]; });
+      s.state.edit = null; rerender(s); refreshLeadUi(sc1, a1, false);
+      toast('Đã bỏ câu mở đầu', { undo: function () { undo(); rerender(s); refreshLeadUi(sc1, a1, false); } }); break;
+    }
+    case 'leadadd': s.state.adding = true; s.state.edit = null; rerender(s); { var na = $('[data-lfi=new]', s.el); if (na) na.focus(); } break;
+    case 'leadaddsave': {
+      var tx = ($('[data-lfi=new]', s.el) || {}).value || '';
+      if (tx.trim()) { var nid = addLead(s.state.a, lang, tx); leadSet(s.state.scope, s.state.a, nid); toast('Đã lưu câu mở đầu'); closeSheet(s, true); } else { s.state.adding = false; rerender(s); }
+      break;
+    }
     /* replies / message */
     case 'fill': {
-      var snapF = takeEdits(s);
-      s.state.fills[t.dataset.k] = v;
-      if (t.dataset.k === 'item' && v) { setCtxQuiet(v, ctx() && ctx().itemId === v ? ctx().size : null); var sz = psizes(PM[v]); if (s.state.fills.size && sz.indexOf(s.state.fills.size) < 0) delete s.state.fills.size; }
-      else if (t.dataset.k === 'size') { setCtxQuiet(ctx() ? ctx().itemId : null, v); }
+      var snapF = takeEdits(s), fk = t.dataset.k;
+      s.state.fills[fk] = v;
+      if (fk === 'size') { setCtxQuiet(ctx() ? ctx().itemId : null, v); }
       rerender(s); afterPaint(function () { growAll(s.el); }); editsToast(s, snapF); break;
     }
     case 'pickfill': {
-      var kk = t.dataset.k, ms = s;
-      openPicker('pick', function (pid) { var sn = takeEdits(ms); ms.state.fills[kk] = pid; if (kk === 'item') setCtxQuiet(pid, ctx() && ctx().itemId === pid ? ctx().size : null); rerender(ms); afterPaint(function () { growAll(ms.el); }); editsToast(ms, sn); });
+      var kk = t.dataset.k, ms = s, opt = !!t.dataset.opt, curId = kk === 'item' ? (opt ? ms.state.fills.item : fillVal('item', ms.state.fills)) : ms.state.fills.otherItem;
+      openPicker('pick', function (pid) {
+        var sn = takeEdits(ms); ms.state.fills[kk] = pid;
+        if (kk === 'item' && pid) { setCtxQuiet(pid, ctx() && ctx().itemId === pid ? ctx().size : null); var sz = psizes(PM[pid]); if (ms.state.fills.size && sz.indexOf(ms.state.fills.size) < 0) delete ms.state.fills.size; }
+        rerender(ms); afterPaint(function () { growAll(ms.el); }); editsToast(ms, sn);
+      }, { none: opt, cur: curId || null, title: opt ? 'Kèm thông tin mẫu' : 'Chọn mẫu' });
       break;
     }
     case 'pickone': {
@@ -1208,39 +1369,34 @@ document.addEventListener('click', function (e) {
       }
       var cb = ps.cb, f1 = ps.first; closeSheet(s); cb(f1 ? [f1, id] : id); break;
     }
-    case 'pickadd': addLine(id, v); toast('Đã thêm ' + pname(PM[id], 'vi') + ' · ' + v + ' vào đơn'); t.classList.add('sealed'); setTimeout(function () { closeSheet(s); }, 250); break;
     case 'tok': { var row = s.el.querySelector('[data-k="' + t.dataset.k + '"]:not(.tok)') || s.el.querySelector('[data-fill="' + t.dataset.k + '"]'); var fr = (row || t).closest('.frow'); if (fr) { fr.scrollIntoView({ block: 'nearest' }); var inp = fr.querySelector('input'); if (inp) inp.focus(); } break; }
     case 'msgcopy': msgCopy(s, t); break;
     /* order */
     case 'oadd': addLine(id, v); break;
-    case 'lineopen': if (!e.target.closest('[data-act=linesize],[data-act=qty],[data-act=linedel],.lexp')) { UI.ordOpen = UI.ordOpen === +t.dataset.i ? -1 : +t.dataset.i; redrawOrder(); } break;
-    case 'linesize': { var L = st.draft.lines[+t.dataset.i], dup = st.draft.lines.find(function (x, j) { return j !== +t.dataset.i && x.pid === L.pid && x.size === v; }); if (dup) { dup.qty = Math.min(9, dup.qty + L.qty); st.draft.lines.splice(+t.dataset.i, 1); UI.ordOpen = -1; } else L.size = v; save(); orderChanged(); e.stopPropagation(); break; }
-    case 'qty': { var L2 = st.draft.lines[+t.dataset.i]; L2.qty = Math.max(1, Math.min(9, L2.qty + (+t.dataset.d))); save(); orderChanged(); e.stopPropagation(); break; }
-    case 'linedel': { var i2 = +t.dataset.i, snap = JSON.stringify(st.draft); var nm = PM[st.draft.lines[i2].pid]; st.draft.lines.splice(i2, 1); UI.ordOpen = -1; save(); orderChanged(); toast('Đã xoá ' + pname(nm, 'vi'), { undo: function () { st.draft = JSON.parse(snap); save(); orderChanged(); } }); e.stopPropagation(); break; }
+    case 'oqclear': UI.oq = ''; { var oqi = $('#oq'); if (oqi) oqi.value = ''; var oe0 = $('#ores'); if (oe0) oe0.innerHTML = oresHtml(); } break;
+    case 'lineopen': openLine(+t.dataset.i); break;
+    case 'linesize': {
+      var L = st.draft.lines[s.state.i], dup = st.draft.lines.find(function (x, j) { return j !== s.state.i && x.pid === L.pid && x.size === v; });
+      if (dup) { dup.qty = Math.min(9, dup.qty + L.qty); st.draft.lines.splice(s.state.i, 1); save(); orderChanged(); closeSheet(s); break; }
+      L.size = v; save(); orderChanged(); rerender(s); break;
+    }
+    case 'qty': { var L2 = st.draft.lines[s.state.i]; L2.qty = Math.max(1, Math.min(9, L2.qty + (+t.dataset.d))); save(); orderChanged(); rerender(s); break; }
+    case 'linedel': { var i2 = s.state.i, snap = JSON.stringify(st.draft), nm = PM[st.draft.lines[i2].pid]; st.draft.lines.splice(i2, 1); save(); orderChanged(); closeSheet(s, true); toast('Đã xoá ' + pname(nm, 'vi'), { undo: function () { st.draft = JSON.parse(snap); save(); orderChanged(); } }); break; }
     case 'ship': st.draft.ship = v; save(); orderChanged(); break;
     case 'pasteinfo': try { navigator.clipboard.readText().then(function (x) { st.draft.info = x; save(); var ti = $('[data-in=info]'); if (ti) ti.value = x; refreshPreview(PAGE); }, function () { var ta = $('[data-in=info]'); if (ta) ta.focus(); }); } catch (x) { var ta2 = $('[data-in=info]'); if (ta2) ta2.focus(); } break;
-
     case 'copyorder': {
       if (!st.draft.lines.length) break;
-      var r = C.composeCopy('order', { sel: PAGE.state.sel }, lang), total = calc().total, ota = $('[data-eta=order]'), otext = ota ? ota.value : r.text;
+      var r = C.composeCopy('order', { sel: PAGE.state.sel }, lang), total = calc().total, otext = fullText(PAGE, 'order');
       copy(otext, { btn: t, msg: 'Đã chép đơn · ' + money(total, lang) + ' · ' + lu(), sub: 'Nhớ gửi mã QR nhé', icon: 'clip', label: 'Đơn', lang: lang, done: function (ok) { if (ok) { commitLeads(r.leadIds); st.draft.copiedAt = Date.now(); save(); afterPaint(function () { var op = $('#opost'); if (op) op.innerHTML = postCardHtml(); }); } } });
       break;
     }
-
-    case 'neworder': { var sn = JSON.stringify(st.draft); st.draft = { lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0 }; UI.ordOpen = -1; PAGE.state.ed = {}; save(); renderStage(); paintDock(); updateOrderBar(); toast('Đã làm mới đơn', { undo: function () { st.draft = JSON.parse(sn); save(); renderStage(); paintDock(); updateOrderBar(); } }); break; }
-    case 'undo': if (toast.undoFn) { toast.undoFn(); toast.undoFn = null; $('.toast', toastEl) && $('.toast', toastEl).remove(); } break;
+    case 'neworder': { var sn = JSON.stringify(st.draft); st.draft = { lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0 }; PAGE.state.ed = {}; save(); renderStage(); paintDock(); updateOrderBar(); toast('Đã làm mới đơn', { undo: function () { st.draft = JSON.parse(sn); save(); renderStage(); paintDock(); updateOrderBar(); } }); break; }
     /* sets */
-    case 'setnew': openPicker('setnew', function (pair) { var set = createSet(pair); openSet(set.id); }, { title: 'Chọn 2 mẫu cho set' }); break;
+    case 'setnew': openPicker('setnew', function (pair) { var set = createSet(pair); openSet(set.id); }, { title: 'Chọn 2 mẫu cho set', sub: 'Chạm mẫu thứ nhất, rồi mẫu thứ hai' }); break;
     case 'bcopy': bubbleCopy(s, t, t.dataset.b, t.dataset.alt ? other(lang) : null); break;
     case 'bnext': bubbleCopy(s, t, s.state.next); break;
     case 'setok': SM(s.state.id).checked = true; save(); rerender(s); afterPaint(function () { growAll(s.el); }); break;
     case 'setsugg': { var sx = createSet([t.dataset.a, t.dataset.b], false); openSet(sx.id); break; }
-    case 'linktoggle': s.state.link = !s.state.link; t.setAttribute('aria-pressed', !!s.state.link); refreshPreview(s, ['info', 'both']); break;
-    case 'linkedit': s.state.edit = { a: 'link' }; refreshLeadZone(s, 'link'); break;
-    case 'linksave': { var pu = $('[data-lead=link] textarea', s.el).value.trim(); st.ov[s.state.id] = st.ov[s.state.id] || {}; st.ov[s.state.id].postUrl = pu; if (!pu) s.state.link = false; s.state.edit = null; save(); refreshLeadZone(s, 'link'); refreshPreview(s, ['info', 'both']); break; }
-
-
-
     case 'setovreset': { var set4 = SM(s.state.id), bb = t.dataset.b; if (bb === 'a') set4.ov[lang] = null; else if (set4.bov && set4.bov[bb]) set4.bov[bb][lang] = null; save(); delete s.state.ed['s' + bb]; rerender(s); afterPaint(function () { growAll(s.el); }); break; }
     case 'setadd': { var set5 = SM(s.state.id), ms2 = s; openPicker('setadd', function (pid) { set5.items.push(pid); save(); ms2.state.ed = {}; rerender(ms2); afterPaint(function () { growAll(ms2.el); }); }, { title: 'Thêm mẫu vào set', skip: set5.items }); break; }
     case 'setdel': { var set6 = SM(s.state.id), ss = s; confirmBox('Xoá set này?', 'Xoá', function () { st.sets = st.sets.filter(function (x) { return x !== set6; }); save(); IDX = null; closeSheet(ss); if (UI.top === 'pi' && UI.view === 's') renderPI(); toast('Đã xoá set'); }); break; }
@@ -1251,9 +1407,9 @@ document.addEventListener('click', function (e) {
     case 'setlang': setLang(v); rerender(s); break;
     case 'ins': { var ta = s.state.lastTa; if (ta) { ta.setRangeText(t.dataset.t, ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); } break; }
     case 'resetitem': delete st.ov[id]; save(); refreshAll(); settingsGo(s, s.state.path, 0); toast('Đã khôi phục bản gốc'); break;
-    case 'leadnew': { var nid = addLead(A, 'vi', ''); settingsGo(s, s.state.path.concat(['lead:' + A + ':' + nid]), 1); break; }
-    case 'leadrm': { var u = removeLead(id); settingsGo(s, s.state.path.slice(0, -1), -1); toast('Đã xoá câu đệm', { undo: u }); break; }
-    case 'leadhide': { var u2 = removeLead(id); settingsGo(s, s.state.path, 0); toast('Đã ẩn câu đệm', { undo: function () { u2(); } }); break; }
+    case 'leadnew': { var nid2 = addLead(A, 'vi', ''); settingsGo(s, s.state.path.concat(['lead:' + A + ':' + nid2]), 1); break; }
+    case 'leadrm': { var u = removeLead(id); settingsGo(s, s.state.path.slice(0, -1), -1); toast('Đã xoá câu mở đầu', { undo: u }); break; }
+    case 'leadhide': { var u2 = removeLead(id); settingsGo(s, s.state.path, 0); toast('Đã ẩn câu mở đầu', { undo: function () { u2(); } }); break; }
     case 'leadshow': { var ls = C.leadStore(); ls.hidden = ls.hidden.filter(function (x) { return x !== id; }); save(); settingsGo(s, s.state.path, 0); break; }
     case 'leadreset': delete C.leadStore().edits[id]; save(); settingsGo(s, s.state.path, 0); break;
     case 'resetall': confirmBox('Khôi phục toàn bộ nội dung gốc? Các chỉnh sửa của bạn sẽ mất.', 'Khôi phục', function () { st.ov = {}; st.lead = { sel: {}, custom: [], edits: {}, hidden: [] }; save(); refreshAll(); toast('Nội dung gốc đã được khôi phục'); }); break;
@@ -1282,7 +1438,7 @@ document.addEventListener('input', function (e) {
   if (t.matches('[data-eta]')) onEta(t);
   else if (t.matches('[data-fill]')) { s.state.fills[t.dataset.fill] = t.value; refreshPreview(s); }
   else if (t.matches('[data-pq]')) { s.state.q = t.value; $('#plist', s.el).innerHTML = pickerList(s); }
-  else if (t.matches('[data-sprice]')) { var d0 = t.value.replace(/\D/g, ''); SM(s.state.id).price = d0 ? parseInt(d0, 10) : null; save(); grow(t); refreshPreview(s, ['sa']); }
+  else if (t.matches('[data-sprice]')) { var d0 = t.value.replace(/\D/g, ''); SM(s.state.id).price = d0 ? parseInt(d0, 10) : null; save(); refreshPreview(s, ['sa']); }
   else if (t.matches('[data-oq]')) { UI.oq = t.value; var oe = $('#ores'); if (oe) oe.innerHTML = oresHtml(); }
   else if (t.matches('[data-lfi],[data-ovta]')) grow(t);
   else if (t.matches('[data-lfs]')) {
@@ -1300,12 +1456,12 @@ document.addEventListener('change', function (e) {
   if (t.matches('[data-in=bank]')) { st.draft.bank = t.checked; save(); refreshPreview(PAGE); }
 });
 document.addEventListener('focusin', function (e) { var s = topS('settings'); if (s && e.target.matches('textarea')) s.state.lastTa = e.target; });
-document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('[data-fill],[data-pq],#q,#oq,[data-in=custom]')) e.target.blur(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('[data-fill],[data-pq],#q,#oq,[data-in=custom],[data-sprice],[data-spurl]')) e.target.blur(); });
 
 /* ---------- boot ---------- */
 $('#hint').hidden = !!st.hintDone;
 paintLang(); renderHomeScreen(); renderStage(); renderPI(); setTop('home');
-idle(function () { if (!IDX) buildIndex(); idle(measureSafe); });
+idle(function () { if (!IDX) buildIndex(); });
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   addEventListener('load', function () {
     var had = !!navigator.serviceWorker.controller;
@@ -1313,5 +1469,5 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) toast('Có bản mới — đóng và mở lại app nhé', { icon: 'sparkle', ms: 4000 }); had = true; });
   });
 }
-window.__SE = { boot: performance.now() - T0, st: st, calc: calc, PS: PS, composeCopy: C.composeCopy, STAGES: C.STAGES };
+window.__SE = { boot: performance.now() - T0, st: st, calc: calc, PS: PS, composeCopy: C.composeCopy, STAGES: C.STAGES, ins: function () { return INS; }, measure: measureInsets, leadList: C.leadList, leadSet: function (a, id) { var s = topS(); leadSet(s || PAGE, a, id); } };
 })();

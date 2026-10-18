@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Round 4: rebuild dist/icons/* from brand/logomark-FA.png on a LIGHT brand background and write shots/icon-preview.png (candidates at 180/60/29 px).
+"""Round 5 (PICK = "B", Vanilla #F2E7AB + Jet logomark, 11.37:1): rebuild dist/icons/* from brand/logomark-FA.png on a LIGHT brand background and write shots/icon-preview.png (candidates at 180/60/29 px).
 Candidates use brand colours only (Baby powder #FCFBF5, Vanilla #F2E7AB, Old Rose #CC8C87, its darker text variant #A84E47, Jet #2A2B2A, Dun #C5B9A8); no brown.
 PICK is the chosen candidate key; the runner-up is named in docs/v2-report.md.  Usage: python3 tools/make_icons.py"""
 import pathlib
@@ -14,7 +14,7 @@ CAND = {  # key: (label, background, logomark colour)
     "E": ("E  Vanilla + Rose dark", VANILLA, ROSED),
     "F": ("F  Dun + Jet", DUN, JET),
 }
-PICK = "A"
+PICK = "B"
 src = Image.open(ROOT / "brand/logomark-FA.png").convert("RGBA")
 cov = Image.composite(src.convert("L").point(lambda v: 255 - v), Image.new("L", src.size, 0), src.getchannel("A"))
 cov = cov.crop(cov.getbbox())
@@ -30,7 +30,10 @@ def mark(size, frac, bg, fg):
 def q(im, n=16): return im.quantize(colors=n, dither=Image.Dither.NONE)
 def build(key):
     _, bg, fg = CAND[key]; out = ROOT / "dist/icons"
-    mark(180, .80, bg, fg).save(out / "apple-touch-icon.png", optimize=True)
+    ic = mark(180, .80, bg, fg)
+    # baked 1 px inner edge rgba(42,43,42,.08) so the pale tile separates from a white wallpaper (iOS rounds the corners itself)
+    ed = Image.new("RGB", ic.size, JET); m = Image.new("L", ic.size, 0); d = ImageDraw.Draw(m); d.rounded_rectangle((0, 0, 179, 179), radius=40, fill=20); d.rounded_rectangle((1, 1, 178, 178), radius=39, fill=0)
+    ic.paste(ed, (0, 0), m); ic.save(out / "apple-touch-icon.png", optimize=True)
     q(mark(192, .86, bg, fg)).save(out / "icon-192.png", optimize=True)
     q(mark(512, .86, bg, fg)).save(out / "icon-512.png", optimize=True)
     q(mark(512, .62, bg, fg)).save(out / "icon-maskable-512.png", optimize=True)

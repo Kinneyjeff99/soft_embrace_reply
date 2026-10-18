@@ -342,3 +342,75 @@ test('logo wordmark <= 8 KB; service worker precaches every photo and the logo; 
   assert.ok(lum(man.background_color) > .35 && lum(man.theme_color) > .8, man.background_color + ' ' + man.theme_color);
   assert.notEqual(man.background_color.toUpperCase(), '#2A2B2A');
 });
+
+// ---------- Round 5: colours, icon, insets, contrast ----------
+import { inflateSync } from 'node:zlib';
+const SRCF = f => readFileSync(new URL('../src/' + f, import.meta.url), 'utf8');
+const UISRC = () => SRCF('app.css') + '\n' + SRCF('app.js') + '\n' + SRCF('index.src.html') + '\n' + SRCF('compose.js') + '\n' + readFileSync(new URL('../build.py', import.meta.url), 'utf8');
+test('Old Rose and brown are gone from src css/js/html and build.py (hex, rgb and the name)', () => {
+  const all = UISRC();
+  assert.ok(!/CC8C87|A84E47|93443E|DDA39E|F4E9E3|E3B0AB|5F3E31/i.test(all), 'rose / brown hex');
+  assert.ok(!/204,\s*140,\s*135|168,\s*78,\s*71|95,\s*62,\s*49/.test(all), 'rose / brown rgb');
+  assert.ok(!/old\s*rose/i.test(all), 'the name Old Rose');
+  // hue scan: any hex colour in the UI sources that is a dark, saturated brown/red-orange is rejected
+  const bad = [];
+  for (const m of all.matchAll(/#([0-9a-f]{6})\b/gi)) {
+    const [r, g, b] = [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16) / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d) continue;
+    const s = d / (1 - Math.abs(2 * l - 1)); let hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; hh = (hh * 60 + 360) % 360;
+    if ((hh >= 0 && hh <= 50 || hh >= 345) && s > 0.2 && l < 0.5) bad.push(m[0] + ' h' + Math.round(hh) + ' s' + s.toFixed(2) + ' l' + l.toFixed(2));
+  }
+  // #B3261E / #FF8A80 are the red of Xoá and errors (hue 3 / 5), allowed explicitly
+  const rest = bad.filter(x => !/^#(B3261E|FF8A80)/i.test(x));
+  assert.deepEqual(rest, [], 'brown-ish hexes: ' + rest.join(', '));
+});
+test('red (#B3261E / #FF8A80) is only used through --destructive / --toast-bad', () => {
+  const css = SRCF('app.css');
+  for (const m of css.matchAll(/#(B3261E|FF8A80)/gi)) { const line = css.slice(css.lastIndexOf('\n', m.index) + 1, css.indexOf('\n', m.index)); assert.ok(/--destructive|--toast-bad/.test(line.slice(0, line.indexOf(m[0]) + 1).split(';').pop() || '') || /--destructive:|--toast-bad:/.test(line), line.slice(0, 120)); }
+  assert.ok(!/#B3261E|#FF8A80/i.test(SRCF('app.js') + SRCF('index.src.html')));
+});
+test('no 100vh/100dvh anywhere; env(safe-area-inset) is read only by the JS probe', () => {
+  assert.ok(!/100d?vh|100svh|100lvh/.test(SRCF('app.css') + SRCF('app.js')));
+  assert.ok(!/env\(/.test(SRCF('app.css')), 'no env() in css');
+  const html = readFileSync(new URL('index.html', DIST), 'utf8');
+  assert.equal((html.match(/env\(safe-area/g) || []).length, 2, 'the probe string names top and bottom once each (one probe)');
+  assert.ok((html.match(/padding-top:env\(safe-area-inset-top,0px\);padding-bottom:env\(safe-area-inset-bottom,0px\)/g) || []).length === 1, 'exactly one probe');
+  assert.ok(!/--safe-top|--safe-bottom/.test(SRCF('app.css') + SRCF('app.js')));
+});
+test('manifest background is Vanilla; apple-touch-icon is a Vanilla tile with a Jet logomark', () => {
+  const man = JSON.parse(readFileSync(new URL('manifest.webmanifest', DIST), 'utf8'));
+  assert.equal(man.background_color, '#F2E7AB'); assert.equal(man.theme_color, '#FCFBF5');
+  const png = readFileSync(new URL('icons/apple-touch-icon.png', DIST));
+  let off = 8, w = 0, h = 0, ct = 0; const idat = [];
+  while (off < png.length) { const len = png.readUInt32BE(off), type = png.toString('ascii', off + 4, off + 8); if (type === 'IHDR') { w = png.readUInt32BE(off + 8); h = png.readUInt32BE(off + 12); ct = png[off + 17]; } if (type === 'IDAT') idat.push(png.subarray(off + 8, off + 8 + len)); off += 12 + len; }
+  assert.equal(ct, 2, 'RGB'); const raw = inflateSync(Buffer.concat(idat)), bpp = 3, stride = w * bpp, px = Buffer.alloc(h * stride);
+  for (let y = 0; y < h; y++) { const f = raw[y * (stride + 1)]; for (let x = 0; x < stride; x++) { const a = x >= bpp ? px[y * stride + x - bpp] : 0, up = y ? px[(y - 1) * stride + x] : 0, c = x >= bpp && y ? px[(y - 1) * stride + x - bpp] : 0; let v = raw[y * (stride + 1) + 1 + x]; v = f === 0 ? v : f === 1 ? v + a : f === 2 ? v + up : f === 3 ? v + ((a + up) >> 1) : v + (() => { const p = a + up - c, pa = Math.abs(p - a), pb = Math.abs(p - up), pc = Math.abs(p - c); return pa <= pb && pa <= pc ? a : pb <= pc ? up : c; })(); px[y * stride + x] = v & 255; } }
+  const at = (x, y) => [...px.subarray(y * stride + x * 3, y * stride + x * 3 + 3)];
+  assert.deepEqual(at(0, 0), [242, 231, 171], 'corner pixel is Vanilla #F2E7AB');
+  assert.deepEqual(at(12, 90), [242, 231, 171]);
+  let dark = 0; for (let i = 0; i < px.length; i += 3) if (px[i] < 70 && px[i + 1] < 70) dark++;
+  assert.ok(dark > 600, 'Jet logomark pixels present: ' + dark);
+});
+// ---- contrast of the token pairs (WCAG), read from the real CSS ----
+function tokens(block) { const o = {}; for (const m of block.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\b/g)) o[m[1]] = m[2]; return o; }
+const cssSrc = SRCF('app.css'), lightT = tokens(cssSrc.slice(cssSrc.indexOf(':root{'), cssSrc.indexOf('@supports'))), darkT = tokens(cssSrc.slice(cssSrc.indexOf('@media(prefers-color-scheme:dark){:root{')));
+const lumHex = h => { const f = c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; const [r, g, b] = [1, 3, 5].map(i => f(parseInt(h.slice(i, i + 2), 16) / 255)); return .2126 * r + .7152 * g + .0722 * b; };
+const CR = (a, b) => { const x = lumHex(a), y = lumHex(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+export const CONTRAST = [];
+for (const [mode, T, text, surfaces] of [['light', lightT, 4.5, ['bg', 'bg-grouped', 'bg-cell', 'bg-sheet', 'bg-paper']], ['dark', darkT, 4.5, ['bg', 'bg-cell', 'bg-sheet', 'bg-paper']]]) {
+  test(`contrast ${mode}: text tokens on their surfaces, on-primary, accent-ui, badges, notices`, () => {
+    const t = { ...lightT, ...(mode === 'dark' ? darkT : {}) };
+    for (const fg of ['label', 'label-2', 'label-3']) for (const s of surfaces) { const c = CR(t[fg], t[s]); CONTRAST.push([mode, fg + ' on ' + s, c]); assert.ok(c >= 4.5, `${mode} ${fg} on ${s} = ${c.toFixed(2)}`); }
+    for (const [fg, bg, min] of [['on-primary', 'primary', 7], ['on-primary', 'primary-pressed', 7], ['accent-ui', 'bg-sheet', 4.5], ['accent-ui', 'bg-cell', 4.5], ['accent-ui', 'bg-paper', 4.5], ['label', 'sel-fill', 4.5], ['label', 'tonal', 4.5], ['label-2', 'tonal', 4.5], ['label', 'insert', 4.5], ['label', 'insert-rest', 4.5], ['badge-fg', 'badge-bg', 7], ['destructive', 'bg-sheet', 4.5], ['destructive', 'bg-cell', 4.5], ['success', 'bg-sheet', 4.5], ['icon', 'bg-grouped', 4.5], ['label', 'thumb', 4.5], ['accent-ui', 'sel-fill', 4.5]]) { const c = CR(t[fg], t[bg]); CONTRAST.push([mode, fg + ' on ' + bg, c]); assert.ok(c >= min, `${mode} ${fg} on ${bg} = ${c.toFixed(2)} (< ${min})`); }
+    for (const [fg, bg] of [['edge', 'bg-sheet'], ['primary', 'bg']]) { const c = CR(t[fg], t[bg]); CONTRAST.push([mode, fg + ' vs ' + bg + ' (non-text)', c]); assert.ok(c >= 3, `${mode} ${fg} vs ${bg} = ${c.toFixed(2)}`); }
+  });
+}
+test('spec numbers: on-primary 7.59 (light, Davy) and 11.37 (dark, Vanilla); Jet on Vanilla icon 11.37', () => {
+  assert.ok(Math.abs(CR(lightT['on-primary'], lightT.primary) - 7.59) < .02);
+  assert.ok(Math.abs(CR(darkT['on-primary'], darkT.primary) - 11.37) < .02);
+  assert.ok(Math.abs(CR('#2A2B2A', '#F2E7AB') - 11.37) < .02);
+  assert.equal(lightT.primary, '#4D5162'); assert.equal(darkT.primary, '#F2E7AB'); assert.equal(darkT.bg, '#1C1D1C');
+});
+test('service worker cache name carries the v5 bump', () => {
+  assert.ok(/const CACHE = 'se-v5-[0-9a-f]{10}'/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
+});

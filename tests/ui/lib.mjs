@@ -19,10 +19,13 @@ export function serve(port = 0) {
   return new Promise(r => srv.listen(port, '127.0.0.1', () => r({ srv, url: 'http://127.0.0.1:' + srv.address().port + '/' })));
 }
 export async function launch() { return chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] }); }
-export async function newPage(browser, { w = 393, h = 852, dark = false, reduced = false, storage = null, stubClip = true, fakeVV = false } = {}) {
+export async function newPage(browser, { w = 393, h = 852, dark = false, reduced = false, storage = null, stubClip = true, fakeVV = false, insets = null, standalone = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, colorScheme: dark ? 'dark' : 'light', reducedMotion: reduced ? 'reduce' : 'no-preference', locale: 'vi-VN', serviceWorkers: 'block',
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
   const page = await ctx.newPage();
+  // real env(safe-area-inset-*) emulation (Chromium CDP): insets = { top, bottom }
+  if (insets || standalone) { const cdp = await ctx.newCDPSession(page); ctx.__cdp = cdp; if (insets) await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: insets.top || 0, bottom: insets.bottom || 0, left: 0, right: 0 } }); }
+  if (standalone) await page.addInitScript(() => { Object.defineProperty(navigator, 'standalone', { value: true, configurable: true }); });
   const errors = [];
   page.on('console', m => { if (['error', 'warning'].includes(m.type()) && !/Service Worker registration blocked/.test(m.text())) errors.push(m.type() + ': ' + m.text()); });
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
@@ -39,4 +42,13 @@ export async function newPage(browser, { w = 393, h = 852, dark = false, reduced
     window.__setKb = px => { vv.height = innerHeight - px; vv.dispatchEvent(new Event('resize')); };
   });
   return { page, ctx, errors };
+}
+// minimal PNG decoder (8-bit RGB / RGBA, non-interlaced) for pixel scans of screenshots
+import { inflateSync } from 'node:zlib';
+export function decodePng(buf) {
+  let off = 8, w = 0, h = 0, ct = 0; const idat = [];
+  while (off < buf.length) { const len = buf.readUInt32BE(off), type = buf.toString('ascii', off + 4, off + 8); if (type === 'IHDR') { w = buf.readUInt32BE(off + 8); h = buf.readUInt32BE(off + 12); ct = buf[off + 17]; } if (type === 'IDAT') idat.push(buf.subarray(off + 8, off + 8 + len)); off += 12 + len; }
+  const bpp = ct === 6 ? 4 : 3, raw = inflateSync(Buffer.concat(idat)), stride = w * bpp, px = Buffer.alloc(h * stride);
+  for (let y = 0; y < h; y++) { const f = raw[y * (stride + 1)]; for (let x = 0; x < stride; x++) { const a = x >= bpp ? px[y * stride + x - bpp] : 0, up = y ? px[(y - 1) * stride + x] : 0, c = x >= bpp && y ? px[(y - 1) * stride + x - bpp] : 0; let v = raw[y * (stride + 1) + 1 + x]; v = f === 0 ? v : f === 1 ? v + a : f === 2 ? v + up : f === 3 ? v + ((a + up) >> 1) : v + (() => { const p = a + up - c, pa = Math.abs(p - a), pb = Math.abs(p - up), pc = Math.abs(p - c); return pa <= pb && pa <= pc ? a : pb <= pc ? up : c; })(); px[y * stride + x] = v & 255; } }
+  return { w, h, bpp, at: (x, y) => [px[y * stride + x * bpp], px[y * stride + x * bpp + 1], px[y * stride + x * bpp + 2]] };
 }

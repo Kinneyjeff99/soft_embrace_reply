@@ -300,3 +300,71 @@ A Old Rose #CC8C87 + Jet (picked), B Vanilla #F2E7AB + Jet (runner-up), C Baby p
 - The new home-screen icon and splash on the real wallpaper; iOS caches icons, remove and re-add the app to see it.
 - Lead-in chips as a wrapped list in the product sheet (is it too long?) and the 5-column stage control at larger Dynamic Type.
 - Everything listed under Round 3 (IME in textareas, keyboard layout, nested scroll feel, clipboard permission, SW update).
+
+## Round 5
+
+Scope: `docs/design-v5.md` implemented in full (P0 to P4). No commit made; `docs/design-*.md` untouched. `shots/` holds the current screens only: 27 per size and mode (393 and 430, light and dark, shot as a home-screen app with 59/34 insets), the safe-area wrapper simulations, `icon-preview.png` (117 files).
+
+### Changes
+- **Icon (P0).** `PICK = "B"`: Vanilla #F2E7AB tile, Jet logomark (11.37 : 1). Icons, splash (Vanilla ground), `apple-touch-icon` with a baked 1 px inner edge (rounded, corner pixel stays Vanilla), manifest `background_color` #F2E7AB, `shots/icon-preview.png` marks B as picked.
+- **Single-source insets (P0).** `measureInsets()` (boot, `resize`, `orientationchange`, `visualViewport.resize` when no field is focused, `hashchange`) writes `--inset-t` / `--inset-b`; it is 0 when framed, when `#app` was shrunk by a host, or when `#inset-b=0&inset-t=0` is in the hash. `--bar-y = max(inset-b - 10, 12)`, `--bar-top = bar-y + 60`; `.tab`, `#toast`, `.ofoot`, `.shf`, `.shb.pad`, `.sheet` top and `#fbar` all derive from them. `html`, `body`, `.app` paint `--bg-grouped`. No `100vh`, `--safe-*` deleted, the CSS has no `env()`, `dist/index.html` has one probe (`grep -c "env(safe-area" dist/index.html` = 1). `#debug=insets` overlay (sat, sab, framed, shrunk, innerHeight, screen, visualViewport, --inset-b, --bar-y, ctx). While the keyboard is open the insets are not re-measured (the shrunk app is not mistaken for a host box).
+- **Colour (P0).** Tokens replaced by spec 2.2 and 2.3. Primary action Davy's Grey #4D5162 (light) / Vanilla #F2E7AB (dark); Old Rose gone from every token, glyph, badge and test; red only on Xoá, errors and the copy-failure toast icon; selected states are a raised thumb, a filled radio, a check, a tinted nav pill (no coloured outline). Dark `--bg` #1C1D1C, text boxes #333433, photos get a 0.5 pt ring.
+- **Nav.** Order button is a clipboard-list glyph + "Đơn" + neutral count badge (`aria-label` "Đơn hàng, 3 món, 1.240.000đ"); bar 60 pt, items with tinted pill; `aria-current` replaces `aria-pressed`.
+- **Product sheet (P1).** No accordion. Segmented Thông tin | Bảng size | Cả hai ("Bạn muốn gửi"), dropdown row "Câu mở đầu / Không kèm / Đổi ⌄", one always-visible box "TIN SẼ GỬI · …" with "✎ Sửa" and an edited row (● Đã sửa, ↺ Khôi phục, Lưu làm mẫu), highlighted strip with ✕ at the top of the box, one footer primary that follows the segment ("Chép thông tin · VI" / bảng size / cả hai). Separate labelled sections: Gửi kèm (link switch or "Thêm link bài viết"), Thêm vào đơn (＋ S/M/L capsules + "Trong đơn: …"), Set có mẫu này (nav rows + "Ghép set với mẫu khác"), a grey ⓘ note. Edits live per part (`info`, `size`), survive segment switches, and now also survive an opening-line change (the strip is separate from the textarea). Clipboard of a box = strip + blank line + textarea; `Cả hai` = the two parts in one outer box. The sheet opens on the segment last copied from (and preset to Bảng size from Tư vấn size).
+- **Opening-line picker (P1).** Medium sheet with radio rows, full sentences, "✎ Sửa" per row (inline VI/EN editor, Lưu, Huỷ, Ẩn/Xoá câu này), "＋ Thêm câu mới" ("Lưu và dùng"); the strip arrives with a 220 ms expand and a 1.2 s Vanilla flash (none under reduced motion). The long-press menu is removed (every action has a visible button).
+- **Set sheet (P2).** 72 pt circle pair, notice with "Đã kiểm tra", price and link fields (52 pt) with helper text, "Gửi lần lượt n tin · Đã chép k/n", bubble cards (16 padding, 16 gap, 12 between box and button, button in its own row right-aligned), one "Tiếp theo" card with ring and tag, ✓ and "Chép lại tin n" after a copy, scroll to the next card, footer "Chép tin 2/4 · VI" then "Đã chép đủ 4 tin".
+- **Affordance sweep (P3), every screen.** Home tiles (step disc, "Bước n", ›, live "· 2 món"), stage screens (eyebrow "Trả lời nhanh · Bước n/5", title = stage name, segmented stage control with thumb, message cards with quoted preview and "Mở để xem và chép", product cards as photo rows + "Tìm mẫu khác…", "Câu khác (n)"), message sheet (✎ Sửa, dropdown rows for product, segmented size, segmented variants), Tạo đơn (＋ size capsules, "Trong đơn", ship segmented, Dán tonal, switch row, dropdown + strip, line editor sheet instead of the inline expander, "Đơn còn trống" empty state), Sản phẩm (title = view, one segmented category filter, category merged into the grey line, "＋ Tạo set mới" first row), pickers (segmented filter, ✓ row, "Không kèm"), settings ("Câu mở đầu", tags Câu của bạn / Câu gợi ý / Đã ẩn, "Xong" in accent), dialogs and toasts. First-use teaching: copy tip for the first 3 copies (`st.tips.copy`), "Xem đơn" on the add-to-order toast, first-open hint in the dropdown ("Không kèm — chạm Đổi để thêm câu chào"), empty states with an action (empty order, empty search "Xoá tìm kiếm", empty sets list).
+- **Service worker.** Cache name is now `se-v5-<hash>`; the old `se-*` caches are deleted on activate. Precache list unchanged (41 images, icons, shell).
+
+### Deviations from the spec (and why)
+1. **Product sheet box top is 335 pt, not 311** (430 and 393). The "✎ Sửa" button keeps a real 44 pt row above the box instead of overlapping it; segmented 163-207, dropdown 223-279 and footer top 825/745/594 match the table (asserted within 4 pt). With the 280 pt cap the "Gửi kèm" header is still above the footer at 430 and 393.
+2. **Sheet footer bottom padding is `inset-b + 12`** (not `max(inset-b,12) + 8`) so the footer tops match the budget table (826 / 746 / 595).
+3. **The first-open hint wraps to two lines below 380 pt** (SE); at 393 and up it is one line. The dropdown row is 56 pt everywhere except that one hint state on SE.
+4. **Root-padded wrapper without an iframe** keeps the app full-bleed (fixed), so the inset is counted once and the bar is at 24 on Face ID devices (12 on SE). The spec table's 12 applies to the iframe and to the "box shrunk by the host" cases, both asserted.
+5. "Tiếp theo" card keeps the 1.5 pt `--accent-ui` ring that the spec itself defines; it is the only ring and is excluded from the "no coloured outline on selected states" test.
+6. Guarded copy label is always "Chạm lại để chép" (tonal); for an unchecked set price an ⓘ toast says the price is unchecked.
+7. Home product tiles use 40 pt circles (spec 7.2) in addition to the 32/44/56/72 scale; the test allows 40.
+8. `both` edit key retired; "Lưu làm mẫu" now works for both parts in Cả hai (each box has its own row).
+
+### Contrast table (WCAG, computed from the CSS tokens by `tests/compose.test.mjs`)
+| Pair | Light | Dark |
+|---|---|---|
+| label on bg-grouped / cell / sheet / paper | 12.92 / 14.09 / 13.60 / 14.09 | 16.31 / 13.71 / 14.84 / 12.06 |
+| label-2 on the same | 6.82 / 7.43 / 7.17 / 7.43 | 9.67 / 8.13 / 8.79 / 7.15 |
+| label-3 on the same | 5.17 / 5.64 / 5.44 / 5.64 | 6.60 / 5.55 / 6.01 / 4.88 |
+| on-primary on primary (#4D5162 / #F2E7AB) | 7.59 | 11.37 |
+| on-primary on primary-pressed | 10.08 | 9.71 |
+| accent-ui on sheet / cell / paper | 7.53 / 7.80 / 7.80 | 12.30 / 11.37 / 10.00 |
+| label on sel-fill / tonal / insert / insert-rest | 12.13 / 11.37 / 12.37 / 13.09 | 9.31 / 10.21 / 6.93 / 10.20 |
+| badge text on badge | 13.71 | 11.37 |
+| destructive on sheet / cell | 6.25 / 6.48 | 6.74 / 6.23 |
+| success on sheet | 5.89 | 7.79 |
+| edge (non-text) on sheet | 3.04 | 3.11 |
+| primary vs bg (non-text) | 7.59 | 13.52 |
+Jet on Vanilla (icon) 11.37. `--label-4` is decorative and below 4.5 by design. The live test also reads the computed colours of the real primary button and switch in both modes.
+
+### Test numbers
+- Unit (`node --test tests/compose.test.mjs`): 53 pass (new: no Old Rose/brown hex, rgb or name in `src/` css/js/html and `build.py` plus a hue scan, red only through `--destructive`, no `100vh`/`env()` in css and one probe in `dist/index.html`, manifest Vanilla and apple-touch-icon pixel decode (Vanilla corner, Jet mark), contrast of all token pairs in both modes, spec numbers 7.59 / 11.37, `se-v5-` cache name).
+- `tests/ui/ui.mjs`: 582/582 (393x852, 430x932 and SE 375x667, light and dark): stages, product sheet (segment/caption/footer agree, one box, one copy button), strip, per-part edits, preview == clipboard for every lead x info/size/both x VI/EN (35 and 23 combinations) and set bubbles and order, picker add/edit/delete, set bubble flow (Tiếp theo, Đã chép n/4, done), tap counts (greeting 2, product info 2 from the list and from Chào hỏi, size chart 2 from Tư vấn size and 3 from the list, set bubble 1 is 3 from a product sheet, order 2 + Chép đơn), first-3-copies tip, guards, missing EN, keyboard layout, reduced motion, service worker.
+- `tests/ui/round4.mjs` 202/202 (ported), `tests/ui/list.mjs` 46/46.
+- `tests/ui/round5.mjs`: 926/926: safe-area matrix with real `env()` emulation (CDP `Emulation.setSafeAreaInsetsOverride`) for SE, 14 Pro, 15 Pro Max, light and dark: Safari tab (12; 24 when Safari reports 34), home-screen app (24 on Face ID, 12 on SE, span 24..84, order button the same, sheet top = inset-t + 10), root-padded wrapper, box shrunk by the host, iframe wrapper (framed: 0/0, bar 12, sheet top 10), `#inset-b=0` override, keyboard open (bar hidden, insets kept), `#debug=insets` overlay, and a pixel scan of the bottom 80 pt (no band of another colour under the app). Audit on 24 screens x 5 size/mode combinations: no overflow, no outline chips, every control >= 44 x 44, every button name a verb (or a noun on a row/segment/nav), no rose in any computed colour, all photos are 50 % circles at 32/40/44/56/72, no coloured outline on selected states, at most one filled primary per surface, set sheet geometry, live contrast of the primary button, switch, html/body background and theme-color meta. Zero console errors everywhere.
+- Performance at 4x CPU: copy handler median 2.1 to 2.6 ms (first click up to 10.9), typing median 0.9 ms, message sheet copy 3.8 to 4.9 ms, list scroll with photos 205 frames, 0 frames over 33 ms in 3 of 4 runs (one run had a single 50 ms frame at the start of the drag), p95 16.7 ms. Search handler under 2 ms.
+- Size: `dist/index.html` 191.9 KB raw, 54.0 KB gzip (+4.1 KB gzip over Round 4, budget 6 KB; css 36.3, js 111.2, data 30.3).
+
+### Decisions made on her behalf
+1. Vanilla also fills the dark-mode primary button, switch, badge and "Xong"; Davy's Grey is light-mode only.
+2. A first-time user sees "Không kèm — chạm Đổi để thêm câu chào" until she chooses a line once (`st.tips.lead`).
+3. A copy's toast carries the "dán vào ô tin nhắn" tip for the first three copies only (counted across the whole app).
+4. After a size copy, the next product sheet opened from a list opens on Bảng size (spec 7.7); she can tap Thông tin (one extra tap).
+5. Editing a set price or the link still drops a typed edit of the affected bubble (with Hoàn tác); changing an opening line no longer does.
+6. "Mẫu mới nhất" vs "Mẫu gần đây" heading in Tạo đơn depends on whether she has history.
+7. No long-press anywhere; the picker's "✎ Sửa" is the only way to edit a line.
+
+### Needs a real iPhone
+- `#debug=insets` on her 15 Pro Max in (a) Safari, (b) the home-screen app and (c) inside the host she uses: one screenshot of each settles whether the host frames, shrinks or full-bleeds the app (expected: Safari 12 or 24, app 24, framed 12).
+- Whether the real host sets `framed`/shrinks the box the way the simulations do; if it pads `<html>` but keeps the page fixed, the bar will sit at 24, not 12.
+- `env(safe-area-inset-bottom)` value reported in standalone (34 expected) and in Safari with a floating toolbar.
+- The bar at 24 pt against the home indicator by thumb; the Vanilla primary in the dark room (contrast is 11.37 but check glare), the Vanilla flash of the opening-line strip.
+- Caret placement after "✎ Sửa", keyboard over the medium picker sheet (typing in "Thêm câu mới" raises it to full height), Vietnamese IME in the new inputs.
+- Icon on the real wallpaper (iOS caches; remove and re-add the app), splash in Vanilla.
+- Everything under Round 3 and 4 that was device-only (clipboard permission, service worker update, nested scrolling feel).
