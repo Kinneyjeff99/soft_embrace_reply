@@ -368,3 +368,59 @@ Jet on Vanilla (icon) 11.37. `--label-4` is decorative and below 4.5 by design. 
 - Caret placement after "✎ Sửa", keyboard over the medium picker sheet (typing in "Thêm câu mới" raises it to full height), Vietnamese IME in the new inputs.
 - Icon on the real wallpaper (iOS caches; remove and re-add the app), splash in Vanilla.
 - Everything under Round 3 and 4 that was device-only (clipboard permission, service worker update, nested scrolling feel).
+
+---
+
+## Round 6 (design-v6: "Khách đang hỏi gì, tin nằm ngay đó")
+
+Built on v5 in the order of the build plan, P0 to P5. Nothing was committed or pushed. `docs/design-*.md` are untouched.
+
+### What was built
+- **P0, duplicate hotfix (shipped and verified before anything else).** `renderMsg` builds its rows from a de-duplicated key list (the greeting's product row exists once, `data-row` on every `.frow`); `pushSheet` has a re-entry guard (same kind+key, or any push within 350 ms of the previous one while a sheet is up, returns the sheet already there); a double tap on the picker cannot select twice; tapping a size pill never raises a quantity (adding is idempotent); Chào hỏi has one path per message. `#debug=dupes` (`assertUnique`, one check per animation frame) logs `console.error('dupe', …)` for a repeated keyed sibling, a second `.mcard`/`.ctxbar`/`.pstrip`, a repeated row in a sheet, a sheet count that disagrees with the stack and two stacked sheets of the same kind+key. `tests/ui/lib.mjs` appends `#debug=dupes` to every `page.goto`, so a repeated group fails every UI suite's "zero console errors" check.
+- **P1, model and compose.** `st.draft.lines` is the one customer context (`st.ctx` is gone, migrated once on boot). `composeCopy` gained `greet` (Khách mới / Khách cũ / Chỉ thông tin x 0..4 products), `sizes` (1 product = today's chart, 2+ = blocks labelled by product, optional "Kèm câu xin số đo", partial/missing EN) and `entry` (any flow message with its blanks filled; unfilled data stays visible as `[size]`, `[món]`, `[mã vận đơn]`, `[link hình]`… and is listed in `pending`). The order message prints `size [size]` for a line without a size and `• [món] – size [size]: [giá]` / `[tổng]` when empty. `readyCount()` (badge) counts lines with a size. New `STAGES` (hero, entry, sequence and composer cards).
+- **P2, shared components.** Context bar (all states of §5.1, stale caption after 2 h), sticky block, "↺ Khách mới" with Hoàn tác (snapshot of context, ✓ marks, edits, per-card inputs and stage), ✓ marks on the stage segmented, the unified picker (3 modes, 3-column photo grid 104/96 pt, search, category segmented, Gần đây, Set hay hỏi pair cells, tap = toggle, tray with the size segmented, limit 4, commit rules), the strip (4 frozen suggestions + "Tất cả mẫu"), the single card (preview with token spans, clamp + "Xem hết · n dòng", one capsule whose label names what is missing, notices, language fallback "Chép bản VI / Thêm bản EN") and the Sửa tin sheet (context row, opening line, box with edited state, one row per fill key). Edits are kept per card and per language; an edit is dropped (with Hoàn tác) only when the generated text it was typed over changes.
+- **P3, stages 1, 2, 3, 5.** Chào hỏi hero with the 3-variant segmented; Tư vấn size hero (both charts in one message, labelled), Vừa size (item switcher with 2+ products, size writes the context line), Giữa 2 size, Xin số đo, Câu khác (4); Xin thông tin with the "Dán vào đơn" hand-off row; Check out with two sequence cards (Tin 1/Tin 2, "Tiếp theo" ring, "Đã chép k/2", Có sẵn / May đo auto-selected from the order, tracking code field with Dán, tin 2 capsule "Dán mã" until filled), Xin hình feedback, Câu khác (4) and "Xong khách này · Khách mới". Toast action "Tiếp: {stage}" and the Home resume row.
+- **P4, Tạo đơn.** Message card on top (placeholders as tokens), "Món trong đơn · n" with an always-visible size segmented (no thumb until chosen) + stepper + ✕ per line, "＋ Thêm món" (picker, order mode), one shipping dropdown row + radio sheet ("Khác…" numeric field), collapsed receiver row with a labelled "Dán", bank switch, grey ⓘ notice only when the edited text lost the transfer instruction, "Sang Check out" row after a copy, and the dock (outside the scrolling page, opaque, scrim band under it, above the keyboard when it is open).
+- **P5, tests and shots** (below). `sw.js` cache is now `se-v6-<hash>`.
+
+### Acceptance criteria (design-v6 §15)
+1. **No duplicates.** `dupes.mjs`: her 6.webp sequence replayed on v6 surfaces, double taps on cards, context bar, picker cells, "Xong", size segmented and "＋ Thêm món" never give two sheets or qty 2; canary tests prove the check fails a test when a card or a sheet row is cloned; fuzz of 200 seeded random taps (cards, strip cells, chips, pickers, sheets, stages, languages, 18 % double taps) x 3 seeds x 2 viewports, plus 8 more seeds run by hand (`SEEDS=1,2,…`): 0 duplicated groups, 0 stacked duplicate sheets, qty always 1..9, never more than 4 products. The fuzz found two real bugs (double tap on a closing sheet acted on the page) that are fixed.
+2. **One product choice** asserted: Lace Top · M + Lace Skirt chosen once gives both infos in the greeting, both labelled charts, Vừa size with M pressed, Tạo đơn with Lace Top · M and Lace Skirt waiting for a size.
+3. **Message first.** Tạo đơn: body starts at 269, message preview top 319 (<= 340), the whole message (<= 10 lines, not clipped) and the dock are visible on open at 393 x 852. **Deviation:** on the other stages the first preview cannot start at <= 340 as written: the body starts at 325 (sticky block with the context bar) and a card needs 16 + 22 + 12 before its box, so the preview starts at about 375 (compact cards) or 431 (Chào hỏi, with the variant segmented above it). Asserted instead: the first preview starts within 120 pt of the body start and well above the fold.
+4. **Dock geometry** asserted at 393 and 430, light and dark: dock bottom = capsule top − 8 (±1), no intersection, last element ≤ dock top − 16 at max scroll, alpha 1, pixel scan of the 8 pt gap (tolerance = the capsule's own soft shadow). The dock's own shadow points upward only, so nothing falls into the gap.
+5. **Card contract**, 6. **size chart in 3 taps**, 7. **tokens block copying** (capsule verb / "Còn chỗ trống" / sheet "Điền n chỗ nữa", dock "Chọn size cho n món"), 8. **tap counts** and 9. **preview == clipboard** (every card x variant x VI/EN x edit x opening line x size ask x order, 44 and 48 checks) are all asserted at 393 and 430, light and dark. Every tap-count row also asserts that the message really reached the clipboard.
+10. **Performance / hygiene:** see numbers below; zero console errors, no horizontal overflow, every hit target >= 44 x 44, no rose in any computed colour (round5 audit extended to 30 v6 screens).
+
+### Test numbers
+- Unit `node --test tests/compose.test.mjs`: 67 pass (new: greet 3 variants x 0/1/2 products x VI/EN, 2-product greet, partial/missing EN, sizes 1/2 products with and without opening line and ask, labelled order, partial EN, entry tokens and pending, paired messages, order totals with a sizeless line, tokens, readyCount, tokKeys, stageOf, "four charts / four infos are NOT split", the extension point is commented, v6 source rules).
+- `ui.mjs` 460/460 (ported), `round4.mjs` 205/205 (ported), `list.mjs` 46/46, `round5.mjs` 1171/1171 (safe-area matrix and audits kept, 30 screens now), **`round6.mjs` 519/519**, **`dupes.mjs` 32/32**. All run with `#debug=dupes`.
+- Performance at 4x CPU: copy handler on a stage card median **1.4 ms** (first click 10), product sheet 2.5 ms, Sửa tin sheet 3.6 ms, typing median 1.1 ms. Scroll of a card stage: 208 frames, 0 janky (one run had a single 50 ms frame at the start). Picker open: handler 17–35 ms, to the second frame about 50–60 ms warm (budget 40) and 85–125 ms cold (first run after load). Strip tap (context change, repaint of the changed cards): median about 11 ms (budget 8). Picker CLS 0.
+- Size: `dist/index.html` 236.2 KB raw, 65.9 KB gzip (v5: 54.0), that is **+11.9 KB gzip**; the budget was +8 KB.
+
+### Deviations from the spec (and why)
+1. **Instagram ~1,000 character split: not implemented, on purpose.** The limit is an unverified assumption. `composeCopy` always returns `bubbles: null`; the place to add it is a commented EXTENSION POINT in `src/compose.js` (greet) and the card would have to render a sequence. `greet-two-long` in `shots/` therefore shows one long message (clamped, "Xem hết · 36 dòng"), not "2 tin · tin dài".
+2. Criterion 3 as written (<= 340 pt) holds only on Tạo đơn (see above). Gzip +11.9 KB (over +8). Strip tap and picker open are above their 4x budgets (numbers above); the clamp measurement is deferred to the next frame, the picker paints its first row and the rest one frame later, and unchanged cards are not repainted.
+3. Picker cells show the name with the colour ("Lace Skirt · Kem") and the price on the next line, not "Kem · 470.000đ" (it truncated at 96 pt). The sheet subtitle may wrap to two lines.
+4. A sizeless order line shows the hint "Chọn size" next to the price (under the name) instead of beside the segmented (no room at 393); size segmented buttons are 48 pt wide, not 52.
+5. "Lưu làm mẫu" is not offered for the greeting and size-chart cards (they are made from several products); it works for every other card and for the order message.
+6. "Gửi thêm hình / link" is reachable from the Chào hỏi nav row and from Câu khác of Xin thông tin (both are in the spec) and opens the same card.
+7. Optional "Tính giá set" switch (§13) not built. Home resume row, stale caption, ✓ marks, toast action "Tiếp: …" are built.
+8. The picker's "Gần đây" needs a record of recent products: `st.rp` (copied or added in the last 7 days) is new storage.
+9. The first-run hint line is deleted (the card is the instruction); Round 4/5 tests about the stage description line were replaced by "no description line".
+
+### Decisions made on her behalf
+1. The badge and the "Tạo đơn" count show the quantity of lines that have a size; the dock shows the quantity of all lines (price does not depend on size).
+2. Tạo đơn's message card has no capsule (the dock owns the one primary); opening line lives in Sửa tin.
+3. "Vừa size" and "Giữa 2 size" share one item switcher (the first line with a size is the default).
+4. Removing a product from the context also removes its order lines (with Hoàn tác).
+5. Changing the context drops a typed edit only for cards whose generated text actually changed.
+6. A pending token in an edited text disables the copy ("Còn chỗ trống"); only the known blanks (`[món] [size] [mã vận đơn] [link hình]` …) count, so the English "[bust / waist / hip]" is not a blank.
+7. Check out tin 2 capsule "Dán mã" reads the clipboard into the code field.
+
+### Needs a real iPhone
+- **The Instagram 1,000-character limit** (paste 1,100 characters into a DM): decides whether the extension point is needed.
+- Clipboard **read** (Dán, "Dán vào đơn", "Dán mã") in the home-screen app: the iOS paste prompt, and what happens when she refuses.
+- The **dock above the keyboard** when the receiver field is focused, and the dock's gap to the capsule on the 15 Pro Max (24 pt bar offset).
+- Picker feel: first open speed with 40+ photos on the phone, the 350 ms double-tap guard (does a deliberate quick second tap feel ignored?), tray scrolling with 3+ rows, search with the Vietnamese IME.
+- Whether the "Khách đang hỏi" bar is noticed as tappable, the ✓ marks, "↺ Khách mới" + Hoàn tác (5 s), and the stale-context caption after 2 h.
+- VoiceOver: capsule names, picker cells "đã chọn", dock total, ✓ marks ("đã gửi").

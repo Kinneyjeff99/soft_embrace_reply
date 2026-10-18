@@ -22,11 +22,13 @@ var LS = 'se.v1';
 function load() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } }
 var st = load();
 st.recents = st.recents || []; st.ov = st.ov || {};   /* st.favs from v1 is left untouched and ignored */
-st.draft = Object.assign({ lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0 }, st.draft || {});
+st.draft = Object.assign({ lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: 0 }, st.draft || {});
+st.draft.done = st.draft.done || {};
+st.rp = Array.isArray(st.rp) ? st.rp : [];   /* recent products: [{p, at}] — copied or added in the last 7 days */
 st.set = Object.assign({ lang: 'vi', fee: 25000, bank: { name: '', no: '', holder: '' } }, st.set || {});
 st.lead = Object.assign({ sel: {}, custom: [], edits: {}, hidden: [] }, st.lead || {});
 st.sets = st.sets || [];
-st.ui = Object.assign({ stage: 'greet' }, st.ui || {});
+st.ui = Object.assign({ stage: 'greet', greetV: 'new', sizeAsk: false, thanksV: null }, st.ui || {});
 st.tips = Object.assign({ copy: 0, lead: false }, st.tips || {});
 var saveT;
 function save() { clearTimeout(saveT); saveT = setTimeout(flush, 300); }
@@ -50,61 +52,6 @@ function short(s, n) { n = n || 22; return s.length > n ? s.slice(0, n - 1) + '�
 function uid(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 function lu() { return lang.toUpperCase(); }
 function SM(id) { return st.sets.filter(function (x) { return x.id === id; })[0]; }
-/* greeting-only replies drop the product slot and the dangling colon */
-function greetOnly(tpl) { return tpl.replace(/\s*for \{\{item\}\}/g, '').replace(/\{\{itemInfo\}\}/g, '').replace(/\{\{item\}\}/g, '').replace(/[:：]\s*$/, ''); }
-var GREET = { 'open-first': 1, 'open-returning': 1 };
-function mtext(e, l, fills) {
-  var et = entryText(e, l);
-  if (GREET[e.id]) { if (fills && fills.item) { if (!/\{\{itemInfo\}\}/.test(et.text)) et.text = et.text + '\n\n{{itemInfo}}'; } else et.text = clean(greetOnly(et.text)); }
-  return et;
-}
-
-/* ---------- context (the last product and size she handled pre-fill reply templates) ---------- */
-function ctx() { var c = st.ctx; if (!c || Date.now() - c.at > 20 * 60000) return null; if (!c.itemId && !c.size) return null; return c; }
-function setCtx(pid, size) {
-  var c = ctx() || {};
-  var n = { itemId: pid != null ? pid : c.itemId, size: size !== undefined ? size : c.size, at: Date.now() };
-  if (pid != null && c.itemId !== pid && size === undefined) n.size = null;
-  st.ctx = n; save();
-}
-function setCtxQuiet(pid, size) { st.ctx = { itemId: pid, size: size, at: Date.now() }; save(); }
-function ctxLabel() { var c = ctx(); if (!c) return ''; var p = PM[c.itemId]; return [p ? pname(p, lang) : null, c.size].filter(Boolean).join(' · '); }
-
-/* ---------- reply templates: placeholders ---------- */
-function tkey(t) { return (t === 'itemInfo' || t === 'sizeChart') ? 'item' : t; }
-function keysOf(tpl) { var ks = []; (tpl.match(/\{\{(\w+)\}\}/g) || []).forEach(function (m) { var k = tkey(m.slice(2, -2)); if (ks.indexOf(k) < 0) ks.push(k); }); return ks; }
-function fillVal(k, fills) {
-  if (fills[k] != null && fills[k] !== '') return fills[k];
-  var c = ctx();
-  if (k === 'item') return c && c.itemId ? c.itemId : null;
-  if (k === 'size') return c && c.size ? c.size : null;
-  return null;
-}
-function resolve(tpl, l, fills, html, mark) {
-  var missing = [], out = '', vals = [];
-  var parts = tpl.split(/(\{\{\w+\}\})/);
-  for (var i = 0; i < parts.length; i++) {
-    var part = parts[i], m = /^\{\{(\w+)\}\}$/.exec(part);
-    if (!m) { out += html ? esc(part) : part; continue; }
-    var t = m[1], k = tkey(t), v = null, p;
-    if (t === 'orderLines' || t === 'total') {
-      if (st.draft.lines.length) v = t === 'total' ? C.totalStr(l) : C.linesText(l);
-      else v = fills[t] || null;
-    } else if (k === 'item') {
-      p = PM[fillVal('item', fills)];
-      if (p) v = t === 'itemInfo' ? ptext(p, 'desc', l) : t === 'sizeChart' ? ptext(p, 'size', l) : C.pitem(p, l);
-    } else if (k === 'otherItem') {
-      p = PM[fills.otherItem]; if (p) v = C.pitem(p, l);
-    } else v = fillVal(k, fills);
-    if (v == null || v === '') { if (missing.indexOf(k) < 0) missing.push(k); if (mark) vals.push([t, '[' + (STR.tokl[k] || k) + ']']); }
-    else vals.push([t, String(v)]);
-    if (mark && !html) { out += v == null || v === '' ? '[' + (STR.tokl[k] || k) + ']' : v; continue; }
-    if (html) out += '<span class="tok' + (v == null || v === '' ? '' : ' ok') + '" data-act="tok" data-k="' + k + '">' + (v == null || v === '' ? esc(STR.tokl[k] || k) : esc(v)) + '</span>';
-    else out += v == null ? '' : v;
-  }
-  return { text: html ? out : clean(out), missing: missing, vals: vals };
-}
-
 /* ---------- toast ---------- */
 var toastEl = $('#toast'), toastT, toastAt = 0;
 function dismissToast() { if (toastEl.firstChild && performance.now() - toastAt > 300) { clearTimeout(toastT); toastEl.innerHTML = ''; } }
@@ -153,10 +100,9 @@ function copy(text, o) {
   seal(o.btn);
   var ok = function () {
     var n = st.tips.copy || 0;
-    toast(o.msg || ('Đã chép · ' + short(o.label || 'Văn bản') + ' · ' + l.toUpperCase()), { sub: o.sub || (n < 3 ? STR.tip : undefined), icon: o.icon });
+    toast(o.msg || ('Đã chép · ' + short(o.label || 'Văn bản') + ' · ' + l.toUpperCase()), { sub: o.sub || (n < 3 ? STR.tip : undefined), icon: o.icon, act: o.act });
     if (n < 3) { st.tips.copy = n + 1; save(); }
     if (o.rec) afterPaint(function () { commitRecent(o.rec, l); });
-    if (!st.hintDone) afterPaint(hintDone);
     if (o.done) o.done(true);
   };
   var bad = function () { if (o.done) o.done(false); rollback(o.btn, text); };
@@ -175,7 +121,6 @@ function commitRecent(key, l) {
   st.recents = st.recents.slice(0, 8);
   save();
 }
-function hintDone() { st.hintDone = 1; save(); var h = $('#hint'); if (h) h.hidden = true; }
 function commitLeads(ids) { Object.keys(ids).forEach(function (k) { st.lead.sel[k] = ids[k]; }); save(); }
 
 /* tap guard for a truncated text: the first tap only arms the button, a second tap 400 ms..3 s later copies */
@@ -223,7 +168,7 @@ function measureInsets() {
 }
 function insetT() { return INS.t; }
 function paintDebug() {
-  var on = new URLSearchParams(location.hash.slice(1)).get('debug') === 'insets', el = $('#dbg');
+  var on = new URLSearchParams(location.hash.slice(1)).getAll('debug').indexOf('insets') > -1, el = $('#dbg');
   if (!on) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'dbg'; document.body.appendChild(el); }
   var vv = window.visualViewport;
@@ -234,7 +179,7 @@ addEventListener('resize', measureInsets); addEventListener('orientationchange',
 if (window.visualViewport) visualViewport.addEventListener('resize', function () { var a = document.activeElement; if (!(a && a.matches && a.matches('input,textarea'))) measureInsets(); });
 
 /* ---------- shell: header, floating bar, pages ---------- */
-var UI = { top: 'home', view: 'p', more: {}, oq: '', filt: 'all', lastSeg: null };
+var UI = { top: 'home', view: 'p', more: {}, oq: '', filt: 'all', lastSeg: null, exp: {}, recv: false };
 var PAGE = { kind: 'page', state: { ed: {}, sel: {}, edit: null }, el: $('#stage') };
 var homeEl = $('#home'), qrEl = $('#qr'), piEl = $('#pi');
 var PS = C.PS;
@@ -253,8 +198,8 @@ function pairHtml(ps, sz) { return '<span class="pair' + (sz >= 72 ? ' l72' : ''
 /* segmented control: items = [value, html]; tab = switches a view (aria-selected), otherwise a value (aria-pressed) */
 function segHtml(items, cur, act, o) {
   o = o || {};
-  var i = Math.max(0, items.findIndex(function (x) { return x[0] === cur; })), sel = o.tab ? 'aria-selected' : 'aria-pressed';
-  return '<div class="seg ' + (o.cls || '') + '"' + (o.id ? ' id="' + o.id + '"' : '') + ' role="' + (o.tab ? 'tablist' : 'group') + '"' + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + ' style="--n:' + items.length + ';--i:' + i + '"><span class="th"></span>' +
+  var ix = items.findIndex(function (x) { return x[0] === cur; }), i = Math.max(0, ix), sel = o.tab ? 'aria-selected' : 'aria-pressed';
+  return '<div class="seg ' + (o.cls || '') + (ix < 0 ? ' none' : '') + '"' + (o.id ? ' id="' + o.id + '"' : '') + ' role="' + (o.tab ? 'tablist' : 'group') + '"' + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + ' style="--n:' + items.length + ';--i:' + i + '"><span class="th"></span>' +
     items.map(function (x) { return '<button ' + (o.tab ? 'role="tab" ' : '') + 'data-act="' + act + '" ' + (o.attr || '') + ' data-v="' + x[0] + '" ' + sel + '="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join('') + '</div>';
 }
 function placeThumb(el) {
@@ -262,26 +207,16 @@ function placeThumb(el) {
   var b = $$('button', el), i = b.findIndex(function (x) { return x.getAttribute('aria-pressed') === 'true' || x.getAttribute('aria-selected') === 'true'; });
   el.style.setProperty('--i', Math.max(0, i));
 }
-function paintStages() {
-  var box = $('#stseg'), seg = box.firstChild;
-  if (!seg) {
-    box.innerHTML = '<div class="seg stg" role="tablist" aria-label="Các bước trò chuyện" style="--n:5;--i:0"><span class="th"></span>' + C.STAGES.map(function (g, i) {
-      return '<button class="sg" role="tab" data-act="stage" data-v="' + g.id + '" data-i="' + (i + 1) + '" aria-selected="false">' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
-    }).join('') + '</div>';
-    seg = box.firstChild;
-  }
-  $$('.sg', seg).forEach(function (b) {
-    var g = b.dataset.v, n = g === 'order' ? calc().qty : 0;
-    b.setAttribute('aria-selected', g === st.ui.stage);
-    if (n) { b.dataset.n = n; b.setAttribute('aria-label', GLBL[g] + ', ' + n + ' món'); } else { delete b.dataset.n; b.removeAttribute('aria-label'); }
-  });
-  placeThumb(seg);
-}
-function paintDock() { paintStages(); updateOrderBar(); if (UI.top === 'home') paintHomeOrder(); }
 function paintLang() { var el = $('#lsw'); $$('button', el).forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === lang); }); placeThumb(el); }
 function greetWord() { var h = new Date().getHours(); return h < 11 ? 'Chào buổi sáng' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'; }
-function tileDesc(id) { var n = calc().qty; return id === 'order' && n ? TILEDESC.order + ' · ' + n + ' món' : TILEDESC[id]; }
+function tileDesc(id) { var n = C.readyCount(); return id === 'order' && n ? TILEDESC.order + ' · ' + n + ' món' : TILEDESC[id]; }
 function paintHomeOrder() { var t = $('#home [data-v=order] .td'); if (t) t.textContent = tileDesc('order'); }
+function resumeHtml() {
+  var n = ctxPids().length; if (!n) return '';
+  var nm = ctxPids().map(function (id) { return pv(PM[id], 'name') + (PM[id].variant ? ' · ' + C.VAR[PM[id].variant].vi : ''); }).join(' + ');
+  return '<button class="resume" data-act="stage" data-v="' + st.ui.stage + '" aria-label="' + esc('Đang trả lời: ' + nm + ', Bước ' + stageNo(st.ui.stage) + '. Mở') + '">' + avatarStack(ctxPids()) + '<span class="dl"><span class="dc">Đang trả lời · Bước ' + stageNo(st.ui.stage) + '</span><span class="dv">' + esc(nm) + '</span></span>' + ic('chev', 's13') + '</button>';
+}
+function paintResume() { var r = $('#resume'); if (r) r.innerHTML = resumeHtml(); }
 function renderHomeScreen() {
   var tiles = C.STAGES.map(function (g, i) {
     var nm = esc(g.lab[0].join(' '));
@@ -289,7 +224,7 @@ function renderHomeScreen() {
     return '<button class="tile" data-act="stage" data-v="' + g.id + '"><span class="th1"><span class="tn">' + (i + 1) + '</span>Bước ' + (i + 1) + ic('chev', 's13') + '</span><span class="tt">' + nm + '</span><span class="td">' + esc(tileDesc(g.id)) + '</span></button>';
   }).join('');
   var sg = suggestions()[0];
-  homeEl.innerHTML = '<div class="ttl"><h1 id="hgreet">' + greetWord() + '</h1><p class="sub" id="hsub">Khách đang ở bước nào? Chạm để mở câu trả lời.</p></div>' +
+  homeEl.innerHTML = '<div class="ttl"><h1 id="hgreet">' + greetWord() + '</h1><p class="sub" id="hsub">Khách đang ở bước nào? Chạm để mở câu trả lời.</p></div><div id="resume">' + resumeHtml() + '</div>' +
     '<h2 class="cap">Trả lời khách</h2><div class="tiles">' + tiles + '</div>' +
     '<h2 class="cap">Thông tin sản phẩm</h2><div class="tiles">' +
     '<button class="tile pt" data-act="pgo" data-v="p"><span class="pc">' + pairHtml(PS.slice(0, 3), 40) + '</span><span class="tt">Theo mẫu' + ic('chev', 's13') + '</span><span class="td">Giá, mô tả, bảng size</span></button>' +
@@ -307,39 +242,405 @@ function gotoStage(id) {
   if (UI.top !== 'qr') setTop('qr'); else { renderStage(); paintDock(); }
   qrEl.scrollTop = 0;
 }
-function entrySub(e) {
-  if (entryHidden(e)) return '';
-  var tx = mtext(e, lang).text, x = tx.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
-  return x || entryText(e, 'vi').text.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
+/* ======================= v6 · Trả lời nhanh =======================
+   One customer context ("Khách đang hỏi") = st.draft.lines. Every stage reads it; changing it anywhere changes every message.
+   Each message is one card: the real text, one "⧉ Chép", one "✎ Sửa". Cards are composed by composeCopy and cached in CARDS at render time,
+   so the copy handler only reads CARDS[id].text (preview == clipboard). Every region has one render function (design-v6 section 9). */
+var MAXP = 4;
+var CED = PAGE.state.ed;                      /* typed text over a generated message: { 'cardKey:lang': text } */
+var FILL = {}, SEQ = {}, CARDS = {}, FROZEN = { strip: {}, show: {} }, DEFS = {};
+var SEQT = { pay: ['Đã nhận', 'Cảm ơn'], track: ['Lời dẫn', 'Mã vận đơn'] };
+(function () {   /* registry of every card, by id (sequence bubbles get "<seq>.<n>") */
+  C.STAGES.forEach(function (g) {
+    g.cards.concat(g.more, g.nav || []).forEach(function (c) {
+      if (!c.id) return;
+      DEFS[c.id] = Object.assign({}, DEFS[c.id] || {}, { stage: g.id }, c);
+      if (c.kind === 'seq') c.items.forEach(function (it, i) {
+        DEFS[c.id + '.' + (i + 1)] = { id: c.id + '.' + (i + 1), kind: 'entry', tid: Array.isArray(it) ? it[0] : it, parent: c.id, n: i + 1, stage: g.id, t: 'Tin ' + (i + 1) + ' · ' + SEQT[c.id][i], inputs: c.field && i === 1 ? [c.field] : [] };
+      });
+    });
+  });
+  DEFS['extra-photos'].stage = 'info';
+})();
+function thanksTid() { return st.ui.thanksV || (st.draft.lines.some(function (L) { return PM[L.pid] && PM[L.pid].madeToOrder; }) ? 'thanks-custom' : 'paid-thanks'); }
+function tidOf(d) { return d.tidO || (d.id === 'pay.2' ? thanksTid() : d.tid || d.id); }
+function cardKey(d) { if (d.id === 'greet') return 'greet.' + (d.v || st.ui.greetV); if (d.id === 'pay.2') return 'pay.2.' + tidOf(d); return d.id; }
+function defKeyed(key) {
+  if (key.indexOf('greet.') === 0) return Object.assign({}, DEFS.greet, { v: key.slice(6) });
+  if (key.indexOf('pay.2.') === 0) return Object.assign({}, DEFS['pay.2'], { tidO: key.slice(6) });
+  return DEFS[key];
 }
-/* a message card is ONE tap target; a product card is a short list of rows (photo + name + ›) and a search row */
-function qcard(c) {
-  if (c.kind === 'info' || c.kind === 'size') {
-    var ids = candidates().slice(0, 3);
-    return '<div class="qc pcard" data-card="' + c.kind + '"><span class="qh" style="padding:0 16px"><span class="t">' + esc(c.t) + '</span></span><span class="q">Chọn mẫu khách hỏi</span><div class="qlst">' + ids.map(function (id) {
-      var p = PM[id];
-      return '<button class="prw" data-act="pchip" data-id="' + id + '" data-v="' + c.kind + '" aria-label="Mở ' + (c.kind === 'size' ? 'bảng size ' : 'thông tin ') + esc(pname(p, 'vi')) + '">' + avatar(p, 32) + '<span class="nm">' + esc(pname(p, 'vi')) + ' <span class="pp num">· ' + money(pv(p, 'price'), 'vi') + '</span></span>' + ic('chev', 's13') + '</button>';
-    }).join('') + '<button class="prw find" data-act="pchoose" data-v="' + c.kind + '"><span class="fico">' + ic('search', 's20') + '</span><span class="nm">Tìm mẫu khác…</span>' + ic('chev', 's13') + '</button></div></div>';
+function leadActOf(d) { return d.id === 'greet' ? ((d.v || st.ui.greetV) === 'info' ? 'info' : null) : d.id === 'sizes' ? 'size' : d.kind === 'composer' ? 'order' : null; }
+function replaceObj(t, src) { Object.keys(t).forEach(function (k) { delete t[k]; }); Object.assign(t, src || {}); }
+
+/* ---------- the context ---------- */
+function ctxPids() { var o = []; st.draft.lines.forEach(function (L) { if (PM[L.pid] && o.indexOf(L.pid) < 0) o.push(L.pid); }); return o; }
+function lineOf(pid) { return st.draft.lines.filter(function (L) { return L.pid === pid; })[0]; }
+function ctxValue() {
+  return ctxPids().map(function (pid) {
+    var z = st.draft.lines.filter(function (L) { return L.pid === pid && L.size; }).map(function (L) { return L.size; });
+    return pname(PM[pid], 'vi') + (z.length ? ' · ' + z.join(', ') : '');
+  }).join(' + ');
+}
+function touch() { st.draft.at = Date.now(); save(); }
+function noteRecent(pids) {
+  var now = Date.now();
+  pids.forEach(function (p) { st.rp = st.rp.filter(function (x) { return x.p !== p; }); st.rp.unshift({ p: p, at: now }); });
+  st.rp = st.rp.slice(0, 16); save();
+}
+function recents(n) {
+  var out = [], lim = Date.now() - 7 * 864e5;
+  st.rp.forEach(function (x) { if (x.at >= lim && PM[x.p] && out.indexOf(x.p) < 0) out.push(x.p); });
+  return out.slice(0, n);
+}
+function markDone(stg) { st.draft.done[stg] = Date.now(); st.draft.at = Date.now(); save(); paintStages(); paintNewBtn(); }
+function nextStage(id) { var i = C.STAGES.indexOf(stageDef(id)); return C.STAGES[i + 1] ? C.STAGES[i + 1].id : null; }
+function snapAll() { return JSON.stringify({ d: st.draft, ed: CED, fl: FILL, sq: SEQ, ui: { greetV: st.ui.greetV, sizeAsk: st.ui.sizeAsk, thanksV: st.ui.thanksV, stage: st.ui.stage }, exp: UI.exp }); }
+function restoreAll(js) {
+  var o = JSON.parse(js);
+  st.draft = o.d; replaceObj(CED, o.ed); replaceObj(FILL, o.fl); replaceObj(SEQ, o.sq); Object.assign(st.ui, o.ui); UI.exp = o.exp || {}; save();
+  if (UI.top === 'qr') renderStage(); else ctxChanged();
+  paintDock();
+}
+/* a typed edit belongs to the text it was typed over: when the generated text changes (context, size, variant) the edit is dropped, with undo */
+function edGen(ek) { var i = ek.lastIndexOf(':'), d = defKeyed(ek.slice(0, i)); return d ? compute(d, ek.slice(i + 1)).body : null; }
+function genSnap() { var o = {}; Object.keys(CED).forEach(function (ek) { o[ek] = edGen(ek); }); return o; }
+function dropStale(before) { var any = false; Object.keys(before).forEach(function (ek) { if (CED[ek] !== undefined && edGen(ek) !== before[ek]) { delete CED[ek]; any = true; } }); return any; }
+/* every change of the context goes through here: snapshot, change, drop stale edits, repaint each owning region once, one toast with undo */
+function mutate(fn, o) {
+  o = o || {};
+  var snap = snapAll(), before = genSnap();
+  fn(); touch();
+  var dropped = dropStale(before);
+  ctxChanged();
+  var undo = function () { restoreAll(snap); };
+  if (o.msg) toast(o.msg, { undo: undo, icon: o.icon });
+  else if (dropped) toast('Tin đã cập nhật theo lựa chọn mới', { sub: 'Phần bạn sửa trước đó đã bỏ', undo: undo });
+}
+function ctxChanged() {
+  paintStages(); updateOrderBar(); paintNewBtn();
+  if (UI.top === 'home') { paintHomeOrder(); paintResume(); }
+  if (UI.top === 'qr') { paintCtxBar(); if (st.ui.stage === 'order') paintStageBody(); else paintStageCards(); paintOdock(); }
+  SH.forEach(function (s) { if (s.kind === 'card') { rerender(s); afterPaint(function () { growAll(s.el); }); } });
+}
+function ctxToggle(pid) {
+  var has = lineOf(pid);
+  if (!has && ctxPids().length >= MAXP) { toast('Tối đa 4 mẫu một lần — bỏ bớt một mẫu nhé', { icon: 'info' }); return; }
+  mutate(function () {
+    if (has) st.draft.lines = st.draft.lines.filter(function (L) { return L.pid !== pid; });
+    else st.draft.lines.push({ pid: pid, size: null, qty: 1 });
+  }, has ? { msg: 'Đã bỏ ' + pv(PM[pid], 'name') + ' khỏi khách đang hỏi' } : null);
+  if (!has) noteRecent([pid]);
+}
+/* size of the first line of a product (the Vừa size segmented). Merging with a line of the same product and size adds quantities. */
+function setLineSize(pid, size) {
+  mutate(function () {
+    var L = lineOf(pid); if (!L) return;
+    var dup = st.draft.lines.filter(function (x) { return x !== L && x.pid === pid && x.size === size; })[0];
+    if (dup) { dup.qty = Math.min(9, dup.qty + L.qty); st.draft.lines.splice(st.draft.lines.indexOf(L), 1); } else L.size = size;
+  });
+}
+function itemPid() {
+  var pids = ctxPids(), f = FILL._item;
+  if (f && pids.indexOf(f) > -1) return f;
+  var ws = st.draft.lines.filter(function (L) { return L.size && PM[L.pid]; })[0];
+  return ws ? ws.pid : pids[0] || null;
+}
+function nextUp(p, a) { var z = psizes(p), i = z.indexOf(a); return z[Math.min(z.length - 1, i < 0 ? 1 : i + 1)] || z[0]; }
+function fillsOf(d) {
+  var f = FILL[d.parent || d.id] || {}, pid = itemPid(), L = pid ? lineOf(pid) : null, p = pid && PM[pid], o = {};
+  o.size = L && L.size || null;
+  o.sizeA = f.sizeA || (L && L.size) || (p ? psizes(p)[0] : null);
+  o.sizeB = f.sizeB || (p ? nextUp(p, o.sizeA) : null);
+  ['trackingCode', 'imageLinks', 'otherItem', 'fitStyle'].forEach(function (k) { if (f[k]) o[k] = f[k]; });
+  return o;
+}
+
+/* ---------- composing one card ---------- */
+function rawCompose(d, l) {
+  var sel = PAGE.state.sel;
+  if (d.id === 'greet') return C.composeCopy('greet', { v: d.v || st.ui.greetV, pids: ctxPids(), sel: sel }, l);
+  if (d.id === 'sizes') return C.composeCopy('sizes', { pids: ctxPids(), ask: st.ui.sizeAsk, sel: sel }, l);
+  if (d.kind === 'composer') return C.composeCopy('order', { sel: sel }, l);
+  return C.composeCopy('entry', { tid: tidOf(d), pid: itemPid(), fills: fillsOf(d) }, l);
+}
+/* -> { def, id, key, l (language shown), alt (other language shown because l is missing), r, lead, body, ed, edited, text, pending, tokens, blocked, partial, trunc } */
+function compute(d, l) {
+  l = l || lang;
+  var r = rawCompose(d, l), c = { def: d, id: d.id, key: cardKey(d), l: l, alt: false, miss: null };
+  if (r.missing) { var ol = other(l), r2 = rawCompose(d, ol); c.miss = l; if (r2.text) { c.alt = true; c.l = ol; r = r2; } }
+  c.r = r; c.lead = r.lead || ''; c.body = C.stripLead(r.text, r.lead);
+  c.ed = c.alt ? undefined : CED[c.key + ':' + l]; c.edited = c.ed !== undefined;
+  c.text = clean(c.edited ? (c.lead ? c.lead + '\n\n' + c.ed : c.ed) : r.text);
+  c.tokens = c.edited ? C.tokKeys(c.ed) : [];
+  c.blocked = c.edited && c.tokens.length > 0;
+  c.pending = c.edited ? [] : (r.pending || []).slice().sort(function (x, y) { return (x === 'item' ? 0 : 1) - (y === 'item' ? 0 : 1); });   /* the product comes first */
+  c.partial = r.partial; c.trunc = !!r.trunc && !c.edited;
+  return c;
+}
+var NEEDV = { item: 'Chọn mẫu', otherItem: 'Chọn mẫu', size: 'Chọn size', sizeA: 'Chọn size', sizeB: 'Chọn size', trackingCode: 'Dán mã', imageLinks: 'Thêm link', fitStyle: 'Điền chỗ trống' };
+function pname2(id) { return PM[id] ? pname(PM[id], lang) : ''; }
+function tokHtml(t) {
+  return esc(t).replace(C.TOKRE, function (m, w) { var k = 'item'; Object.keys(C.TOKW).forEach(function (x) { if (C.TOKW[x] === w) k = x; }); return '<span class="tok" data-act="tok" data-k="' + k + '">' + m + '</span>'; });
+}
+
+/* ---------- frame: eyebrow, "↺ Khách mới", sticky segmented + context bar ---------- */
+function ctxEmpty() { return !st.draft.lines.length; }
+function paintNewBtn() { var b = $('#newcust'); if (b) b.classList.toggle('off', ctxEmpty() && !Object.keys(st.draft.done).length); }
+function avatarStack(pids) {
+  var show = pids.slice(0, pids.length > 2 ? 2 : pids.length), h = show.map(function (id) { return avatar(PM[id], 32); }).join('');
+  if (pids.length > 2) h += '<span class="more2">+' + (pids.length - 2) + '</span>';
+  return '<span class="cav">' + h + '</span>';
+}
+function ctxBarHtml() {
+  var pids = ctxPids(), n = pids.length, stale = n && Date.now() - st.draft.at > 2 * 36e5;
+  var cap = stale ? 'Từ ' + Math.max(2, Math.round((Date.now() - st.draft.at) / 36e5)) + ' giờ trước · vẫn khách này?' : n > 2 ? 'Khách đang hỏi · ' + n + ' mẫu' : 'Khách đang hỏi';
+  var left = n ? avatarStack(pids) : '<span class="cav"><span class="plus0">' + ic('plus', 's15') + '</span></span>';
+  var val = n ? ctxValue() : 'Chưa chọn mẫu';
+  return '<button class="ctxbar" data-act="ctxpick" data-m="context" data-ctx="bar" aria-haspopup="dialog" aria-label="' + esc(n ? 'Khách đang hỏi: ' + val + '. Đổi' : 'Khách đang hỏi: chưa chọn mẫu. Chọn') + '">' + left + '<span class="dl"><span class="dc">' + esc(cap) + '</span><span class="dv' + (n ? '' : ' none') + '">' + esc(val) + '</span></span><span class="dx">' + (n ? 'Đổi' : 'Chọn') + ic('chevd', 's13') + '</span></button>';
+}
+function paintCtxBar() {
+  var box = $('#ctxbar'); if (!box) return;
+  var show = st.ui.stage !== 'order';
+  box.hidden = !show; box.innerHTML = show ? ctxBarHtml() : '';
+}
+/* ---------- stage segmented: number, or ✓ once that stage was copied for this customer; badge on Tạo đơn = lines with a size ---------- */
+function paintStages() {
+  var box = $('#stseg .segbox'), seg = box.firstChild;
+  if (!seg) {
+    box.innerHTML = '<div class="seg stg" role="tablist" aria-label="Các bước trò chuyện" style="--n:5;--i:0"><span class="th"></span>' + C.STAGES.map(function (g, i) {
+      return '<button class="sg" role="tab" data-act="stage" data-v="' + g.id + '" data-i="' + (i + 1) + '" aria-selected="false">' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
+    }).join('') + '</div>';
+    seg = box.firstChild;
   }
-  var e = FM[c.id]; if (!e) return '';
-  var hid = entryHidden(e), sub = entrySub(e);
-  return '<button class="qc" data-open="f:' + c.id + '"><span class="qh"><span class="t">' + esc(c.t) + '</span>' + ic('chev', 's13') + '</span><span class="q">' + (hid ? 'Gửi kèm tệp: ' + esc(e.attach || eLabel(e)) : '“' + esc(sub) + '”') + '</span><span class="qf">' + (hid ? ic('clip', 's15') + 'Xem lời nhắc đính kèm' : ic('copy', 's15') + 'Mở để xem và chép') + '</span></button>';
+  $$('.sg', seg).forEach(function (b) {
+    var g = b.dataset.v, n = g === 'order' ? C.readyCount() : 0, done = !!st.draft.done[g] && g !== st.ui.stage;
+    b.setAttribute('aria-selected', g === st.ui.stage);
+    if (done) b.dataset.done = '1'; else delete b.dataset.done;
+    var lab = GLBL[g] + (done ? ', đã gửi' : '') + (n ? ', ' + n + ' món' : '');
+    if (n) b.dataset.n = n; else delete b.dataset.n;
+    if (done || n) b.setAttribute('aria-label', lab); else b.removeAttribute('aria-label');
+  });
+  placeThumb(seg);
+}
+function paintDock() { paintStages(); updateOrderBar(); if (UI.top === 'home') { paintHomeOrder(); paintResume(); } }
+
+/* ---------- strips: 4 photos + "Tất cả mẫu"; suggestions are frozen while a stage is open so nothing reorders under her finger ---------- */
+function suggest() {
+  var pids = ctxPids(), out = [];
+  function add(id) { if (PM[id] && pids.indexOf(id) < 0 && out.indexOf(id) < 0) out.push(id); }
+  if (pids.length === 1) {
+    var me = pids[0];
+    st.sets.forEach(function (x) { if (x.items.indexOf(me) > -1) x.items.forEach(add); });
+    (SEED.setSuggestions || []).forEach(function (x) { if (x[0] === me) add(x[1]); else if (x[1] === me) add(x[0]); });
+  }
+  recents(12).forEach(add); PS.forEach(function (p) { add(p.id); });
+  return out.slice(0, 4);
+}
+function freezeStrips(g) {
+  g.cards.forEach(function (c) { if (c.id === 'greet' || c.id === 'sizes' || c.id === 'order') { FROZEN.strip[c.id] = suggest(); FROZEN.show[c.id] = ctxPids().length <= 1; } });
+}
+function pstripHtml(id, mode) {
+  var ids = FROZEN.strip[id] || [], n = ctxPids().length;
+  var cap = mode === 'order' ? 'Khách mua mẫu nào?' : n ? 'Khách hỏi thêm mẫu? Chạm để gửi cả hai.' : mode === 'size' ? 'Gửi bảng size mẫu nào? Chạm ảnh, chọn 2 mẫu để gửi cả hai.' : 'Khách hỏi mẫu nào? Chạm ảnh để kèm vào tin.';
+  return '<div class="pstrip" data-strip="' + id + '" data-need="item"><p class="cp">' + esc(cap) + '</p><div class="row5">' + ids.map(function (pid) {
+    var on = !!lineOf(pid);
+    return '<button class="sc" data-act="stripset" data-pid="' + pid + '" data-c="' + id + '" aria-pressed="' + on + '" aria-label="' + esc('Kèm ' + pname(PM[pid], 'vi') + ' vào tin') + '"><span class="pa">' + avatar(PM[pid], 56, true) + '<i class="ck">' + ic('check') + '</i></span><span class="nm">' + esc(pname(PM[pid], 'vi')) + '</span></button>';
+  }).join('') + '<button class="sc all" data-act="stripall" data-m="' + mode + '" data-c="' + id + '" aria-label="Tất cả mẫu"><span class="allc">' + ic('search', 's20') + '</span><span class="nm">Tất cả mẫu</span></button></div></div>';
+}
+function addMoreHtml(id, mode) { return '<button class="txtbtn addmore" data-act="stripall" data-m="' + mode + '" data-c="' + id + '">' + ic('plus', 's15') + 'Thêm mẫu</button>'; }
+function stripOrMore(id, mode) { return FROZEN.show[id] ? pstripHtml(id, mode) : addMoreHtml(id, mode); }
+
+/* ---------- the one card anatomy ---------- */
+function metaHtml(c, d) {
+  var m = [], n = ctxPids().length;
+  if (d.id === 'greet') m.push(n ? n + ' mẫu' : 'Chưa kèm mẫu'); else if (d.id === 'sizes') m.push(n ? n + ' mẫu' : 'Chưa chọn mẫu'); else if (d.kind === 'composer') m.push(lu());
+  var h = esc(m.join(' · '));
+  if (c.edited) h += (h ? ' · ' : '') + '<span class="ed"><i></i>Đã sửa</span>';
+  return h;
+}
+function pvHtml(c, d, n) {
+  var ex = !!UI.exp[d.id];
+  return '<div class="pvw" data-pvw="' + d.id + '"><div class="pv c' + n + (ex ? ' open' : '') + '" data-n="' + n + '" role="button" tabindex="0" data-act="cardedit" data-c="' + d.id + '" aria-label="' + esc('Tin sẽ gửi: ' + short(c.text, 140) + '. Chạm hai lần để sửa') + '">' + tokHtml(c.text) + '</div></div>' +
+    '<button class="txtbtn xm" data-act="cardmore" data-c="' + d.id + '" aria-expanded="' + ex + '" hidden></button>';
+}
+function noticeHtml(c, d) {
+  var h = '';
+  if (c.alt) h += '<div class="notice">' + ic('info', 's15') + '<span class="nb">Chưa có bản ' + c.miss.toUpperCase() + ' của tin này.</span></div>';
+  else if (c.partial && c.partial.length) h += '<div class="notice">' + ic('info', 's15') + '<span class="nb">' + esc(c.partial.map(pname2).join(', ')) + ' chưa có ' + (d.id === 'sizes' ? 'bảng size' : 'thông tin') + ' ' + lu() + ' — tin chỉ có ' + esc(ctxPids().filter(function (x) { return c.partial.indexOf(x) < 0; }).map(pname2).join(', ')) + '.</span></div>';
+  if (c.blocked) h += '<div class="notice">' + ic('info', 's15') + '<span class="nb">Xoá hoặc điền chỗ trong ngoặc [ ] rồi chép.</span></div>';
+  return h;
+}
+function capsuleHtml(c, d, label) {
+  var id = d.id;
+  if (c.alt) return '<button class="btn tonal ccap" data-act="cardcopy" data-c="' + id + '">' + lblBtn('Chép bản ' + c.l.toUpperCase()) + '</button>';
+  if (c.blocked) return '<button class="btn tonal ccap" aria-disabled="true" data-c="' + id + '">Còn chỗ trống</button>';
+  if (c.pending.length) return '<button class="btn tonal ccap need" data-act="cardneed" data-c="' + id + '" data-k="' + c.pending[0] + '">' + esc(NEEDV[c.pending[0]] || 'Điền chỗ trống') + '</button>';
+  return '<button class="btn tonal ccap" data-act="cardcopy" data-c="' + id + '">' + lblBtn((label || 'Chép') + ' · ' + lu()) + '</button>';
+}
+function actHtml(c, d, label) {
+  var extra = c.alt ? '<button class="txtbtn" data-act="addlang" data-c="' + d.id + '">' + ic('pencil', 's15') + 'Thêm bản ' + c.miss.toUpperCase() + '</button>' : '<button class="txtbtn" data-act="cardedit" data-c="' + d.id + '">' + ic('pencil', 's15') + 'Sửa</button>';
+  return '<div class="mact">' + extra + '<span class="mcap">' + (d.kind === 'composer' ? '' : capsuleHtml(c, d, label)) + '</span></div>';
+}
+/* item switcher (two or more products) and the inputs of an entry card */
+function itemSwitch(d) {
+  var pids = ctxPids(); if (pids.length < 2) return '';
+  var cur = itemPid();
+  return '<div class="frow itsw" data-row="item" data-need="item"><span class="dc">Mẫu</span><span class="cir">' + pids.map(function (id) {
+    return '<button class="cb" data-act="fititem" data-pid="' + id + '" data-c="' + d.id + '" aria-pressed="' + (id === cur) + '" aria-label="' + esc(pname(PM[id], 'vi')) + '">' + avatar(PM[id], 40) + '<i class="ck">' + ic('check') + '</i></button>';
+  }).join('') + '</span><span class="cn">' + esc(pname2(cur)) + '</span></div>';
+}
+function sizeSeg(d, k, lab, cur) {
+  var pid = itemPid(), p = pid && PM[pid], sizes = p ? psizes(p) : ['S', 'M', 'L'];
+  return '<div class="frow" data-row="' + k + '"' + (k === 'size' ? ' data-need="size"' : '') + '><div class="dc">' + esc(lab) + '</div>' + segHtml(sizes.map(function (z) { return [z, z]; }), cur, k === 'size' ? 'fitsize' : 'fillseg', { label: lab, attr: 'data-c="' + d.id + '" data-k="' + k + '"' + (p ? '' : ' disabled') }) + '</div>';
+}
+function fieldHtml(d, k, ph) {
+  var f = FILL[d.parent || d.id] || {};
+  return '<div class="frow fldrow" data-row="' + k + '" data-need="' + k + '"><input class="fld" data-fill="' + k + '" data-c="' + d.id + '" enterkeyhint="done" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(f[k] || '') + '" placeholder="' + esc(ph) + '" aria-label="' + esc(ph) + '"><button class="btn tonal" data-act="pastefill" data-k="' + k + '" data-c="' + d.id + '">' + ic('paste', 's15') + 'Dán</button></div>';
+}
+function inputsHtml(d) {
+  var h = '', f = fillsOf(d);
+  (d.inputs || []).forEach(function (k) {
+    if (k === 'item') h += itemSwitch(d);
+    else if (k === 'size') h += sizeSeg(d, 'size', 'Size', f.size);
+    else if (k === 'sizeA') h += sizeSeg(d, 'sizeA', 'Vừa vặn', f.sizeA);
+    else if (k === 'sizeB') h += sizeSeg(d, 'sizeB', 'Thoải mái', f.sizeB);
+    else if (k === 'trackingCode') h += fieldHtml(d, k, 'Mã vận đơn');
+    else if (k === 'imageLinks') h += fieldHtml(d, k, 'Link hình');
+  });
+  if (d.id === 'between-sizes') h = itemSwitch(d) + h;
+  return h;
+}
+function cardHtml(d) {
+  if (d.kind === 'seq') return seqHtml(d);
+  var c = compute(d); CARDS[d.id] = c;
+  var hero = d.id === 'greet' || d.id === 'sizes' || d.kind === 'composer', n = d.kind === 'composer' ? 10 : hero ? 8 : 3;
+  var h = '<section class="mcard ' + (hero ? 'hero' : 'compact') + '" data-card="' + d.id + '" aria-label="' + esc(d.t) + '"><div class="mh"><h3 class="mt">' + esc(d.t) + '</h3><span class="mm">' + metaHtml(c, d) + '</span></div>';
+  if (d.id === 'greet') h += segHtml([['new', 'Khách mới'], ['back', 'Khách cũ'], ['info', 'Chỉ thông tin']], st.ui.greetV, 'greetv', { label: 'Kiểu chào', attr: 'data-c="greet"' });
+  h += '<div class="mi">' + inputsHtml(d) + '</div>' + pvHtml(c, d, n) + '<div class="mn">' + noticeHtml(c, d) + '</div>';
+  if (d.id === 'sizes') h += '<label class="swrow sask"><span class="sl"><span class="t">Kèm câu xin số đo</span></span><span class="sw"><input type="checkbox" switch data-in="sizeask" aria-label="Kèm câu xin số đo"' + (st.ui.sizeAsk ? ' checked' : '') + '><i></i></span></label>';
+  h += actHtml(c, d);
+  if (d.id === 'greet') h += stripOrMore('greet', 'context');
+  if (d.id === 'sizes') h += stripOrMore('sizes', 'size');
+  return h + '</section>';
+}
+/* a sequence of messages sent together (Check out): one mini-card per message, the next one carries the ring */
+function seqHtml(d) {
+  var subs = [1, 2].map(function (i) { return DEFS[d.id + '.' + i]; }), done = SEQ[d.id] || {}, nx = subs.findIndex(function (s, i) { return !done[i]; });
+  var k = subs.filter(function (s, i) { return done[i]; }).length;
+  var h = '<section class="mcard seq compact" data-card="' + d.id + '" aria-label="' + esc(d.t) + '"><div class="mh"><h3 class="mt">' + esc(d.t) + '</h3><span class="mm" data-seqm>Đã chép ' + k + '/2</span></div>';
+  if (d.field) h += fieldHtml(subs[1], d.field, 'Mã vận đơn');
+  subs.forEach(function (s, i) {
+    var c = compute(s); CARDS[s.id] = c;
+    var isNext = i === nx, isDone = !!done[i];
+    h += '<div class="mb' + (isNext ? ' next' : '') + (isDone ? ' done' : '') + '" data-b="' + (i + 1) + '"><div class="bh"><span class="bdisc">' + (isDone ? ic('check', 's15') : (i + 1)) + '</span><h4 class="bt">' + esc(s.t) + '</h4>' + (isNext ? '<span class="btag">Tiếp theo</span>' : isDone ? '<span class="bdone">Đã chép</span>' : '') + '</div>';
+    if (s.id === 'pay.2') h += segHtml([['paid-thanks', 'Có sẵn'], ['thanks-custom', 'May đo']], thanksTid(), 'thanksv', { label: 'Loại đơn' });
+    h += pvHtml(c, s, 3) + '<div class="mn">' + noticeHtml(c, s) + '</div>' + actHtml(c, s, 'Chép tin ' + (i + 1)) + '</div>';
+  });
+  return h + '</section>';
+}
+function stageCardsHtml(g) {
+  var h = '<div class="qlist">';
+  g.cards.forEach(function (c) { h += cardHtml(DEFS[c.id]); });
+  if (g.id === 'greet') h += '<button class="nrow" data-act="cardedit" data-c="extra-photos">' + ic('clip', 's20') + '<span class="nt">Gửi thêm hình / link</span>' + ic('chev', 's13') + '</button>';
+  if (g.id === 'info') h += '<button class="nrow" data-act="pastego">' + ic('paste', 's20') + '<span class="nt">Khách gửi địa chỉ rồi? Dán vào đơn</span>' + ic('chev', 's13') + '</button>';
+  if (g.more.length) {
+    var on = !!UI.more[g.id];
+    h += '<button class="morebtn" data-act="stmore" aria-expanded="' + on + '">Câu khác (' + g.more.length + ')' + ic('chevd', 's13') + '</button>';
+    if (on) g.more.forEach(function (c) {
+      if (c.id === 'return-policy' && entryHidden(FM[c.id])) h += '<button class="nrow" data-act="attach" data-id="' + c.id + '">' + ic('clip', 's20') + '<span class="nt">' + esc(c.t) + '</span>' + ic('chev', 's13') + '</button>';
+      else h += cardHtml(DEFS[c.id]);
+    });
+  }
+  if (g.id === 'out') h += '<button class="btn tonal wide endbtn" data-act="newcust">' + ic('undo', 's15') + 'Xong khách này · Khách mới</button>';
+  return h + '</div>';
+}
+function measureClamps(root) {
+  var rows = $$('.pv', root).map(function (pv) { return [pv, pv.scrollHeight, +pv.dataset.n]; });
+  rows.forEach(function (r) {
+    var pv = r[0], id = pv.dataset.c, lines = Math.round((r[1] - 26) / 21), show = lines > r[2], ex = !!UI.exp[id], w = pv.parentNode, b = w.nextElementSibling;
+    w.classList.toggle('clip', show && !ex);
+    if (b && b.classList.contains('xm')) { b.hidden = !show; b.setAttribute('aria-expanded', ex); b.innerHTML = ex ? ic('chevd', 's13') + 'Thu gọn' : ic('chevd', 's13') + 'Xem hết · ' + lines + ' dòng'; }
+  });
+}
+var mq = 0;
+/* the clamp measurement needs a layout: do it once per frame after the repaint, never inside the tap handler */
+function queueMeasure() { if (mq) return; mq = requestAnimationFrame(function () { mq = 0; measureClamps(PAGE.el); }); }
+function paintStageBody() {
+  var g = stageDef(st.ui.stage);
+  PAGE.el.innerHTML = g.id === 'order' ? orderStageHtml() : stageCardsHtml(g);
+  qrEl.classList.toggle('o', g.id === 'order');
+  queueMeasure();
+}
+/* a change of the context repaints each card in place (the strip keeps its frozen photos) */
+function paintStageCards() {
+  var changed = false;
+  $$('#stage [data-card]').forEach(function (el) {
+    var d = DEFS[el.dataset.card]; if (!d) return;
+    var html = cardHtml(d);
+    if (el._h === html) return;   /* nothing in this card depends on what changed: leave the DOM alone */
+    var t = document.createElement('div'); t.innerHTML = html;
+    t.firstChild._h = html; el.replaceWith(t.firstChild); changed = true;
+  });
+  if (changed) queueMeasure();
 }
 function renderStage() {
-  var g = stageDef(st.ui.stage), h = '';
-  $('#qreb').textContent = 'Trả lời nhanh · Bước ' + stageNo(g.id) + '/5'; $('#qrtitle').textContent = GLBL[g.id]; $('#qrsub').textContent = g.desc;
-  if (g.id === 'order') h += orderStageHtml();
-  else {
-    h += '<div class="qlist">' + g.cards.map(qcard).join('') + '</div>';
-    if (g.more.length) {
-      var on = !!UI.more[g.id];
-      h += '<button class="morebtn" data-act="stmore" aria-expanded="' + on + '">Câu khác (' + g.more.length + ')' + ic(on ? 'chevd' : 'chevd', 's13') + '</button>' + (on ? '<div class="qlist">' + g.more.map(qcard).join('') + '</div>' : '');
-    }
-  }
-  PAGE.el.innerHTML = h; qrEl.classList.toggle('o', g.id === 'order');
-  paintStages();
-  if (g.id === 'order') growAll(PAGE.el);
+  var g = stageDef(st.ui.stage);
+  $('#qreb').textContent = 'Trả lời nhanh · Bước ' + stageNo(g.id) + '/5'; $('#qrtitle').textContent = GLBL[g.id];
+  document.body.dataset.stage = g.id; CARDS = {}; freezeStrips(g);
+  paintStageBody(); paintStages(); paintCtxBar(); paintNewBtn(); paintOdock();
 }
+
+function paintCard(id) {
+  var el = $('#stage [data-card="' + id + '"]'), d = DEFS[id]; if (!el || !d) return;
+  var html = cardHtml(d), t = document.createElement('div'); t.innerHTML = html; t.firstChild._h = html; el.replaceWith(t.firstChild); queueMeasure();
+}
+/* a choice that is not part of the context (item switcher, A/B sizes, Có sẵn / May đo, "kèm câu xin số đo"): repaint, and drop an edit that no longer matches */
+function fillShift(fn) {
+  var before = genSnap(); fn(); var dropped = dropStale(before);
+  ctxChanged();
+  if (dropped) toast('Tin đã cập nhật theo lựa chọn mới', { sub: 'Phần bạn sửa trước đó đã bỏ' });
+}
+function orderTyped(fn) {
+  var before = genSnap(); fn(); touch(); var dropped = dropStale(before);
+  patchOrder();
+  if (dropped) toast('Tin đã cập nhật theo lựa chọn mới', { sub: 'Phần bạn sửa trước đó đã bỏ' });
+}
+function setInfo(x) { mutate(function () { st.draft.info = x; }); }
+function pasteInfo() {
+  UI.recv = true;
+  function refuse() { paintStageBody(); var ta = $('[data-in=info]'); if (ta) ta.focus(); }
+  try { navigator.clipboard.readText().then(function (x) { x = String(x || '').trim(); if (x) setInfo(x); else paintStageBody(); }, refuse); } catch (e) { refuse(); }
+}
+/* "Khách gửi địa chỉ rồi? Dán vào đơn": paste into the receiver field and go to Tạo đơn with it open (a refused read still opens the field) */
+function pasteGo() {
+  UI.recv = true;
+  function go() { gotoStage('order'); }
+  try { navigator.clipboard.readText().then(function (x) { x = String(x || '').trim(); if (x) { st.draft.info = x; touch(); } go(); }, function () { go(); afterPaint(function () { var ta = $('[data-in=info]'); if (ta) ta.focus(); }); }); } catch (e) { go(); }
+}
+/* "↺ Khách mới": one reset for the whole customer, with undo; nothing is lost without a way back */
+function newCustomer() {
+  var snap = snapAll();
+  closeAllSheets();
+  st.draft = { lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: 0 };
+  replaceObj(CED, {}); replaceObj(FILL, {}); replaceObj(SEQ, {}); st.ui.thanksV = null; UI.exp = {}; UI.recv = false; UI.more = {};
+  st.ui.stage = 'greet'; save();
+  if (UI.top === 'qr') { renderStage(); qrEl.scrollTop = 0; } else ctxChanged();
+  paintDock();
+  toast('Đã sang khách mới', { undo: function () { restoreAll(snap); qrEl.scrollTop = 0; } });
+}
+/* one card or one bubble changed without touching its inputs (typing): refresh the text, the notices and the capsule only */
+function patchCard(id) {
+  var d = DEFS[id], root = d && $('#stage [data-card="' + (d.parent || d.id) + '"]'); if (!d || !root) return;
+  var c = compute(d); CARDS[id] = c;
+  var scope = d.parent ? root.querySelector('.mb[data-b="' + d.n + '"]') : root; if (!scope) return;
+  var pvw = scope.querySelector('.pvw'), pvEl = pvw && pvw.firstChild; if (pvEl) { pvEl.innerHTML = tokHtml(c.text); pvEl.setAttribute('aria-label', 'Tin sẽ gửi: ' + short(c.text, 140) + '. Chạm hai lần để sửa'); }
+  var mn = scope.querySelector('.mn'); if (mn) mn.innerHTML = noticeHtml(c, d);
+  var mc = scope.querySelector('.mcap'); if (mc && d.kind !== 'composer') mc.innerHTML = capsuleHtml(c, d, d.parent ? 'Chép tin ' + d.n : '');
+  var mm = root.querySelector('.mm'); if (mm && !d.parent) mm.innerHTML = metaHtml(c, d);
+  queueMeasure();
+}
+
 /* product tab */
 var homeHtml = '';
 function renderPI() {
@@ -360,7 +661,7 @@ function setsViewHtml() {
     return setRow(x.items, 'data-open="s:' + x.id + '"', money(C.setPrice(x), 'vi') + (x.checked === false ? ' · chưa kiểm giá' : ''));
   }).join('') + '</div>';
   var sg = suggestions();
-  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return setRow(x, 'data-act="setsugg" data-a="' + x[0] + '" data-b="' + x[1] + '"', 'Gợi ý · ' + money(C.setSum({ items: x }), 'vi') + ' · chưa kiểm giá'); }).join('') + '</div>';
+  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return setRow(x, 'data-act="setsugg" data-a="' + x[0] + '" data-sb="' + x[1] + '"', 'Gợi ý · ' + money(C.setSum({ items: x }), 'vi') + ' · chưa kiểm giá'); }).join('') + '</div>';
   return h;
 }
 function pRow(p) {
@@ -385,89 +686,120 @@ function renderList() {
   if ($('#q').value.trim()) doSearch(); else $('#hbody').innerHTML = homeHtml;
 }
 
-/* ---------- order button: shortcut to the "Tạo đơn" stage ---------- */
+
+/* ---------- Tạo đơn: message first, then the lines, one shipping row, collapsed receiver info, a solid dock ---------- */
 function updateOrderBar() {
-  var c = calc(), b = $('#obtn2'), bd = b.querySelector('.bd');
-  bd.hidden = !c.qty; bd.textContent = c.qty;
-  b.setAttribute('aria-label', c.count ? 'Đơn hàng, ' + c.qty + ' món, ' + money(c.total, 'vi') : 'Đơn hàng');
+  var c = calc(), n = C.readyCount(), b = $('#obtn2'), bd = b.querySelector('.bd');
+  bd.hidden = !n; bd.textContent = n;
+  b.setAttribute('aria-label', n ? 'Đơn hàng, ' + n + ' món, ' + money(c.total, 'vi') : 'Đơn hàng');
   b.classList.toggle('on', UI.top === 'qr' && st.ui.stage === 'order');
 }
 function bump() { var b = $('#obtn2'); if (b.animate && !reduce) b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 300 }); }
-function addLine(pid, size, qty) {
-  var d = st.draft, f = d.lines.find(function (L) { return L.pid === pid && L.size === size; });
-  if (f) f.qty = Math.min(9, f.qty + (qty || 1)); else d.lines.push({ pid: pid, size: size, qty: qty || 1 });
-  setCtxQuiet(pid, size); save(); orderChanged(); bump();
+/* "＋ M" in the product sheet: fills a waiting line of that product, or adds one; never raises a quantity */
+function addLine(pid, size) {
+  var d = st.draft, f = d.lines.filter(function (L) { return L.pid === pid && L.size === size; })[0];
+  if (f) { toast('Đã có ' + pname(PM[pid], 'vi') + ' · ' + size + ' trong đơn', { icon: 'info' }); return false; }
+  var wait = d.lines.filter(function (L) { return L.pid === pid && !L.size; })[0];
+  if (!wait && ctxPids().indexOf(pid) < 0 && ctxPids().length >= MAXP) { toast('Tối đa 4 mẫu một lần — bỏ bớt một mẫu nhé', { icon: 'info' }); return false; }
+  mutate(function () { if (wait) wait.size = size; else d.lines.push({ pid: pid, size: size, qty: 1 }); });
+  noteRecent([pid]); bump(); return true;
 }
-function lineQty(pid, size) { var f = st.draft.lines.filter(function (L) { return L.pid === pid && L.size === size; })[0]; return f ? f.qty : 0; }
-function inOrderText(pid) { return st.draft.lines.filter(function (L) { return L.pid === pid; }).map(function (L) { return L.size + ' × ' + L.qty; }).join(', '); }
+function inOrderText(pid) { return st.draft.lines.filter(function (L) { return L.pid === pid && L.size; }).map(function (L) { return L.size + ' × ' + L.qty; }).join(', '); }
 function addedToast(pid, size) { toast('Đã thêm ' + pname(PM[pid], 'vi') + ' · ' + size + ' vào đơn', { act: { label: 'Xem đơn', fn: function () { closeAllSheets(); gotoStage('order'); } } }); }
-function orderChanged() { paintDock(); if (UI.top === 'qr' && st.ui.stage === 'order') redrawOrder(); }
-
-/* ---------- order composer (stage "Tạo đơn") ---------- */
-function oresHtml() {
-  var q = norm(UI.oq || ''), ids = q ? PS.filter(function (p) { return norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1; }).map(function (p) { return p.id; }).slice(0, 8) : candidates().slice(0, 4);
-  if (!ids.length) return '<div class="empty" style="padding-top:12px"><p>Chưa tìm thấy “' + esc(UI.oq) + '”. Thử một tên ngắn hơn nhé.</p><button class="btn tonal" data-act="oqclear">Xoá tìm kiếm</button></div>';
-  var fresh = !ctx() && !st.recents.length;
-  return (q ? '' : '<div class="secH"><h3 class="cap sm">' + (fresh ? 'Mẫu mới nhất' : 'Mẫu gần đây') + '</h3></div>') + '<div class="grp">' + ids.map(function (id) {
-    var p = PM[id], io = inOrderText(id);
-    return '<div class="oit" data-pid="' + id + '"><div class="oh">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></div><div class="addrow">' + psizes(p).map(function (z) {
-      return '<button class="btn tonal" data-act="oadd" data-id="' + id + '" data-v="' + z + '" aria-label="Thêm ' + esc(pname(p, 'vi')) + ' size ' + z + ' vào đơn">' + ic('plus', 's15') + z + '</button>';
-    }).join('') + '<span class="inord">' + (io ? 'Trong đơn: ' + esc(io) : '') + '</span></div></div>';
-  }).join('') + '</div>';
+function shipValue() { var d = st.draft; return d.ship === 'courier' ? 'Khách trả shipper' : d.ship === 'fee' ? money(st.set.fee, 'vi') : d.ship === 'free' ? 'Miễn phí' : d.custom ? money(d.custom, 'vi') : 'Khác…'; }
+function lineRowHtml(L, i) {
+  var p = PM[L.pid]; if (!p) return '';
+  var nm = esc(pname(p, 'vi'));
+  return '<div class="lrow2' + (L.size ? '' : ' nosz') + '" data-line="' + L.pid + ':' + (L.size || '') + '"><div class="l1r">' + avatar(p, 44) + '<span class="ln"><span class="t">' + nm + '</span><span class="sub num">' + money(pv(p, 'price') * L.qty, 'vi') + (L.size ? '' : ' · Chọn size') + '</span></span>' +
+    '<button class="iconbtn" data-act="lnrm" data-i="' + i + '" aria-label="Bỏ món ' + nm + '"><span class="c bare">' + ic('x', 's15') + '</span></button></div>' +
+    '<div class="l2r"><span data-need="size">' + segHtml(psizes(p).map(function (z) { return [z, z]; }), L.size, 'lnsize', { label: 'Size ' + pname(p, 'vi'), attr: 'data-i="' + i + '"' }) + '</span>' +
+    '<span class="stp"><button class="btn tonal" data-act="lnqty" data-i="' + i + '" data-d="-1" aria-label="Giảm số lượng ' + nm + '"' + (L.qty <= 1 ? ' disabled' : '') + '>' + ic('minus', 's15') + '</button><span class="v num">' + L.qty + '</span><button class="btn tonal" data-act="lnqty" data-i="' + i + '" data-d="1" aria-label="Tăng số lượng ' + nm + '"' + (L.qty >= 9 ? ' disabled' : '') + '>' + ic('plus', 's15') + '</button></span></div></div>';
 }
-function olinesHtml() {
-  var d = st.draft, rows = '';
-  d.lines.forEach(function (L, i) {
-    var p = PM[L.pid]; if (!p) return;
-    rows += '<button class="row lrow" data-act="lineopen" data-i="' + i + '" aria-label="Sửa món ' + esc(pname(p, 'vi')) + ', size ' + L.size + ', số lượng ' + L.qty + '">' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">Size ' + L.size + ' · SL ' + L.qty + '</span></span><span class="pr">' + money(pv(p, 'price') * L.qty, 'vi') + '</span>' + ic('chev', 's13') + '</button>';
-  });
-  return rows ? '<div class="grp">' + rows + '</div>' : '<div class="oempty"><p class="tt">Đơn còn trống</p><p>Chạm ＋ size bên dưới để thêm món nhé.</p></div>';
+function recvHtml() {
+  var d = st.draft, first = d.info.trim().split('\n')[0], open = UI.recv;
+  return '<div class="recvw"><div class="ddrow recvrow" data-row="recv"><button class="rmain3" data-act="recvtoggle" aria-expanded="' + open + '"><span class="dl"><span class="dc">Thông tin nhận (tuỳ chọn)</span><span class="dv' + (first ? '' : ' hint2') + '">' + esc(first || 'Tên, SĐT, địa chỉ khách gửi…') + '</span></span>' + ic('chevd', 's13') + '</button><button class="btn tonal" data-act="pasteinfo">' + ic('paste', 's15') + 'Dán</button></div>' +
+    (open ? '<textarea class="ta sel" data-in="info" rows="3" placeholder="Tên, SĐT, địa chỉ khách gửi…" aria-label="Thông tin nhận">' + esc(d.info) + '</textarea>' : '') + '</div>';
 }
-function oshipHtml() {
-  var d = st.draft, labels = [['courier', 'Trả shipper'], ['fee', money(st.set.fee, 'vi')], ['free', 'Freeship'], ['custom', 'Khác']];
-  return segHtml(labels.map(function (x) { return [x[0], esc(x[1])]; }), d.ship, 'ship', { label: 'Phí ship', cls: 'full' }) +
-    (d.ship === 'custom' ? '<input class="fld" style="margin-top:8px" inputmode="numeric" data-in="custom" placeholder="Nhập phí ship (đ)" value="' + (d.custom ? nfV.format(d.custom) : '') + '" aria-label="Phí ship khác">' : '');
+function orderNotice(c) {
+  var t = c.text, has = /chuyển khoản|transfer note/i.test(t) && /instagram/i.test(t);
+  return has ? '' : '<div class="notice">' + ic('info', 's15') + '<span class="nb">Tin chưa có hướng dẫn ghi tên Instagram khi chuyển khoản.</span></div>';
 }
-function ofootHtml() {
-  var c = calc();
-  return '<div><div class="tl">' + (c.count ? 'Tổng · ' + c.qty + ' món' : 'Chưa có món') + '</div><div class="tv num">' + money(c.total, lang) + '</div></div><button class="btn m" id="obtn" data-act="copyorder"' + (c.count ? '' : ' disabled') + '>' + lblBtn('Chép đơn · ' + lu()) + '</button>';
-}
-function tnoteHtml() {
-  var t = ebVal(PAGE, 'order'), has = /chuyển khoản|transfer note/i.test(t) && /instagram/i.test(t);
-  return has ? '<div class="notice row2">' + ic('check', 's15') + '<span class="nb">Đã kèm hướng dẫn ghi tên Instagram khi chuyển khoản</span></div>' : '<div class="notice row2">' + ic('info', 's15') + '<span class="nb">Tin chưa có hướng dẫn nội dung chuyển khoản</span></div>';
-}
-function postCardHtml() {
-  return st.draft.copiedAt && Date.now() - st.draft.copiedAt < 864e5 ? '<button class="qc postcard" data-act="stage" data-v="out"><span class="qh"><span class="t">Khách đã chuyển khoản?</span>' + ic('chev', 's13') + '</span><span class="q">Sang Check out để cảm ơn và gửi mã vận đơn</span></button>' : '';
+function postRowHtml() {
+  return st.draft.copiedAt && Date.now() - st.draft.copiedAt < 864e5 ? '<button class="nrow" data-act="stage" data-v="out"><span class="nt">Khách đã chuyển khoản? Sang Check out</span>' + ic('chev', 's13') + '</button>' : '';
 }
 function orderStageHtml() {
-  var d = st.draft, h = '<div class="ostage">';
-  h += '<div class="secH"><h3 class="cap sm">1 · Món trong đơn</h3><button class="txtbtn" data-act="neworder">' + ic('undo', 's15') + 'Đơn mới</button></div><div id="olines">' + olinesHtml() + '</div>';
-  h += '<div class="oadd">' + ic('search') + '<input id="oq" data-oq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu để thêm…" aria-label="Tìm mẫu để thêm" value="' + esc(UI.oq) + '"></div><div class="ores" id="ores">' + oresHtml() + '</div>';
-  h += '<div class="secH"><h3 class="cap sm">2 · Phí ship</h3></div><div id="oship">' + oshipHtml() + '</div>';
-  h += '<div class="secH"><h3 class="cap sm">3 · Thông tin nhận (tuỳ chọn)</h3><button class="btn tonal" data-act="pasteinfo">' + ic('paste', 's15') + 'Dán</button></div><textarea class="ta sel" data-in="info" placeholder="Dán tên, SĐT, địa chỉ khách gửi…" aria-label="Thông tin nhận">' + esc(d.info) + '</textarea>';
-  h += '<div style="margin-top:12px">' + (st.set.bank.no ? '<label class="swrow"><span class="sl"><span class="t">Kèm thông tin chuyển khoản</span></span><span class="sw"><input type="checkbox" switch data-in="bank" aria-label="Kèm thông tin chuyển khoản"' + (d.bank ? ' checked' : '') + '><i></i></span></label>' : '<button class="swrow" data-act="bankset"><span class="sl"><span class="t">Thêm STK để kèm vào đơn</span></span>' + ic('chev', 's13') + '</button>') + '</div>';
-  h += '<div class="eb" style="margin-top:16px"><div class="ebh"><h3 class="cap sm">4 · Tin chốt đơn</h3>' + editBtn('order') + '</div><div style="margin-bottom:12px">' + leadRow(PAGE, 'order', 'Câu mở đầu') + '</div>' + boxHtml(PAGE, 'order', { label: 'Tin chốt đơn', lead: 'order', leadLab: 'Câu mở đầu' }) + '' + estBlock(PAGE, 'order') + '</div><div id="tnote">' + tnoteHtml() + '</div><div id="opost">' + postCardHtml() + '</div>';
-  h += '<div class="ofoot" id="ofoot">' + ofootHtml() + '</div></div>';
+  var d = st.draft, n = d.lines.filter(function (L) { return PM[L.pid]; }).length, h = '<div class="ostage">';
+  h += cardHtml(DEFS.order);
+  h += '<div class="secH"><h3 class="cap sm">Món trong đơn · ' + n + '</h3></div>';
+  if (!n) h += '<div class="oempty2" data-need="item">' + pstripHtml('order', 'order') + '</div>';
+  else h += '<div class="grp lines">' + d.lines.map(lineRowHtml).join('') + '</div>';
+  h += '<button class="btn tonal wide addbtn" data-act="oadd2" data-need="item">' + ic('plus', 's15') + 'Thêm món</button>';
+  h += '<div class="ogap"></div><button class="ddrow" data-row="ship" data-act="shipopen" aria-haspopup="dialog" aria-label="Phí ship: ' + esc(shipValue()) + '. Đổi"><span class="dl"><span class="dc">Phí ship</span><span class="dv">' + esc(shipValue()) + '</span></span><span class="dx">Đổi' + ic('chevd', 's13') + '</span></button>';
+  h += recvHtml();
+  h += '<div class="bankw">' + (st.set.bank.no ? '<label class="swrow"><span class="sl"><span class="t">Kèm số tài khoản</span></span><span class="sw"><input type="checkbox" switch data-in="bank" aria-label="Kèm số tài khoản"' + (d.bank ? ' checked' : '') + '><i></i></span></label>' : '<button class="swrow" data-act="bankset"><span class="sl"><span class="t">Thêm STK để kèm vào đơn</span></span>' + ic('chev', 's13') + '</button>') + '</div>';
+  h += '<div id="onote">' + orderNotice(CARDS.order) + '</div><div id="opost">' + postRowHtml() + '</div></div>';
   return h;
 }
-function redrawOrder() {
-  if (!$('#olines')) return;
-  $('#olines').innerHTML = olinesHtml(); $('#ores').innerHTML = oresHtml(); $('#oship').innerHTML = oshipHtml(); $('#ofoot').innerHTML = ofootHtml();
-  refreshPreview(PAGE);
+/* the dock lives outside the scrolling page (position absolute in <main>), is opaque, and a scrim band under it keeps the gap to the capsule clean */
+function dockHtml() {
+  var c = calc(), sl = C.sizelessCount(), cd = CARDS.order || (CARDS.order = compute(DEFS.order)), btn;
+  if (!c.count) btn = '<button class="btn tonal" id="obtn" data-act="dockneed" data-k="item">Chọn món</button>';
+  else if (sl) btn = '<button class="btn tonal" id="obtn" data-act="dockneed" data-k="size">Chọn size cho ' + sl + ' món</button>';
+  else if (cd.blocked) btn = '<button class="btn tonal" id="obtn" aria-disabled="true">Còn chỗ trống</button>';
+  else btn = '<button class="btn m" id="obtn" data-act="copyorder">' + lblBtn('Chép đơn · ' + lu()) + '</button>';
+  return '<div class="dl2"><div class="tl">' + (c.count ? 'Tổng · ' + c.qty + ' món' : 'Chưa có món') + '</div><div class="tv num">' + (c.count ? money(c.total, lang) : '0đ') + '</div></div>' + btn;
 }
+function paintOdock() {
+  var on = UI.top === 'qr' && st.ui.stage === 'order', dk = $('#odock'), sc = $('#oscrim');
+  dk.hidden = !on; sc.hidden = !on;
+  if (on) dk.innerHTML = dockHtml();
+}
+/* typing in the receiver box, a custom fee or the bank switch: refresh the message, notice and dock without touching the inputs */
+function patchOrder() {
+  patchCard('order'); var n = $('#onote'); if (n) n.innerHTML = orderNotice(CARDS.order);
+  var sv = $('#stage [data-row=ship] .dv'); if (sv) { sv.textContent = shipValue(); $('#stage [data-row=ship]').setAttribute('aria-label', 'Phí ship: ' + shipValue() + '. Đổi'); }
+  paintOdock(); updateOrderBar();
+}
+function lineMutate(fn, msg) { mutate(fn, msg ? { msg: msg } : null); }
+function orderCopy(btn) {
+  var c = CARDS.order || compute(DEFS.order), total = calc().total;
+  copy(c.text, { btn: btn, msg: 'Đã chép đơn · ' + money(total, lang) + ' · ' + lu(), sub: 'Nhớ gửi mã QR nhé', icon: 'clip', lang: lang, act: { label: 'Tiếp: Check out', fn: function () { gotoStage('out'); } },
+    done: function (ok) {
+      if (!ok) return;
+      commitLeads(c.r.leadIds); st.draft.copiedAt = Date.now(); noteRecent(ctxPids()); markDone('order');
+      afterPaint(function () { var op = $('#opost'); if (op) op.innerHTML = postRowHtml(); });
+    } });
+}
+/* ship sheet: radio rows; picking a fixed option closes it, "Khác…" opens a numeric field in the sheet */
+function openShip() { return pushSheet({ kind: 'ship', key: 'ship', det: 'm', fixed: false, state: {}, render: renderShip }); }
+function renderShip(s) {
+  var d = st.draft, dot = '<span class="rd">' + ic('check') + '</span>';
+  var opts = [['courier', 'Khách trả shipper'], ['fee', money(st.set.fee, 'vi')], ['free', 'Miễn phí'], ['custom', 'Khác…']];
+  return shHead('Phí ship', 'Tính vào tin chốt đơn') + '<div class="shb pad"><div class="grp sheetgrp" role="radiogroup" aria-label="Phí ship">' + opts.map(function (o) {
+    return '<div class="rrow" role="radio" aria-checked="' + (d.ship === o[0]) + '"><button class="rmain" data-act="shippick" data-v="' + o[0] + '">' + dot + '<span class="rt">' + esc(o[1]) + '</span></button></div>';
+  }).join('') + '</div>' + (d.ship === 'custom' ? '<div class="lf"><input class="fld" inputmode="numeric" data-in="custom" placeholder="Nhập phí ship" aria-label="Nhập phí ship" value="' + (d.custom ? nfV.format(d.custom) : '') + '"><div class="bs"><button class="btn tonal" data-act="shipdone">Xong</button></div></div>' : '') + '</div>';
+}
+
 /* ---------- sheets ---------- */
 var SH = [], sheetsEl = $('#sheets'), appEl = $('#app');
 function syncSheetBody() {
   var top = SH[SH.length - 1];
   document.body.classList.toggle('sheet-open', !!top);
   document.body.classList.toggle('has-foot', !!top && !!top.el.querySelector('.shf'));
+  var f = top && top.el.querySelector('.shf');
+  document.documentElement.style.setProperty('--foot-h', (f ? Math.round(f.getBoundingClientRect().height) : 72) + 'px');   /* toasts clear the sheet footer (the picker tray is taller) */
 }
+var lastPush = 0;
 function pushSheet(o) {
+  /* P0: re-entry guard. A second push of the same kind+key, or any push within 350 ms of the previous one while a sheet is up, returns the sheet that is already there. */
+  var top0 = SH[SH.length - 1], k0 = o.kind + ':' + (o.key == null ? '' : o.key), now0 = performance.now();
+  if (top0 && !top0.closing && (top0.k === k0 || now0 - lastPush < 350)) return top0;
+  lastPush = now0;
   dismissToast();
   var wrap = document.createElement('div'); wrap.className = 'sh';
   wrap.innerHTML = '<div class="dim" data-act="shdim"></div><section class="sheet" role="dialog" aria-modal="true" tabindex="-1"></section>';
   sheetsEl.appendChild(wrap);
-  var s = { wrap: wrap, el: wrap.lastChild, det: o.det || 'm', fixed: !!o.fixed, render: o.render, state: o.state || {}, kind: o.kind, opener: document.activeElement, onClose: o.onClose };
+  var s = { k: k0, wrap: wrap, el: wrap.lastChild, det: o.det || 'm', fixed: !!o.fixed, render: o.render, state: o.state || {}, kind: o.kind, opener: document.activeElement, onClose: o.onClose };
   s.el.innerHTML = o.render(s);
   SH.push(s); growAll(s.el);
   s.H = innerHeight - insetT() - 10;
@@ -574,10 +906,10 @@ function langSeg() { return '<div class="seg lang" role="group" aria-label="Ngô
 function setLang(l) {
   if (l === lang) return;
   lang = l; st.set.lang = l; save(); hap(); paintLang();
-  PAGE.state.ed = {}; PAGE.state.edit = null;
+  PAGE.state.edit = null;   /* typed edits are kept per language (CED keys end with :vi / :en) */
   if (UI.top === 'qr') { var sc = qrEl.scrollTop; renderStage(); qrEl.scrollTop = sc; }
-  SH.forEach(function (s) { s.state.edit = null; s.state.ed = {}; if (s.kind === 'product' || s.kind === 'msg' || s.kind === 'set' || s.kind === 'lead') { rerender(s); afterPaint(function () { growAll(s.el); }); } });
-  updateOrderBar();
+  SH.forEach(function (s) { s.state.edit = null; if (s.kind !== 'card') s.state.ed = {}; if (s.kind === 'product' || s.kind === 'card' || s.kind === 'set' || s.kind === 'lead') { rerender(s); afterPaint(function () { growAll(s.el); }); } });
+  updateOrderBar(); if (UI.top === 'home') paintResume();
 }
 function lblBtn(text, icon) {
   return '<span class="l1">' + (icon === false ? '' : ic('copy', 's20')) + esc(text) + '</span><span class="l2">' + ic('check', 's20') + 'Đã chép</span>';
@@ -605,7 +937,7 @@ function slotHtml(s, key, a, lab) { return a ? '<div class="lslot" data-slot="' 
 function leadKeyOf(s, key) {
   if (s.kind === 'product') return key;
   if (s.kind === 'set') return key === 'sa' ? 'info' : key === 'sb' ? 'size' : null;
-  if (s.kind === 'page') return 'order';
+  if (s.kind === 'card') return leadActOf(cardDef(s));
   return null;
 }
 function leadSet(s, a, id) {
@@ -634,7 +966,6 @@ function sheetCompose(s, a) {
   var k = s.kind;
   if (k === 'product') return C.composeCopy(a || s.state.open, { pid: s.state.id, sel: s.state.sel, link: s.state.link }, lang);
   if (k === 'set') return C.composeCopy('set', { set: SM(s.state.id), sel: s.state.sel, bubble: a || 'a' }, lang);
-  if (k === 'page') return C.composeCopy('order', { sel: s.state.sel }, lang);
   return null;
 }
 /* ---------- editable boxes ----------
@@ -648,9 +979,8 @@ function scopeOf(el) {
 function ebGen(s, key) {
   var k = s.kind, r;
   if (k === 'product') { r = sheetCompose(s, key); return C.stripLead(r.text, r.lead); }
-  if (k === 'msg') return msgGen(s).text;
+  if (k === 'card') { s.state.c = compute(cardDef(s), lang); return s.state.c.body; }
   if (k === 'set') { r = C.composeCopy('set', { set: SM(s.state.id), sel: s.state.sel, bubble: key.slice(1) }, lang); return C.stripLead(r.text, r.lead); }
-  if (k === 'page') { r = C.composeCopy('order', { sel: s.state.sel }, lang); return C.stripLead(r.text, r.lead); }
   return '';
 }
 function ebVal(s, key) { var e = s.state.ed[key]; return e !== undefined ? e : ebGen(s, key); }
@@ -658,7 +988,7 @@ function ebVal(s, key) { var e = s.state.ed[key]; return e !== undefined ? e : e
 function fullText(s, key) { var a = leadKeyOf(s, key), t = a ? leadText(s, a) : '', body = ebVal(s, key); return clean(t ? t + '\n\n' + body : body); }
 function estHtml(s, key, edited) {
   if (!edited) return '';
-  return '<span class="ed"><b>Đã sửa</b><button class="txtbtn" data-act="ebreset" data-k="' + key + '">' + ic('undo', 's15') + 'Khôi phục</button><button class="txtbtn" data-act="ebsave" data-k="' + key + '">Lưu làm mẫu</button></span>';
+  return '<span class="ed"><b>Đã sửa</b><button class="txtbtn" data-act="ebreset" data-k="' + key + '">' + ic('undo', 's15') + 'Khôi phục</button>' + (s.kind === 'card' && !canSaveTpl(cardDef(s)) ? '' : '<button class="txtbtn" data-act="ebsave" data-k="' + key + '">Lưu làm mẫu</button>') + '</span>';
 }
 function estBlock(s, key) { var ed = s.state.ed[key] !== undefined; return '<div class="est" data-est="' + key + '" data-on="' + (ed ? 1 : '') + '">' + estHtml(s, key, ed) + '</div>'; }
 function editBtn(key) { return '<button class="txtbtn" data-act="ebedit" data-k="' + key + '">' + ic('pencil', 's15') + 'Sửa</button>'; }
@@ -683,25 +1013,13 @@ function setEst(s, key) {
   var est = s.el.querySelector('[data-est="' + key + '"]'), ed = s.state.ed[key] !== undefined; if (!est || est.dataset.on === (ed ? '1' : '')) return;
   est.dataset.on = ed ? '1' : ''; est.innerHTML = estHtml(s, key, ed);
 }
-function msgPending(s) {
-  if (s.kind !== 'msg') return 0;
-  var ta = s.el.querySelector('[data-eta=msg]'), g = msgGen(s), t = ta ? ta.value : g.text;
-  return g.missing.filter(function (k) { return t.indexOf('[' + (STR.tokl[k] || k) + ']') > -1; }).length;
-}
-function updateMsgBtn(s) {
-  var b = s.el.querySelector('#mcopy'); if (!b) return;
-  var n = msgPending(s), et = msgGen(s).et, was = b.dataset.n;
-  b.disabled = !!n;
-  if (was !== String(n)) { b.dataset.n = n; b.innerHTML = n ? 'Điền ' + n + ' chỗ nữa' : lblBtn(msgCopyLabel(et)); }
-}
 function syncBoxes(s) {
   $$('[data-eta]', s.el).forEach(function (ta) {
     var k = ta.dataset.eta, v = ebVal(s, k);
     if (ta.value !== v) { ta.value = v; growTa(ta); }
     setEst(s, k);
   });
-  if (s.kind === 'msg') updateMsgBtn(s);
-  if (s.kind === 'page') { var tn = $('#tnote'); if (tn) tn.innerHTML = tnoteHtml(); }
+  if (s.kind === 'card') updateCardBtn(s);
   if (s.kind === 'set') { var set = SM(s.state.id), pl = s.el.querySelector('#pline'); if (pl) pl.textContent = setLine(set); var sub = s.el.querySelector('.shh .st'); if (sub) sub.textContent = 'Set · ' + money(C.setPrice(set), 'vi'); }
 }
 /* an upstream choice (link, language, fill, order line...) changed: the generated text is new, the typed text of the old one is dropped (with undo) */
@@ -719,8 +1037,7 @@ function onEta(t) {
   var s = scopeOf(t), k = t.dataset.eta, gen = ebGen(s, k);
   if (C.isEdited(gen, t.value)) s.state.ed[k] = t.value; else delete s.state.ed[k];
   setEst(s, k);
-  if (s.kind === 'msg') updateMsgBtn(s);
-  if (s.kind === 'page') { var tn = $('#tnote'); if (tn) tn.innerHTML = tnoteHtml(); }
+  if (s.kind === 'card') updateCardBtn(s);
   if (!t._g) t._g = requestAnimationFrame(function () { t._g = 0; growTa(t); });
 }
 function ebReset(s, key) { delete s.state.ed[key]; syncBoxes(s); }
@@ -738,22 +1055,26 @@ function ebSave(s, key) {
     f = (key === 'size' ? 'size' : 'desc') + (l === 'en' ? 'En' : 'Vi');
     st.ov[p.id] = st.ov[p.id] || {}; st.ov[p.id][f] = clean(body); IDX = null;
     msg = 'Đã lưu làm mẫu · ' + pname(p, 'vi') + ' · ' + lu(); sub = key === 'size' ? 'Bảng size mới' : 'Thông tin mới';
-  } else if (s.kind === 'msg') {
-    var g = msgGen(s), u = C.untemplate(text, g.vals), cl = g.et.fell ? other(l) : l, id = s.state.id;
-    st.ov[id] = st.ov[id] || {}; st.ov[id][cl] = u.tpl;
-    msg = 'Đã lưu làm mẫu · ' + short(eLabel(FM[id])) + ' · ' + cl.toUpperCase();
-    if (u.lost.length) sub = 'Phần sửa thay chỗ tự điền, lần sau không tự điền nữa';
+  } else if (s.kind === 'card') {
+    var cd = cardDef(s), cc = s.state.c, cl = cc.l;
+    if (cd.kind === 'composer') {
+      var dr = st.draft, bk = st.set.bank;
+      body = C.stripEnd(text, dr.bank && bk.no ? (cl === 'en' ? 'Bank transfer: ' : 'Chuyển khoản: ') + [bk.name, bk.no, bk.holder].filter(Boolean).join(' · ') : '');
+      body = C.stripEnd(body, dr.info.trim() ? (cl === 'en' ? 'Ship to:' : 'Giao đến:') + '\n' + dr.info.trim() : '');
+      var uo = C.untemplate(body, dr.lines.length ? [['orderLines', C.linesText(cl)], ['total', C.totalStr(cl)]] : []);
+      st.ov.__ord = st.ov.__ord || {}; st.ov.__ord[cl] = uo.tpl;
+      msg = 'Đã lưu làm mẫu · Tin chốt đơn · ' + cl.toUpperCase(); if (uo.lost.length) sub = 'Phần sửa thay chỗ tự điền, lần sau không tự điền nữa';
+    } else {
+      var tid = tidOf(cd), pid0 = itemPid(), p0 = pid0 && PM[pid0], f0 = fillsOf(cd);
+      var u = C.untemplate(text, [['sizeChart', p0 ? ptext(p0, 'size', cl).trim() : ''], ['itemInfo', p0 ? ptext(p0, 'desc', cl).trim() : ''], ['item', p0 ? C.pitem(p0, cl) : ''], ['size', f0.size], ['sizeA', f0.sizeA], ['sizeB', f0.sizeB], ['trackingCode', f0.trackingCode], ['imageLinks', f0.imageLinks]]);
+      st.ov[tid] = st.ov[tid] || {}; st.ov[tid][cl] = u.tpl;
+      msg = 'Đã lưu làm mẫu · ' + short(eLabel(FM[tid])) + ' · ' + cl.toUpperCase();
+      if (u.lost.length) sub = 'Phần sửa thay chỗ tự điền, lần sau không tự điền nữa';
+    }
   } else if (s.kind === 'set') {
     var set = SM(s.state.id), b = key.slice(1); body = clean(text);
     if (b === 'a') { set.ov = set.ov || {}; set.ov[l] = body; } else { set.bov = set.bov || {}; set.bov[b] = set.bov[b] || {}; set.bov[b][l] = body; }
     msg = 'Đã lưu làm mẫu · ' + BLBL[b] + ' · ' + lu(); sub = 'Tin này không tự đổi theo mẫu và giá nữa';
-  } else if (s.kind === 'page') {
-    var d = st.draft, bk = st.set.bank;
-    body = C.stripEnd(text, d.bank && bk.no ? (l === 'en' ? 'Bank transfer: ' : 'Chuyển khoản: ') + [bk.name, bk.no, bk.holder].filter(Boolean).join(' · ') : '');
-    body = C.stripEnd(body, d.info.trim() ? (l === 'en' ? 'Ship to:' : 'Giao đến:') + '\n' + d.info.trim() : '');
-    var pairs = d.lines.length ? [['orderLines', C.linesText(l)], ['total', C.totalStr(l)]] : [], uo = C.untemplate(body, pairs);
-    st.ov.__ord = st.ov.__ord || {}; st.ov.__ord[l] = uo.tpl;
-    msg = 'Đã lưu làm mẫu · Tin chốt đơn · ' + lu(); if (uo.lost.length) sub = 'Phần sửa thay chỗ tự điền, lần sau không tự điền nữa';
   }
   save(); delete s.state.ed[key]; syncBoxes(s); refreshAll();
   if (s.kind === 'set') { rerender(s); afterPaint(function () { growAll(s.el); }); }
@@ -786,7 +1107,7 @@ function leadVals(a, id) {
 function leadTitle(a) { return a === 'size' ? 'Câu trước bảng size' : a === 'order' ? 'Câu mở đầu tin chốt đơn' : 'Câu mở đầu'; }
 function leadTarget(a) { return a === 'size' ? 'Bảng size' : a === 'order' ? 'Tin chốt đơn' : 'Thông tin'; }
 function openLeadPicker(scope, a) {
-  var s = pushSheet({ kind: 'lead', det: 'm', fixed: false, state: { scope: scope, a: a, edit: null, adding: false, sel: {}, ed: {} }, render: renderLead });
+  var s = pushSheet({ kind: 'lead', key: a, det: 'm', fixed: false, state: { scope: scope, a: a, edit: null, adding: false, sel: {}, ed: {} }, render: renderLead });
   return s;
 }
 function renderLead(s) {
@@ -812,8 +1133,8 @@ function renderLead(s) {
 /* ---------- product sheet: segmented "what to send", one box, one primary ---------- */
 function openProduct(id, open) {
   var seg = open || UI.lastSeg || 'info';
-  var s = pushSheet({ kind: 'product', det: 'l', fixed: true, state: { id: id, open: seg, sel: {}, ed: {}, edit: null, guard: null }, render: renderProd });
-  afterPaint(function () { growAll(s.el); setCtx(id); });
+  var s = pushSheet({ kind: 'product', key: id, det: 'l', fixed: true, state: { id: id, open: seg, sel: {}, ed: {}, edit: null, guard: null }, render: renderProd });
+  afterPaint(function () { growAll(s.el); });   /* opening a product does NOT change the customer context (design-v6 section 3) */
 }
 function copyLabel(a) { return a === 'info' ? 'Chép thông tin' : a === 'size' ? 'Chép bảng size' : 'Chép cả hai'; }
 function segTitle(a) { return STR.acts[a]; }
@@ -902,71 +1223,246 @@ function productCopy(s, open, btn, forceLang) {
   copy(text, { btn: btn, label: open === 'size' ? 'Bảng size ' + pname(p, 'vi') : pname(p, 'vi'), lang: l, rec: { k: 'p:' + id + ':' + open, label: label, ref: { t: 'p', id: id, w: open } }, done: function (ok) { if (ok) { commitLeads(ids); UI.lastSeg = open; } } });
 }
 
-/* ---------- message sheet (quick replies) ---------- */
-function openEntry(id) {
-  var e = FM[id];
-  if (id === 'order-recap') { gotoStage('order'); return; }
-  if (entryHidden(e)) { toast('Nhớ gửi đính kèm', { sub: e.attach || eLabel(e), icon: 'clip' }); return; }
-  var alts = null;
-  C.STAGES.forEach(function (g) { g.cards.forEach(function (c) { if (c.alts && c.alts.some(function (a) { return a[0] === id; })) alts = c.alts; }); });
-  if (alts && st.draft.lines.some(function (L) { return PM[L.pid] && PM[L.pid].madeToOrder; })) id = alts[alts.length - 1][0];
-  pushSheet({ kind: 'msg', det: 'l', fixed: true, state: { id: id, fills: {}, ed: {}, sel: {}, guard: null, alts: alts }, render: renderMsg, onClose: null });
+
+/* ---------- copying a card: reads CARDS[id] (composed at render time), nothing else runs before the clipboard write ---------- */
+function cardAct(d) {
+  var stg = d.stage, nx = nextStage(stg);
+  if (d.kind === 'composer' || !nx || st.draft.done[nx] || d.parent) return null;
+  return { label: 'Tiếp: ' + GLBL[nx], fn: function () { gotoStage(nx); } };
 }
-function msgGen(s) {
-  var e = FM[s.state.id], et = mtext(e, lang, s.state.fills), r = resolve(et.text, lang, s.state.fills, false, true);
-  return { et: et, text: r.text, missing: r.missing, vals: r.vals };
+function cardDone(d, c) {
+  commitLeads(c.r.leadIds); noteRecent(ctxPids());
+  markDone(d.stage);
 }
-function msgCopyLabel(et) { return et.fell ? 'Chép bản ' + other(lang).toUpperCase() : 'Chép · ' + lu(); }
-function renderMsg(s) {
-  var id = s.state.id, e = FM[id], g = msgGen(s), et = g.et, fills = s.state.fills, keys = keysOf(et.text), isG = !!GREET[id];
-  var fr = keys.map(function (k) { return fillRow(k, fills, s); }).join('') + (isG ? fillRow('item', fills, s, true) : '');
-  var fromCtx = keys.some(function (k) { return (k === 'item' || k === 'size') && !fills[k] && fillVal(k, fills); });
-  var alts = s.state.alts ? '<div class="altv">' + segHtml(s.state.alts.map(function (a) { return [a[0], esc(a[1])]; }), id, 'variant', { label: 'Loại đơn', tab: true }) + '</div>' : '';
-  var n = msgPending(s), stg = C.stageOf(id), sub = stg ? 'Bước ' + stageNo(stg) + ' · ' + GLBL[stg] : '';
-  return shHead(eLabel(e), sub, langSeg()) +
-    '<div class="shb ebody">' +
-    (et.fell ? '<div class="notice card" style="margin:0 0 12px">' + ic('info', 's15') + '<div class="nb">Chưa có bản ' + lu() + '. Bên dưới là bản ' + other(lang).toUpperCase() + ', chỉ chép khi bạn muốn gửi tiếng ' + (other(lang) === 'vi' ? 'Việt' : 'Anh') + '.<div class="acts"><button class="btn tonal" data-act="editf" data-id="' + id + '">' + ic('pencil', 's15') + 'Thêm bản ' + lu() + '</button></div></div></div>' : '') +
-    alts + ebHtml(s, 'msg', { lang: et.fell ? other(lang) : lang, label: eLabel(e), cap: 'Tin sẽ gửi' }) +
-    (e.attach && !isG ? '<div class="att">' + ic('clip', 's15') + 'Nhớ đính kèm: ' + esc(e.attach) + '</div>' : '') +
-    (fr ? '<div class="sec"><div class="secH"><h3 class="cap sm">' + (isG ? 'Kèm thông tin mẫu (tuỳ chọn)' : 'Điền vào tin') + '</h3></div><div class="dd2">' + fr + '</div>' + (fromCtx ? '<p class="foot">Lấy từ ' + esc(ctxLabel()) + '</p>' : '') + '</div>' : '') + '</div>' +
-    '<div class="shf"><button class="btn wide" id="mcopy" data-act="msgcopy" data-n="' + n + '"' + (n ? ' disabled' : '') + '>' + (n ? 'Điền ' + n + ' chỗ nữa' : lblBtn(msgCopyLabel(et))) + '</button></div>';
+function cardCopy(id, btn, sh) {
+  var d = DEFS[id], c, text;
+  if (sh) { c = sh.state.c; text = fullText(sh, sh.state.ek); if (C.tokKeys(text.slice(c.lead ? c.lead.length : 0)).length) return; }
+  else { c = CARDS[id]; if (!c) return; text = c.text; }
+  if (c.trunc && !sh && !guardPass(PAGE, 'c' + id + c.l, btn)) return;
+  if (c.trunc && sh && sh.state.ed[sh.state.ek] === undefined && !guardPass(sh, 'c' + id + c.l, btn)) return;
+  var seq = d.parent, ix = d.n;
+  copy(text, { btn: btn, label: d.t.replace(/^Tin \d · /, ''), lang: c.l, act: cardAct(d), rec: null,
+    msg: seq ? 'Đã chép tin ' + ix + ' · ' + lu() : undefined,
+    done: function (ok) {
+      if (!ok) return;
+      cardDone(d, c);
+      if (seq) seqMark(d.parent, ix - 1);
+      if (sh) setTimeout(function () { closeSheet(sh, true); }, 600);
+    } });
 }
-function candidates() {
-  var out = [], c = ctx();
-  if (c && c.itemId) out.push(c.itemId);
-  st.recents.forEach(function (r) { var m = /^p:([^:]+):/.exec(r.k); if (m && PM[m[1]] && out.indexOf(m[1]) < 0) out.push(m[1]); });
-  PS.forEach(function (p) { if (out.indexOf(p.id) < 0) out.push(p.id); });
-  return out;
+function seqMark(pid, i) {
+  SEQ[pid] = SEQ[pid] || {}; SEQ[pid][i] = true;
+  var card = $('#stage [data-card="' + pid + '"]'); if (!card) return;
+  var subs = [0, 1], nx = subs.findIndex(function (k) { return !SEQ[pid][k]; }), k = subs.filter(function (j) { return SEQ[pid][j]; }).length;
+  $$('.mb', card).forEach(function (el, j) {
+    var dn = !!SEQ[pid][j], nt = j === nx;
+    el.classList.toggle('done', dn); el.classList.toggle('next', nt);
+    el.querySelector('.bdisc').innerHTML = dn ? ic('check', 's15') : (j + 1);
+    var tg = el.querySelector('.btag, .bdone'); if (tg) tg.remove();
+    if (dn || nt) { var sp = document.createElement('span'); sp.className = nt ? 'btag' : 'bdone'; sp.textContent = nt ? 'Tiếp theo' : 'Đã chép'; el.querySelector('.bh').appendChild(sp); }
+  });
+  var mm = card.querySelector('[data-seqm]'); if (mm) mm.textContent = 'Đã chép ' + k + '/2';
+  if (nx >= 0) toast('Đã chép tin ' + (i + 1) + ' · Tiếp theo: tin ' + (nx + 1) + ' · ' + lu());
 }
-/* fills: product = dropdown row (opens the product picker), size = segmented, anything else = a field */
-function fillRow(k, fills, s, opt) {
-  var cur = opt ? fills.item : fillVal(k, fills), lab = (STR.tokl[k] || k).replace(/^./, function (x) { return x.toUpperCase(); });
-  if (k === 'item' || k === 'otherItem') {
-    var cur2 = k === 'item' ? cur : fills.otherItem, p = cur2 && PM[cur2];
-    return '<button class="ddrow" data-act="pickfill" data-k="' + k + '"' + (opt ? ' data-opt="1"' : '') + ' aria-haspopup="dialog" aria-label="' + esc((opt ? 'Kèm thông tin mẫu' : lab) + ': ' + (p ? pname(p, 'vi') : 'Chưa chọn') + '. Đổi') + '"><span class="dl"><span class="dc">' + (opt ? 'Kèm thông tin mẫu' : esc(lab)) + '</span><span class="dv' + (p ? '' : ' hint2') + '">' + (p ? esc(pname(p, 'vi')) : opt ? 'Không kèm' : 'Chọn mẫu') + '</span></span><span class="dx">' + (p ? 'Đổi' : 'Chọn') + ic('chevd', 's13') + '</span></button>';
+/* the capsule names what is missing; tapping it goes there instead of copying */
+function flashEl(el) { if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(function () { el.classList.remove('flash'); }, 700); }
+function goInput(k, id) {
+  var d = DEFS[id], par = d && (d.parent || d.id), root = $('#stage'), scope = (par && root.querySelector('[data-card="' + par + '"]')) || root, el;
+  if (id === 'dock' || (d && d.kind === 'composer')) scope = root;
+  if (k === 'size' && scope === root) el = root.querySelector('.lrow2.nosz [data-need=size]') || root.querySelector('[data-need=size]');
+  else el = scope.querySelector('[data-need="' + k + '"]') || (k === 'item' || k === 'otherItem' ? root.querySelector('[data-need=item]') : null);
+  if (k === 'trackingCode' && el) { var inp = el.querySelector('input'); if (inp) { pasteFill(inp, id); } return; }
+  if (el) { el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' }); flashEl(el); var f = el.querySelector('input'); if (f && k !== 'size') f.focus({ preventScroll: true }); return; }
+  if (k === 'item' || k === 'otherItem') { openPick(d && d.id === 'sizes' ? 'size' : d && d.kind === 'composer' ? 'order' : 'context'); return; }
+  openCardSheet(id);
+}
+function pasteFill(inp, id) {
+  var d = DEFS[id], k = inp.dataset.fill;
+  function put(x) { x = String(x || '').trim(); if (!x) { inp.focus(); return; } inp.value = x; fillTyped(id, k, x); }
+  try { navigator.clipboard.readText().then(put, function () { inp.focus(); }); } catch (e) { inp.focus(); }
+}
+function fillTyped(id, k, v) {
+  var d = DEFS[id], key = d.parent || d.id, before = genSnap();
+  (FILL[key] = FILL[key] || {})[k] = v;
+  var dropped = dropStale(before);
+  if (d.parent) { patchCard(d.parent + '.1'); patchCard(d.parent + '.2'); } else patchCard(d.id);
+  SH.forEach(function (s) { if (s.kind === 'card' && (s.state.id === id || DEFS[s.state.id].parent === d.parent)) refreshPreview(s, [s.state.ek]); });
+  if (dropped) toast('Tin đã cập nhật theo lựa chọn mới', { sub: 'Phần bạn sửa trước đó đã bỏ' });
+}
+function addLangTarget(id) {
+  var d = DEFS[id];
+  if (d.id === 'greet' || d.id === 'sizes') { var f = ctxPids().filter(function (pid) { return !ptext(PM[pid], d.id === 'sizes' ? 'size' : 'desc', lang).trim(); })[0] || ctxPids()[0]; if (f) editProduct(f); return; }
+  editEntry(tidOf(d));
+}
+
+/* ---------- "Sửa tin": the text of one card, its context, opening line and blanks ---------- */
+function openCardSheet(id) {
+  var s = pushSheet({ kind: 'card', key: id, det: 'l', fixed: true, state: { id: id, ed: CED, sel: PAGE.state.sel, guard: null, edit: null }, render: renderCardSheet, onClose: cardSheetClosed });
+  afterPaint(function () { growAll(s.el); });
+  return s;
+}
+function cardSheetClosed() { if (UI.top !== 'qr') return; CARDS = CARDS || {}; if (st.ui.stage === 'order') paintStageBody(); else paintStageCards(); paintOdock(); }
+function cardDef(s) { var d = DEFS[s.state.id]; return d; }
+function usesItem(d) { return d.id === 'greet' || d.id === 'sizes' || (d.inputs || []).indexOf('item') > -1 || /\{\{(item|itemInfo|sizeChart|size|sizeA|sizeB)\}\}/.test(entryText(FM[tidOf(d)] || { id: '' }, lang).text); }
+function sheetKeys(d) {
+  if (d.id === 'greet' || d.id === 'sizes' || d.kind === 'composer') return [];
+  var e = FM[tidOf(d)]; if (!e) return [];
+  var ks = []; (entryText(e, lang).text.match(/\{\{(\w+)\}\}/g) || []).forEach(function (m) { var k = m.slice(2, -2); if (/^(item|itemInfo|sizeChart)$/.test(k)) return; if (ks.indexOf(k) < 0) ks.push(k); });
+  return ks;
+}
+function canSaveTpl(d) { return d.id !== 'greet' && d.id !== 'sizes'; }
+function sheetFillRows(d, s) {
+  var ks = sheetKeys(d), f = fillsOf(d), h = '';
+  if (!ks.length) return '';
+  var pids = ctxPids();
+  if (ks.some(function (k) { return /^size/.test(k); }) && pids.length > 1) h += itemSwitch(d);
+  ks.forEach(function (k) {
+    if (k === 'size') h += sizeSeg(d, 'size', 'Size', f.size);
+    else if (k === 'sizeA') h += sizeSeg(d, 'sizeA', 'Vừa vặn', f.sizeA);
+    else if (k === 'sizeB') h += sizeSeg(d, 'sizeB', 'Thoải mái', f.sizeB);
+    else if (k === 'otherItem') { var oi = (FILL[d.parent || d.id] || {}).otherItem, p = oi && PM[oi]; h += '<button class="ddrow frow" data-row="otherItem" data-act="pickother" data-c="' + d.id + '" aria-haspopup="dialog"><span class="dl"><span class="dc">Mẫu thay thế</span><span class="dv' + (p ? '' : ' hint2') + '">' + (p ? esc(pname(p, 'vi')) : 'Chọn mẫu') + '</span></span><span class="dx">' + (p ? 'Đổi' : 'Chọn') + ic('chevd', 's13') + '</span></button>'; }
+    else if (k === 'trackingCode') h += fieldHtml(d, k, 'Mã vận đơn');
+    else if (k === 'imageLinks') h += fieldHtml(d, k, 'Link hình');
+    else h += '<div class="frow fldrow" data-row="' + k + '"><input class="fld" data-fill="' + k + '" data-c="' + d.id + '" value="' + esc((FILL[d.parent || d.id] || {})[k] || '') + '" placeholder="' + esc(STR.tokl[k] || k) + '" aria-label="' + esc(STR.tokl[k] || k) + '"></div>';
+  });
+  return '<div class="sec"><div class="secH"><h3 class="cap sm">Điền vào tin</h3></div><div class="dd2">' + h + '</div></div>';
+}
+function renderCardSheet(s) {
+  var d = cardDef(s), c = compute(d); s.state.c = c; s.state.ek = c.key + ':' + lang;
+  var stg = stageDef(d.stage), la = leadActOf(d), n = ctxPids().length, h;
+  h = shHead(d.t, 'Bước ' + stageNo(stg.id) + ' · ' + GLBL[stg.id], langSeg()) + '<div class="shb ebody">';
+  if (c.alt) h += '<div class="notice card" style="margin:0 0 12px">' + ic('info', 's15') + '<div class="nb">Chưa có bản ' + lu() + '. Bên dưới là bản ' + other(lang).toUpperCase() + ', chỉ chép khi bạn muốn gửi tiếng ' + (other(lang) === 'vi' ? 'Việt' : 'Anh') + '.<div class="acts"><button class="btn tonal" data-act="addlang" data-c="' + d.id + '">' + ic('pencil', 's15') + 'Thêm bản ' + lu() + '</button></div></div></div>';
+  if (usesItem(d)) h += '<div class="ddw"><button class="ddrow" data-row="ctx" data-act="ctxpick" data-m="' + (d.id === 'sizes' ? 'size' : 'context') + '" aria-haspopup="dialog" aria-label="' + esc('Cho: ' + (n ? ctxValue() : 'chưa chọn mẫu') + '. Đổi') + '">' + (n ? avatarStack(ctxPids()) : '<span class="cav"><span class="plus0">' + ic('plus', 's15') + '</span></span>') + '<span class="dl"><span class="dc">Cho</span><span class="dv' + (n ? '' : ' hint2') + '">' + esc(n ? ctxValue() : 'Chưa chọn mẫu') + '</span></span><span class="dx">' + (n ? 'Đổi' : 'Chọn') + ic('chevd', 's13') + '</span></button></div>';
+  h += ebHtml(s, s.state.ek, { cap: 'Tin sẽ gửi', label: d.t, lead: la, leadLab: la === 'size' ? 'Câu trước bảng size' : la === 'order' ? 'Câu mở đầu' : 'Câu trước thông tin', lang: c.l, ddFirst: true });
+  h += sheetFillRows(d, s) + '</div>';
+  var pend = C.tokKeys(c.edited ? c.ed : c.body).length;
+  h += '<div class="shf"><button class="btn wide" id="mcopy" data-act="cardcopy" data-c="' + d.id + '" data-sheet="1" data-n="' + pend + '"' + (pend ? ' disabled' : '') + '>' + (pend ? 'Điền ' + pend + ' chỗ nữa' : lblBtn(c.alt ? 'Chép bản ' + c.l.toUpperCase() : 'Chép · ' + lu())) + '</button></div>';
+  return h;
+}
+function updateCardBtn(s) {
+  var b = s.el.querySelector('#mcopy'); if (!b) return;
+  var ta = s.el.querySelector('[data-eta]'), c = s.state.c, n = C.tokKeys(ta ? ta.value : '').length, was = b.dataset.n;
+  b.disabled = !!n;
+  if (was !== String(n)) { b.dataset.n = n; b.innerHTML = n ? 'Điền ' + n + ' chỗ nữa' : lblBtn(c.alt ? 'Chép bản ' + c.l.toUpperCase() : 'Chép · ' + lu()); }
+}
+
+/* ---------- the unified product picker "Chọn mẫu": photo grid, search, category, recents, common sets, size chosen in the same step ----------
+   Modes: context (size optional), order (size required), size (several charts in one message). Tap = toggle; nothing is committed until the footer button.
+   Sections are computed once when the sheet opens (frozen); toggles only update the checks and the tray. */
+var PKT = { context: ['Khách đang hỏi mẫu nào?', 'Chọn 1 hoặc nhiều mẫu. Size chọn sau cũng được.'], order: ['Thêm món vào đơn', 'Chạm ảnh, rồi chọn size ngay bên dưới.'], size: ['Gửi bảng size mẫu nào?', 'Chọn 2 mẫu để gửi cả hai bảng trong một tin.'] };
+function pkSize() { return innerWidth >= 414 ? 104 : 96; }
+function setPairs() {
+  var out = [];
+  st.sets.forEach(function (x) { if (x.items.length === 2 && x.items.every(function (id) { return PM[id]; })) out.push(x.items.slice()); });
+  (SEED.setSuggestions || []).forEach(function (x) {
+    if (!PM[x[0]] || !PM[x[1]]) return;
+    if (out.some(function (y) { return y.slice().sort().join('|') === x.slice().sort().join('|'); })) return;
+    out.push(x.slice());
+  });
+  return out.slice(0, 6);
+}
+function openPick(mode) {
+  var pk = [];
+  if (mode !== 'order') ctxPids().forEach(function (pid) { pk.push({ pid: pid, size: lineOf(pid).size || null }); });
+  var sh = pushSheet({ kind: 'pick', key: mode, det: 'l', fixed: true, state: { mode: mode, pk: pk, q: '', cat: 'all', rec: recents(6), sets: setPairs(), inOrder: ctxPids(), part: true }, render: renderPick });
+  if (sh.kind === 'pick' && sh.state.part) afterPaint(function () { if (sh.closing || !sh.state.part) return; sh.state.part = false; var b = $('#pkbody', sh.el); if (b) b.innerHTML = pkBody(sh); });
+  return sh;
+}
+function pkHas(s, pid) { return s.state.pk.some(function (r) { return r.pid === pid; }); }
+function pkCell(s, p) {
+  var on = pkHas(s, p.id), ino = s.state.mode === 'order' && s.state.inOrder.indexOf(p.id) > -1, c = colorOf(p);
+  var sub = ino ? 'Trong đơn' : money(pv(p, 'price'), 'vi');
+  return '<button class="pcell' + (on ? ' sel' : '') + (ino ? ' ino' : '') + '" data-act="pkcell" data-pid="' + p.id + '" aria-pressed="' + on + '" aria-label="' + esc(pname(p, 'vi') + ', ' + money(pv(p, 'price'), 'vi') + (on ? ', đã chọn' : '')) + '"><span class="pa">' + avatar(p, pkSize(), true) + '<i class="ck">' + ic('check') + '</i></span><span class="nm">' + esc(pname(p, 'vi')) + '</span><span class="pc num">' + esc(sub) + '</span></button>';
+}
+function pkPair(s, pr) {
+  var ps = pr.map(function (id) { return PM[id]; }), on = pr.every(function (id) { return pkHas(s, id); });
+  return '<button class="pcell ppair' + (on ? ' sel' : '') + '" data-act="pkpair" data-pair="' + pr.join('|') + '" data-pa="' + pr[0] + '" data-pb="' + pr[1] + '" aria-pressed="' + on + '" aria-label="' + esc('Set ' + C.setLabel({ items: pr }) + (on ? ', đã chọn' : '')) + '"><span class="pa"><span class="pair2">' + ps.map(function (p) { return avatar(p, innerWidth >= 414 ? 64 : 60); }).join('') + '</span><i class="ck">' + ic('check') + '</i></span><span class="nm">' + esc(C.setLabel({ items: pr })) + '</span></button>';
+}
+function pkBody(s) {
+  var q = norm(s.state.q || ''), cat = s.state.cat, list = C.byCat(PS, cat), h = '';
+  if (q) {
+    var hit = list.filter(function (p) { return norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1; });
+    if (!hit.length) return '<div class="empty" style="padding-top:12px">' + ic('search', 's34') + '<div class="tt">Chưa tìm thấy “' + esc(s.state.q) + '”</div><p>Thử một tên ngắn hơn nhé.</p></div>';
+    return '<h2 class="cap sm pkh">Kết quả · ' + hit.length + '</h2><div class="pgrid">' + hit.map(function (p) { return pkCell(s, p); }).join('') + '</div>';
   }
-  if (/^size/.test(k)) {
-    var pid = fillVal('item', fills), sizes = pid ? psizes(PM[pid]) : ['S', 'M', 'L', 'XL'];
-    return '<div><div class="dc" style="font-size:13px;line-height:18px;color:var(--label-2);padding:0 0 4px">' + esc(lab) + '</div>' + segHtml(sizes.map(function (z) { return [z, z]; }), cur, 'fill', { label: lab, attr: 'data-k="' + k + '"' }) + '</div>';
+  if (s.state.part) {   /* first paint: only the first row, the rest follows one frame later (the sheet opens fast, the grid is long) */
+    var firstIds = (s.state.rec.length ? s.state.rec : list.map(function (p) { return p.id; })).slice(0, 6);
+    return '<h2 class="cap sm pkh">' + (s.state.rec.length ? 'Gần đây' : 'Chọn mẫu') + '</h2><div class="pgrid">' + firstIds.map(function (id) { return pkCell(s, PM[id]); }).join('') + '</div>';
   }
-  return '<div><div class="dc" style="font-size:13px;line-height:18px;color:var(--label-2);padding:0 0 4px">' + esc(lab) + '</div><input class="fld" data-fill="' + k + '" enterkeyhint="done" value="' + esc(fills[k] || '') + '" placeholder="' + esc(STR.tokl[k] || k) + '" aria-label="' + esc(STR.tokl[k] || k) + '"></div>';
+  if (cat === 'all') {
+    if (s.state.rec.length) h += '<h2 class="cap sm pkh">Gần đây</h2><div class="pgrid">' + s.state.rec.map(function (id) { return pkCell(s, PM[id]); }).join('') + '</div>';
+    if (s.state.sets.length) h += '<h2 class="cap sm pkh">Set hay hỏi</h2><div class="pgrid">' + s.state.sets.map(function (pr) { return pkPair(s, pr); }).join('') + '</div>';
+  }
+  C.collections(list).forEach(function (g) { h += '<h2 class="cap sm pkh">' + esc(g.name) + ' · ' + g.items.length + '</h2><div class="pgrid">' + g.items.map(function (p) { return pkCell(s, p); }).join('') + '</div>'; });
+  return h;
 }
-function msgCopy(s, t) {
-  var g = msgGen(s), et = g.et, ent = FM[s.state.id];
-  if (msgPending(s)) return;
-  var ta = s.el.querySelector('[data-eta=msg]'), text = ta ? ta.value : g.text, typed = s.state.ed.msg !== undefined;
-  var p = PM[fillVal('item', s.state.fills)];
-  var tr = p && ((/\{\{itemInfo\}\}/.test(et.text) && ptrunc(p, 'desc', lang)) || (/\{\{sizeChart\}\}/.test(et.text) && ptrunc(p, 'size', lang)));
-  if (tr && !typed && !guardPass(s, 'm' + lang, t)) return;
-  var cl = et.fell ? other(lang) : lang;
-  copy(text, { btn: t, label: eLabel(ent), lang: cl, rec: { k: 'f:' + ent.id, label: eLabel(ent), ref: { t: 'f', id: ent.id } }, done: function (ok) { if (ok) setTimeout(function () { closeSheet(s, true); }, 600); } });
+function pkTray(s) {
+  var m = s.state.mode, pk = s.state.pk, need = pk.filter(function (r) { return !r.size; }).length, rows = '';
+  pk.forEach(function (r) {
+    var p = PM[r.pid];
+    rows += '<div class="trow" data-pid="' + r.pid + '">' + avatar(p, 32) + '<span class="tn"><span class="t">' + esc(pname(p, 'vi')) + '</span>' + (m !== 'size' && !r.size ? '<span class="h">Chọn size</span>' : '') + '</span>' +
+      (m === 'size' ? '' : segHtml(psizes(p).map(function (z) { return [z, z]; }), r.size, 'pksize', { label: 'Size ' + pname(p, 'vi'), attr: 'data-p="' + r.pid + '"' })) +
+      '<button class="iconbtn" data-act="pkrm" data-p="' + r.pid + '" aria-label="Bỏ ' + esc(pname(p, 'vi')) + '"><span class="c bare">' + ic('x', 's15') + '</span></button></div>';
+  });
+  var n = pk.length, btn;
+  if (!n) btn = '<button class="btn wide dis" aria-disabled="true">Chọn ít nhất 1 mẫu</button>';
+  else if (m === 'order' && need) btn = '<button class="btn wide dis" aria-disabled="true">Chọn size cho ' + need + ' món</button>';
+  else btn = '<button class="btn wide" data-act="pkdone">' + (m === 'order' ? 'Thêm ' + n + ' món vào đơn' : 'Xong · ' + n + ' mẫu') + '</button>';
+  return (rows ? '<div class="trows">' + rows + '</div>' : '') + btn;
+}
+function renderPick(s) {
+  var m = s.state.mode;
+  return shHead(PKT[m][0], '<span class="wr">' + esc(PKT[m][1]) + '</span>') + '<div class="pkq"><div class="sfield" style="margin:0">' + ic('search') + '<input data-pkq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm tên, màu…" aria-label="Tìm tên, màu"></div></div>' +
+    '<div class="pkf" id="pkf">' + catSeg(s.state.cat, 'pkcat') + '</div><div class="shb pad pkb" id="pkbody">' + pkBody(s) + '</div><div class="shf tray" id="tray">' + pkTray(s) + '</div>';
+}
+function paintPick(s, scrollEnd) {
+  $$('.pcell[data-pid]', s.el).forEach(function (b) { var on = pkHas(s, b.dataset.pid); b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  $$('.ppair', s.el).forEach(function (b) { var on = pkHas(s, b.dataset.pa) && pkHas(s, b.dataset.pb); b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+  var tr = $('#tray', s.el), old = $('.trows', tr), keep = old ? old.scrollTop : 0;
+  tr.innerHTML = pkTray(s);
+  var nw = $('.trows', tr); if (nw) nw.scrollTop = scrollEnd ? nw.scrollHeight : keep;
+  syncSheetBody();
+}
+function pkAdd(s, pid) {
+  if (pkHas(s, pid)) return true;
+  var all = ctxPids().concat(s.state.pk.map(function (r) { return r.pid; })).filter(function (x, i, a) { return a.indexOf(x) === i; });
+  if (all.indexOf(pid) < 0 && all.length >= MAXP) { toast('Tối đa 4 mẫu một lần — bỏ bớt một mẫu nhé', { icon: 'info' }); return false; }
+  var L = s.state.mode === 'order' ? null : lineOf(pid), z = psizes(PM[pid]);
+  s.state.pk.push({ pid: pid, size: z.length === 1 ? z[0] : L && L.size || null });
+  return true;
+}
+function pkCommit(s) {
+  var m = s.state.mode, pk = s.state.pk, gone = m === 'order' ? [] : ctxPids().filter(function (pid) { return !pkHas(s, pid); });
+  if (s.done) return; s.done = true;
+  mutate(function () {
+    var ls = st.draft.lines;
+    if (m === 'order') {
+      pk.forEach(function (r) {
+        if (ls.some(function (L) { return L.pid === r.pid && L.size === r.size; })) return;
+        var wait = ls.filter(function (L) { return L.pid === r.pid && !L.size; })[0];
+        if (wait) wait.size = r.size; else ls.push({ pid: r.pid, size: r.size, qty: 1 });
+      });
+    } else {
+      st.draft.lines = ls.filter(function (L) { return gone.indexOf(L.pid) < 0; });
+      pk.forEach(function (r) {
+        var L = lineOf(r.pid);
+        if (!L) st.draft.lines.push({ pid: r.pid, size: m === 'size' ? null : r.size, qty: 1 });
+        else if (m !== 'size' && r.size && L.size !== r.size) {
+          var dup = st.draft.lines.filter(function (x) { return x !== L && x.pid === r.pid && x.size === r.size; })[0];
+          if (dup) { dup.qty = Math.min(9, dup.qty + L.qty); st.draft.lines.splice(st.draft.lines.indexOf(L), 1); } else L.size = r.size;
+        }
+      });
+    }
+  }, gone.length ? { msg: 'Đã bỏ ' + gone.map(function (id) { return pv(PM[id], 'name'); }).join(', ') + ' khỏi khách đang hỏi' } : m === 'order' ? { msg: 'Đã thêm ' + pk.length + ' món vào đơn', icon: 'checkc' } : null);
+  noteRecent(pk.map(function (r) { return r.pid; })); if (m === 'order') bump();
+  closeSheet(s, true);
 }
 
 /* ---------- product picker ---------- */
 function openPicker(mode, cb, o) {
   o = o || {};
   pushSheet({
-    kind: 'picker', det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, sub: o.sub, from: o.from, skip: o.skip || [], first: null, cat: 'all', none: !!o.none, cur: o.cur || null },
+    kind: 'picker', key: mode + '|' + (o.title || ''), det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, sub: o.sub, from: o.from, skip: o.skip || [], first: null, cat: 'all', none: !!o.none, cur: o.cur || null },
     render: function (s) {
       return shHead(s.state.title || 'Chọn mẫu', s.state.sub || 'Chạm một mẫu để chọn') +
         '<div style="padding:0 20px 8px"><div class="sfield" style="margin:0">' + ic('search') + '<input data-pq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu" aria-label="Tìm mẫu"></div></div>' +
@@ -1012,7 +1508,7 @@ function openSetPicker(fromPid) {
   openPicker('set', function (pid) { var set = createSet([fromPid, pid], true); openSet(set.id); }, { title: 'Ghép ' + pname(p, 'vi') + ' với…', from: fromPid, skip: [fromPid] });
 }
 function openSet(id) {
-  var s = pushSheet({ kind: 'set', det: 'l', fixed: true, state: { id: id, sel: {}, edit: null, ed: {}, guard: null, next: 'a', done: {} }, render: renderSet });
+  var s = pushSheet({ kind: 'set', key: id, det: 'l', fixed: true, state: { id: id, sel: {}, edit: null, ed: {}, guard: null, next: 'a', done: {} }, render: renderSet });
   afterPaint(function () { growAll(s.el); });
 }
 var BLBL = { a: 'Thông tin + giá set', b: 'Bảng size từng món', c: 'Xin số đo', d: 'Link bài viết' };
@@ -1090,15 +1586,6 @@ function bubbleCopy(s, t, b, forceLang, set) {
   } });
 }
 
-/* ---------- order line editor (medium sheet): Size, Số lượng, Xoá món ---------- */
-function openLine(i) { pushSheet({ kind: 'line', det: 'm', fixed: false, state: { i: i, sel: {}, ed: {} }, render: renderLine }); }
-function renderLine(s) {
-  var L = st.draft.lines[s.state.i], p = L && PM[L.pid]; if (!p) return shHead('Sửa món', '');
-  return shHead('Sửa món', esc(pname(p, 'vi')) + ' · ' + money(pv(p, 'price') * L.qty, 'vi'), '', avatar(p, 44)) + '<div class="shb pad">' +
-    '<div class="sec" style="margin-top:8px"><div class="secH"><h3 class="cap sm">Size</h3></div>' + segHtml(psizes(p).map(function (z) { return [z, z]; }), L.size, 'linesize', { label: 'Size' }) + '</div>' +
-    '<div class="sec"><div class="secH"><h3 class="cap sm">Số lượng</h3></div><div class="stepper"><button class="btn tonal" data-act="qty" data-d="-1" aria-label="Giảm số lượng">' + ic('minus', 's15') + '</button><span class="v num" id="lqty">' + L.qty + '</span><button class="btn tonal" data-act="qty" data-d="1" aria-label="Tăng số lượng">' + ic('plus', 's15') + '</button></div></div>' +
-    '<div class="sec"><button class="txtbtn dest" data-act="linedel" style="margin-left:-8px">Xoá món</button></div></div><div class="shf"><button class="btn wide" data-act="shclose">Xong</button></div>';
-}
 /* ---------- dialogs ---------- */
 function dlgBox(msg, buttons) {
   var d = document.createElement('div'); d.className = 'dlg'; d.setAttribute('role', 'alertdialog');
@@ -1271,25 +1758,24 @@ document.addEventListener('click', function (e) {
   var a = t.getAttribute('data-act'), id = t.getAttribute('data-id'), v = t.getAttribute('data-v');
   if (!a && t.hasAttribute('data-open')) {
     var o = t.getAttribute('data-open'), k = o.charAt(0), oid = o.slice(2);
-    if (k === 'p') openProduct(oid); else if (k === 's') openSet(oid); else openEntry(oid);
+    if (k === 'p') openProduct(oid); else if (k === 's') openSet(oid); else openCardSheet(oid);
     return;
   }
   var s = scopeOf(t), A = t.dataset.a;
+  /* a tap that lands on a sheet that is already closing (double tap) finds no scope: ignore it instead of acting on the page */
+  if (/^(pk(cell|pair|size|rm|done|cat)|shippick|shipdone|leadpick|leadedit|leadsave|leaddel|leadadd|leadaddsave|pickone)$/.test(a) && s.kind === 'page') return;
+  if (a === 'cardcopy' && t.dataset.sheet && s.kind !== 'card') return;
   switch (a) {
     case 'lang': setLang(v); break;
     case 'top': if (v !== UI.top) setTop(v); else if (v !== 'home') { var sc0 = v === 'qr' ? qrEl : piEl; if (sc0.scrollTop > 0) sc0.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } break;
     case 'stage': gotoStage(v); break;
-    case 'stmore': UI.more[st.ui.stage] = !UI.more[st.ui.stage]; renderStage(); break;
+    case 'stmore': UI.more[st.ui.stage] = !UI.more[st.ui.stage]; paintStageBody(); break;
     case 'pview': UI.view = v; renderPI(); break;
     case 'pgo': UI.view = v; setTop('pi'); piEl.scrollTop = 0; break;
     case 'pfilt': UI.filt = v; renderList(); break;
     case 'pkfilt': s.state.cat = v; selectSeg($('#pkf .seg', s.el), v); $('#plist', s.el).innerHTML = pickerList(s); break;
     case 'pkclear': { s.state.q = ''; var pq = $('[data-pq]', s.el); if (pq) pq.value = ''; $('#plist', s.el).innerHTML = pickerList(s); break; }
-    case 'pchoose': { var kind = v; openPicker('pick', function (pid) { openProduct(pid, kind); }, { title: 'Chọn mẫu', sub: kind === 'size' ? 'Chạm một mẫu để gửi bảng size' : 'Chạm một mẫu để gửi thông tin' }); break; }
-    case 'pchip': openProduct(id, v); break;
-    case 'variant': { var snap0 = takeEdits(s); s.state.id = v; rerender(s); editsToast(s, snap0); break; }
     case 'qclear': $('#q').value = ''; $('#q').focus(); doSearch(); break;
-    case 'hintx': hintDone(); break;
     case 'settings': openSettings(); break;
     case 'openorder': gotoStage('order'); break;
     case 'editf': editEntry(id); break;
@@ -1305,7 +1791,7 @@ document.addEventListener('click', function (e) {
     case 'ebreset': ebReset(s, t.dataset.k); break;
     case 'ebsave': ebSave(s, t.dataset.k); break;
     case 'addline': {
-      addLine(id, v); addedToast(id, v);
+      if (addLine(id, v)) addedToast(id, v);
       var io = s.el.querySelector('#pinord'); if (io) io.textContent = 'Trong đơn: ' + inOrderText(id);
       break;
     }
@@ -1322,6 +1808,7 @@ document.addEventListener('click', function (e) {
     case 'leadpick': {
       var ls0 = s.state.scope, la = s.state.a;
       $$('.rrow[role=radio]', s.el).forEach(function (r) { r.setAttribute('aria-checked', (r.querySelector('[data-act=leadpick]').dataset.id || '') === (id || '')); });
+      if (s.closing || s.picked) break; s.picked = true;
       leadSet(ls0, la, id || null); setTimeout(function () { closeSheet(s); }, 200); break;
     }
     case 'leadedit': s.state.edit = id; s.state.adding = false; rerender(s); { var fe = $('[data-lfi=vi]', s.el); if (fe) { fe.focus(); grow(fe); } grow($('[data-lfi=en]', s.el)); } break;
@@ -1346,57 +1833,75 @@ document.addEventListener('click', function (e) {
       break;
     }
     /* replies / message */
-    case 'fill': {
-      var snapF = takeEdits(s), fk = t.dataset.k;
-      s.state.fills[fk] = v;
-      if (fk === 'size') { setCtxQuiet(ctx() ? ctx().itemId : null, v); }
-      rerender(s); afterPaint(function () { growAll(s.el); }); editsToast(s, snapF); break;
-    }
-    case 'pickfill': {
-      var kk = t.dataset.k, ms = s, opt = !!t.dataset.opt, curId = kk === 'item' ? (opt ? ms.state.fills.item : fillVal('item', ms.state.fills)) : ms.state.fills.otherItem;
-      openPicker('pick', function (pid) {
-        var sn = takeEdits(ms); ms.state.fills[kk] = pid;
-        if (kk === 'item' && pid) { setCtxQuiet(pid, ctx() && ctx().itemId === pid ? ctx().size : null); var sz = psizes(PM[pid]); if (ms.state.fills.size && sz.indexOf(ms.state.fills.size) < 0) delete ms.state.fills.size; }
-        rerender(ms); afterPaint(function () { growAll(ms.el); }); editsToast(ms, sn);
-      }, { none: opt, cur: curId || null, title: opt ? 'Kèm thông tin mẫu' : 'Chọn mẫu' });
-      break;
-    }
     case 'pickone': {
-      var ps = s.state;
+      var ps = s.state; if (s.closing) break;
       if (ps.mode === 'setnew') {
         if (!ps.first) { ps.first = id; $('#plist', s.el).innerHTML = pickerList(s); break; }
         if (ps.first === id) break;
       }
       var cb = ps.cb, f1 = ps.first; closeSheet(s); cb(f1 ? [f1, id] : id); break;
     }
-    case 'tok': { var row = s.el.querySelector('[data-k="' + t.dataset.k + '"]:not(.tok)') || s.el.querySelector('[data-fill="' + t.dataset.k + '"]'); var fr = (row || t).closest('.frow'); if (fr) { fr.scrollIntoView({ block: 'nearest' }); var inp = fr.querySelector('input'); if (inp) inp.focus(); } break; }
-    case 'msgcopy': msgCopy(s, t); break;
-    /* order */
-    case 'oadd': addLine(id, v); break;
-    case 'oqclear': UI.oq = ''; { var oqi = $('#oq'); if (oqi) oqi.value = ''; var oe0 = $('#ores'); if (oe0) oe0.innerHTML = oresHtml(); } break;
-    case 'lineopen': openLine(+t.dataset.i); break;
-    case 'linesize': {
-      var L = st.draft.lines[s.state.i], dup = st.draft.lines.find(function (x, j) { return j !== s.state.i && x.pid === L.pid && x.size === v; });
-      if (dup) { dup.qty = Math.min(9, dup.qty + L.qty); st.draft.lines.splice(s.state.i, 1); save(); orderChanged(); closeSheet(s); break; }
-      L.size = v; save(); orderChanged(); rerender(s); break;
+    /* the customer context, cards and strips */
+    case 'newcust': newCustomer(); break;
+    case 'ctxpick': openPick(t.dataset.m || 'context'); break;
+    case 'stripset': ctxToggle(t.dataset.pid); break;
+    case 'stripall': openPick(t.dataset.m); break;
+    case 'greetv': st.ui.greetV = v; save(); paintCard('greet'); break;
+    case 'cardcopy': cardCopy(t.dataset.c, t, t.dataset.sheet ? s : null); break;
+    case 'cardedit': openCardSheet(t.dataset.c); break;
+    case 'cardmore': { var cid = t.dataset.c; UI.exp[cid] = !UI.exp[cid]; t.previousElementSibling.firstChild.classList.toggle('open', UI.exp[cid]); measureClamps(t.parentNode); break; }
+    case 'cardneed': goInput(t.dataset.k, t.dataset.c); break;
+    case 'dockneed': goInput(t.dataset.k, 'dock'); break;
+    case 'tok': { var pvEl = t.closest('.pv'); goInput(t.dataset.k, pvEl ? pvEl.dataset.c : 'dock'); break; }
+    case 'fititem': fillShift(function () { FILL._item = t.dataset.pid; }); break;
+    case 'fitsize': setLineSize(itemPid(), v); break;
+    case 'fillseg': { var dd = DEFS[t.dataset.c], fk = dd.parent || dd.id, fkk = t.dataset.k; fillShift(function () { (FILL[fk] = FILL[fk] || {})[fkk] = v; }); break; }
+    case 'thanksv': fillShift(function () { st.ui.thanksV = v; save(); }); break;
+    case 'pastefill': pasteFill(t.parentNode.querySelector('input'), t.dataset.c); break;
+    case 'pastego': pasteGo(); break;
+    case 'attach': toast('Nhớ gửi đính kèm', { sub: FM[id].attach || eLabel(FM[id]), icon: 'clip' }); break;
+    case 'addlang': addLangTarget(t.dataset.c); break;
+    case 'pickother': { var pd = DEFS[t.dataset.c], pk0 = pd.parent || pd.id; openPicker('pick', function (pid) { fillShift(function () { (FILL[pk0] = FILL[pk0] || {}).otherItem = pid; }); }, { title: 'Mẫu thay thế', sub: 'Chạm một mẫu để gợi ý cho khách' }); break; }
+    /* unified picker */
+    case 'pkcell': { var pid1 = t.dataset.pid, had = pkHas(s, pid1); if (had) s.state.pk = s.state.pk.filter(function (r) { return r.pid !== pid1; }); else if (!pkAdd(s, pid1)) break; paintPick(s, !had); break; }
+    case 'pkpair': {
+      var pa = t.dataset.pa, pb = t.dataset.pb;
+      if (pkHas(s, pa) && pkHas(s, pb)) s.state.pk = s.state.pk.filter(function (r) { return r.pid !== pa && r.pid !== pb; });
+      else { var all = ctxPids().concat(s.state.pk.map(function (r) { return r.pid; }), [pa, pb]).filter(function (x, i, arr) { return arr.indexOf(x) === i; }); if (all.length > MAXP) { toast('Tối đa 4 mẫu một lần — bỏ bớt một mẫu nhé', { icon: 'info' }); break; } pkAdd(s, pa); pkAdd(s, pb); }
+      paintPick(s, true); break;
     }
-    case 'qty': { var L2 = st.draft.lines[s.state.i]; L2.qty = Math.max(1, Math.min(9, L2.qty + (+t.dataset.d))); save(); orderChanged(); rerender(s); break; }
-    case 'linedel': { var i2 = s.state.i, snap = JSON.stringify(st.draft), nm = PM[st.draft.lines[i2].pid]; st.draft.lines.splice(i2, 1); save(); orderChanged(); closeSheet(s, true); toast('Đã xoá ' + pname(nm, 'vi'), { undo: function () { st.draft = JSON.parse(snap); save(); orderChanged(); } }); break; }
-    case 'ship': st.draft.ship = v; save(); orderChanged(); break;
-    case 'pasteinfo': try { navigator.clipboard.readText().then(function (x) { st.draft.info = x; save(); var ti = $('[data-in=info]'); if (ti) ti.value = x; refreshPreview(PAGE); }, function () { var ta = $('[data-in=info]'); if (ta) ta.focus(); }); } catch (x) { var ta2 = $('[data-in=info]'); if (ta2) ta2.focus(); } break;
-    case 'copyorder': {
-      if (!st.draft.lines.length) break;
-      var r = C.composeCopy('order', { sel: PAGE.state.sel }, lang), total = calc().total, otext = fullText(PAGE, 'order');
-      copy(otext, { btn: t, msg: 'Đã chép đơn · ' + money(total, lang) + ' · ' + lu(), sub: 'Nhớ gửi mã QR nhé', icon: 'clip', label: 'Đơn', lang: lang, done: function (ok) { if (ok) { commitLeads(r.leadIds); st.draft.copiedAt = Date.now(); save(); afterPaint(function () { var op = $('#opost'); if (op) op.innerHTML = postCardHtml(); }); } } });
+    case 'pksize': { var rr = s.state.pk.filter(function (x) { return x.pid === t.dataset.p; })[0]; if (rr) rr.size = v; paintPick(s); break; }
+    case 'pkrm': s.state.pk = s.state.pk.filter(function (r) { return r.pid !== t.dataset.p; }); paintPick(s); break;
+    case 'pkdone': pkCommit(s); break;
+    case 'pkcat': s.state.cat = v; selectSeg($('#pkf .seg', s.el), v); $('#pkbody', s.el).innerHTML = pkBody(s); break;
+    /* order */
+    case 'oadd2': openPick('order'); break;
+    case 'lnrm': { var li = +t.dataset.i, Lr = st.draft.lines[li]; if (!Lr) break; mutate(function () { st.draft.lines.splice(li, 1); }, { msg: 'Đã bỏ ' + pname(PM[Lr.pid], 'vi') }); break; }
+    case 'lnqty': { var Lq = st.draft.lines[+t.dataset.i]; if (!Lq) break; mutate(function () { Lq.qty = Math.max(1, Math.min(9, Lq.qty + (+t.dataset.d))); }); break; }
+    case 'lnsize': {
+      var L3 = st.draft.lines[+t.dataset.i]; if (!L3 || L3.size === v) break;
+      var dup2 = st.draft.lines.filter(function (x) { return x !== L3 && x.pid === L3.pid && x.size === v; })[0];
+      mutate(function () { if (dup2) { dup2.qty = Math.min(9, dup2.qty + L3.qty); st.draft.lines.splice(st.draft.lines.indexOf(L3), 1); } else L3.size = v; }, dup2 ? { msg: 'Đã gộp vào ' + pname(PM[L3.pid], 'vi') + ' · ' + v } : null);
       break;
     }
-    case 'neworder': { var sn = JSON.stringify(st.draft); st.draft = { lines: [], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0 }; PAGE.state.ed = {}; save(); renderStage(); paintDock(); updateOrderBar(); toast('Đã làm mới đơn', { undo: function () { st.draft = JSON.parse(sn); save(); renderStage(); paintDock(); updateOrderBar(); } }); break; }
+    case 'shipopen': openShip(); break;
+    case 'shippick': {
+      if (s.closing) break;
+      mutate(function () { st.draft.ship = v; });
+      if (v === 'custom') { rerender(s); var ci = $('[data-in=custom]', s.el); if (ci) ci.focus(); }
+      else { $$('.rrow[role=radio]', s.el).forEach(function (r) { r.setAttribute('aria-checked', r.querySelector('[data-act=shippick]').dataset.v === v); }); setTimeout(function () { closeSheet(s); }, 200); }
+      break;
+    }
+    case 'shipdone': closeSheet(s); break;
+    case 'recvtoggle': UI.recv = !UI.recv; paintStageBody(); if (UI.recv) { var ri = $('[data-in=info]'); if (ri) ri.focus(); } break;
+    case 'pasteinfo': pasteInfo(); break;
+    case 'copyorder': orderCopy(t); break;
     /* sets */
     case 'setnew': openPicker('setnew', function (pair) { var set = createSet(pair); openSet(set.id); }, { title: 'Chọn 2 mẫu cho set', sub: 'Chạm mẫu thứ nhất, rồi mẫu thứ hai' }); break;
     case 'bcopy': bubbleCopy(s, t, t.dataset.b, t.dataset.alt ? other(lang) : null); break;
     case 'bnext': bubbleCopy(s, t, s.state.next); break;
     case 'setok': SM(s.state.id).checked = true; save(); rerender(s); afterPaint(function () { growAll(s.el); }); break;
-    case 'setsugg': { var sx = createSet([t.dataset.a, t.dataset.b], false); openSet(sx.id); break; }
+    case 'setsugg': { var sx = createSet([t.dataset.a, t.dataset.sb], false); openSet(sx.id); break; }
     case 'setovreset': { var set4 = SM(s.state.id), bb = t.dataset.b; if (bb === 'a') set4.ov[lang] = null; else if (set4.bov && set4.bov[bb]) set4.bov[bb][lang] = null; save(); delete s.state.ed['s' + bb]; rerender(s); afterPaint(function () { growAll(s.el); }); break; }
     case 'setadd': { var set5 = SM(s.state.id), ms2 = s; openPicker('setadd', function (pid) { set5.items.push(pid); save(); ms2.state.ed = {}; rerender(ms2); afterPaint(function () { growAll(ms2.el); }); }, { title: 'Thêm mẫu vào set', skip: set5.items }); break; }
     case 'setdel': { var set6 = SM(s.state.id), ss = s; confirmBox('Xoá set này?', 'Xoá', function () { st.sets = st.sets.filter(function (x) { return x !== set6; }); save(); IDX = null; closeSheet(ss); if (UI.top === 'pi' && UI.view === 's') renderPI(); toast('Đã xoá set'); }); break; }
@@ -1436,10 +1941,10 @@ $('#imp').addEventListener('change', function (e) {
 document.addEventListener('input', function (e) {
   var t = e.target, s = scopeOf(t);
   if (t.matches('[data-eta]')) onEta(t);
-  else if (t.matches('[data-fill]')) { s.state.fills[t.dataset.fill] = t.value; refreshPreview(s); }
+  else if (t.matches('[data-fill]')) fillTyped(t.dataset.c, t.dataset.fill, t.value);
+  else if (t.matches('[data-pkq]')) { s.state.q = t.value; $('#pkbody', s.el).innerHTML = pkBody(s); }
   else if (t.matches('[data-pq]')) { s.state.q = t.value; $('#plist', s.el).innerHTML = pickerList(s); }
   else if (t.matches('[data-sprice]')) { var d0 = t.value.replace(/\D/g, ''); SM(s.state.id).price = d0 ? parseInt(d0, 10) : null; save(); refreshPreview(s, ['sa']); }
-  else if (t.matches('[data-oq]')) { UI.oq = t.value; var oe = $('#ores'); if (oe) oe.innerHTML = oresHtml(); }
   else if (t.matches('[data-lfi],[data-ovta]')) grow(t);
   else if (t.matches('[data-lfs]')) {
     var lid = t.dataset.id, ls = C.leadStore(), cu = ls.custom.filter(function (x) { return x.id === lid; })[0];
@@ -1447,19 +1952,68 @@ document.addEventListener('input', function (e) {
     save(); flashSaved();
   }
   else if (t.matches('[data-ov]')) onOvInput(t);
-  else if (t.matches('[data-in=info]')) { st.draft.info = t.value; save(); refreshPreview(PAGE); }
-  else if (t.matches('[data-in=custom]')) { st.draft.custom = parseInt(t.value.replace(/\D/g, ''), 10) || 0; t.value = st.draft.custom ? nfV.format(st.draft.custom) : ''; save(); $('#ofoot').innerHTML = ofootHtml(); updateOrderBar(); refreshPreview(PAGE); }
+  else if (t.matches('[data-in=info]')) orderTyped(function () { st.draft.info = t.value; });
+  else if (t.matches('[data-in=custom]')) orderTyped(function () { st.draft.custom = parseInt(t.value.replace(/\D/g, ''), 10) || 0; t.value = st.draft.custom ? nfV.format(st.draft.custom) : ''; });
 });
 document.addEventListener('change', function (e) {
   var t = e.target, s0 = scopeOf(t);
   if (t.matches('[data-spurl]')) { SM(s0.state.id).postUrl = t.value.trim(); save(); s0.state.ed = {}; rerender(s0); afterPaint(function () { growAll(s0.el); }); return; }
-  if (t.matches('[data-in=bank]')) { st.draft.bank = t.checked; save(); refreshPreview(PAGE); }
+  if (t.matches('[data-in=bank]')) { orderTyped(function () { st.draft.bank = t.checked; }); return; }
+  if (t.matches('[data-in=sizeask]')) { fillShift(function () { st.ui.sizeAsk = t.checked; save(); }); return; }
 });
 document.addEventListener('focusin', function (e) { var s = topS('settings'); if (s && e.target.matches('textarea')) s.state.lastTa = e.target; });
-document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('[data-fill],[data-pq],#q,#oq,[data-in=custom],[data-sprice],[data-spurl]')) e.target.blur(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('[data-fill],[data-pq],[data-pkq],#q,[data-in=custom],[data-sprice],[data-spurl]')) e.target.blur(); });
+
+
+/* ---------- #debug=dupes: the idempotent-render contract made checkable (design-v6 section 9.6) ----------
+   After every DOM change (one check per frame) no two siblings may share a key attribute, no keyed group may appear twice under its owner, and no two
+   sheets of the same kind+key may be stacked. A failure logs console.error('dupe', ...), which the UI tests treat as a test failure. Inert without the hash. */
+function dbgOn(n) { return new URLSearchParams(location.hash.slice(1)).getAll('debug').indexOf(n) > -1; }
+function assertUnique() {
+  var bad = [], KEYS = ['data-row', 'data-card', 'data-line', 'data-b', 'data-slot', 'data-box', 'data-eb', 'data-est', 'data-pid', 'data-pair', 'data-strip', 'data-ctx'];
+  $$('body *').forEach(function (el) {
+    if (!el.parentNode) return;
+    KEYS.forEach(function (a) {
+      var v = el.getAttribute(a); if (v === null) return;
+      var sib = el.parentNode.children;
+      for (var i = 0; i < sib.length; i++) if (sib[i] !== el && sib[i].getAttribute(a) === v && sib[i].tagName === el.tagName) { bad.push(a + '=' + v); return; }
+    });
+  });
+  ['.mcard', '.ctxbar', '#odock'].forEach(function (sel) {
+    var seen = {};
+    $$(sel).forEach(function (el) { var k = sel + (el.dataset.card || ''); if (seen[k]) bad.push(k); seen[k] = 1; });
+  });
+  $$('.pstrip').forEach(function (el, i, all) { var c = el.closest('[data-card]'); if (c && all.some(function (o, j) { return j !== i && o.closest('[data-card]') === c; })) bad.push('pstrip in ' + c.dataset.card); });
+  $$('.sheet').forEach(function (sh) {
+    var seen = {}; $$('[data-row]', sh).forEach(function (r) { if (seen[r.dataset.row]) bad.push('row ' + r.dataset.row); seen[r.dataset.row] = 1; });
+  });
+  var live = $$('#sheets .sh.in').length; if (live !== SH.filter(function (x) { return !x.closing; }).length) bad.push('sheet count ' + live + '/' + SH.length);
+  for (var i = 1; i < SH.length; i++) if (SH[i].k === SH[i - 1].k && !SH[i].closing && !SH[i - 1].closing) bad.push('stacked sheet ' + SH[i].k);
+  bad.forEach(function (b) { console.error('dupe', b); });
+  return bad;
+}
+if (dbgOn('dupes')) {
+  var dq = 0;
+  new MutationObserver(function () { if (!dq) dq = requestAnimationFrame(function () { dq = 0; assertUnique(); }); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-pid', 'data-row'] });
+}
 
 /* ---------- boot ---------- */
-$('#hint').hidden = !!st.hintDone;
+/* migration: the old 20-minute st.ctx becomes a line of the context; unknown products and impossible sizes are dropped silently */
+(function () {
+  var c = st.ctx, d = st.draft;
+  if (c && c.itemId && Date.now() - c.at < 20 * 60000 && !d.lines.length && PM[c.itemId]) d.lines.push({ pid: c.itemId, size: c.size || null, qty: 1 });
+  delete st.ctx; delete st.hintDone;
+  d.lines = d.lines.filter(function (L) { return PM[L.pid]; }).slice(0, 8);
+  d.lines.forEach(function (L) { L.qty = Math.max(1, Math.min(9, +L.qty || 1)); if (L.size && psizes(PM[L.pid]).indexOf(L.size) < 0) L.size = null; });
+  if (d.lines.length && !d.at) d.at = Date.now();
+  if (['courier', 'fee', 'free', 'custom'].indexOf(d.ship) < 0) d.ship = 'courier';
+  if (['new', 'back', 'info'].indexOf(st.ui.greetV) < 0) st.ui.greetV = 'new';
+  if (!C.STAGES.some(function (g) { return g.id === st.ui.stage; })) st.ui.stage = 'greet';
+})();
+(function () {
+  var on = false, bar = $('#stseg');
+  qrEl.addEventListener('scroll', function () { var n = qrEl.scrollTop > 4; if (n !== on) { on = n; bar.classList.toggle('scr', n); } }, { passive: true });
+})();
 paintLang(); renderHomeScreen(); renderStage(); renderPI(); setTop('home');
 idle(function () { if (!IDX) buildIndex(); });
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
@@ -1469,5 +2023,5 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) toast('Có bản mới — đóng và mở lại app nhé', { icon: 'sparkle', ms: 4000 }); had = true; });
   });
 }
-window.__SE = { boot: performance.now() - T0, st: st, calc: calc, PS: PS, composeCopy: C.composeCopy, STAGES: C.STAGES, ins: function () { return INS; }, measure: measureInsets, leadList: C.leadList, leadSet: function (a, id) { var s = topS(); leadSet(s || PAGE, a, id); } };
+window.__SE = { cards: function () { return CARDS; }, defs: DEFS, fill: FILL, compute: compute, ctxPids: ctxPids, assertUnique: assertUnique, boot: performance.now() - T0, st: st, calc: calc, PS: PS, composeCopy: C.composeCopy, STAGES: C.STAGES, ins: function () { return INS; }, measure: measureInsets, leadList: C.leadList, leadSet: function (a, id) { var s = topS(); leadSet(s || PAGE, a, id); } };
 })();

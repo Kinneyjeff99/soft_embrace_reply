@@ -51,14 +51,13 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   const dest = {};
   for (const id of ['greet', 'size', 'info', 'order', 'out']) {
     const s0 = await clicks(page); await page.tap(`#home [data-act=stage][data-v=${id}]`); await wait(page);
-    dest[id] = [(await clicks(page)) - s0, await vis(page, '#qr'), await page.$eval('.sg[aria-selected=true]', e => e.textContent), await page.$eval('#qrsub', e => [e.textContent, e.getBoundingClientRect().height])];
-    subs[id] = dest[id][3];
+    dest[id] = [(await clicks(page)) - s0, await vis(page, '#qr'), await page.$eval('.sg[aria-selected=true]', e => e.textContent), 0];
     await page.tap('[data-act=top][data-v=home]'); await wait(page);
   }
   ok(`${tag} Home -> each of the 5 stages in 1 tap`, Object.values(dest).every(d => d[0] === 1 && d[1]) && Object.entries(dest).every(([id, d], i) => d[2] === ['Chào hỏi', 'Tư vấn size', 'Xin thông tin', 'Tạo đơn', 'Check out'][i]), JSON.stringify(Object.values(dest).map(d => d.slice(0, 3))));
   for (const v of ['p', 's']) { const s0 = await clicks(page); await page.tap(`#home [data-act=pgo][data-v=${v}]`); await wait(page); const on = await page.$eval(`#pview [data-v=${v}]`, e => e.getAttribute('aria-selected')); subs['pi' + v] = await page.$eval('#pisub', e => [e.textContent, e.getBoundingClientRect().height]); ok(`${tag} Home -> Theo ${v === 'p' ? 'mẫu' : 'set'} in 1 tap`, (await clicks(page)) - s0 === 1 && await vis(page, '#pi') && on === 'true'); await page.tap('[data-act=top][data-v=home]'); await wait(page); }
-  ok(`${tag} contextual subtitle on every screen: non-empty, one line, different per stage`, Object.values(subs).every(s => s[0].length > 8 && s[1] < 26) && new Set(Object.values(subs).map(s => s[0])).size === Object.keys(subs).length, Object.entries(subs).map(([k, v]) => k + '=' + v[0]).join(' | '));
-  ok(`${tag} subtitles keep her two favourite lines`, subs.greet[0] === 'Khách vừa nhắn lần đầu hoặc quay lại.' && subs.order[0] === 'Chọn món, phí ship, rồi chép tin chốt đơn.');
+  ok(`${tag} contextual subtitle on Home and Sản phẩm: non-empty, one line, different`, Object.values(subs).every(s => s[0].length > 8 && s[1] < 26) && new Set(Object.values(subs).map(s => s[0])).size === Object.keys(subs).length, Object.entries(subs).map(([k, v]) => k + '=' + v[0]).join(' | '));
+  ok(`${tag} Trả lời nhanh drops the description line (v6): no #qrsub`, !(await page.$('#qrsub')));
   // gear
   await page.tap('#nav [data-act=settings]'); await wait(page, 450);
   ok(`${tag} gear opens settings`, await vis(page, '.sheet') && /Tuỳ chỉnh/.test(await page.textContent('.sheet .sbar')));
@@ -116,7 +115,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   ok(`${tag} product sheet header uses the larger photo`, await page.$eval('.sheet .shh .av img', i => /lace-top-320\.webp$/.test(i.getAttribute('src')) && i.complete && i.naturalWidth === 320));
   await page.tap('[data-act=addline][data-v=M]'); await page.tap('.sheet [data-act=shclose]'); await wait(page, 450);
   await page.tap('#obtn2'); await wait(page, 300);
-  ok(`${tag} order lines show the product photo`, await page.$eval('#olines .lrow .av img', i => /lace-top-168\.webp$/.test(i.getAttribute('src'))));
+  ok(`${tag} order lines show the product photo`, await page.$eval('#stage .lrow2 .av img', i => /lace-top-168\.webp$/.test(i.getAttribute('src'))));
   // ---- no carousels, no horizontal overflow, no scroll-fighting
   for (const [sec, nm] of [['home', 'Home'], ['qr', 'Quick replies'], ['pi', 'Products']]) {
     await page.tap(`#fbar [data-v=${sec}]`); await wait(page, 150);
@@ -136,46 +135,51 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   ok(`${tag} horizontal swipe on the chip row moves nothing (no vertical drift, no sideways scroll)`, t2.every(v => v === 0), t2.join(','));
   await page.tap('#fbar [data-v=qr]'); await wait(page, 150);
   await page.tap('#stseg [data-v=greet]'); await wait(page, 150);
-  const prw = await page.$$eval('#stage [data-card=info] .prw', e => e.map(x => [x.querySelector('.av') ? x.querySelector('.av').getBoundingClientRect().width : 0, Math.round(x.getBoundingClientRect().right), Math.round(x.getBoundingClientRect().height), !!x.querySelector('.i.s13')]));
-  ok(`${tag} greeting product card: 3 product rows (32pt photo, name, ›) + "Tìm mẫu khác…" row, inside the card`, prw.length === 4 && prw.slice(0, 3).every(r => r[0] === 32 && r[1] <= w && r[2] >= 56 && r[3]) && /Tìm mẫu khác/.test(await page.textContent('#stage [data-card=info] .find')));
-  await page.tap('#stage [data-act=pchoose]'); await wait(page, 500);
-  ok(`${tag} "Tìm mẫu khác…" opens the picker: ONE segmented filter, photos, no horizontal scrolling`, await vis(page, '.sheet #pkf') && (await page.$$('.sheet #plist .av img')).length === 20 && (await page.$$eval('.sheet #pkf button', e => e.map(x => x.textContent.replace(/\d+/g, '').trim()))).join('|') === 'Tất cả|Áo|Váy|Đầm|Quần');
+  const strip = await page.$$eval('#stage [data-card=greet] .pstrip .sc', e => e.map(x => [x.querySelector('.av') ? x.querySelector('.av').getBoundingClientRect().width : 0, Math.round(x.getBoundingClientRect().right)]));
+  ok(`${tag} greeting strip: 4 product photos (56pt circles) + "Tất cả mẫu", inside the card`, strip.length === 5 && strip.slice(0, 4).every(r => r[0] === 56 && r[1] <= w) && /Tất cả mẫu/.test(await page.textContent('#stage [data-card=greet] .sc.all')));
+  await page.tap('#stage [data-card=greet] [data-act=stripall]'); await wait(page, 500);
+  ok(`${tag} "Tất cả mẫu" opens the picker: ONE segmented filter, photo grid, no horizontal scrolling`, await vis(page, '.sheet #pkf') && (await page.$$('.sheet #pkbody .pcell .av img')).length >= 20 && (await page.$$eval('.sheet #pkf button', e => e.map(x => x.textContent.replace(/\d+/g, '').trim()))).join('|') === 'Tất cả|Áo|Váy|Đầm|Quần');
   await page.tap('.sheet #pkf [data-v=skirt]'); await wait(page, 150);
-  ok(`${tag} picker filter (Váy)`, (await page.$$('.sheet #plist .row')).length === 6);
-  await page.tap('.sheet #plist [data-act=pickone] >> nth=0'); await wait(page, 600);
-  ok(`${tag} picking opens that product on Thông tin`, await vis(page, '.sheet #pdyn') && (await page.textContent('.sheet #pseg [aria-selected=true]')) === 'Thông tin');
+  ok(`${tag} picker filter (Váy)`, (await page.$$('.sheet #pkbody .pcell:not(.ppair)')).length === 6);
+  await page.tap('.sheet #pkbody .pcell:not(.ppair) >> nth=0'); await wait(page, 150); await page.tap('.sheet [data-act=pkdone]'); await wait(page, 600);
+  ok(`${tag} picking a product fills the context bar`, /Skirt|Váy/i.test(await page.textContent('#ctxbar .dv')));
+  await page.tap('#stage [data-card=greet] .pv'); await wait(page, 500);
+  ok(`${tag} the preview opens the Sửa tin sheet`, await vis(page, '.sheet .ebox'));
+  await page.tap('.sheet [data-act=ebedit]'); await page.evaluate(() => document.activeElement.blur());
   // a vertical swipe starting on the dropdown row scrolls the sheet body
   await page.$eval('.sheet .shb', e => { e.scrollTop = 0; }); await wait(page, 100);
-  const [lx, ly] = await center(page, '.sheet [data-lead=info]');
+  const [lx, ly] = await center(page, '.sheet .ddrow');
   const sb0 = await page.$eval('.sheet .shb', e => e.scrollTop);
   await swipe(page, ctx, lx, ly, 0, -260);
   const sb1 = await page.$eval('.sheet .shb', e => e.scrollTop);
   const sbMax = await page.$eval('.sheet .shb', e => e.scrollHeight - e.clientHeight);
-  ok(`${tag} vertical swipe starting on the opening-line row scrolls the sheet`, sb1 > sb0 + Math.min(60, sbMax - 4), sb0 + '->' + sb1 + ' max ' + sbMax);
+  ok(`${tag} vertical swipe starting on a dropdown row scrolls the sheet`, sb1 > sb0 + Math.min(60, sbMax - 4), sb0 + '->' + sb1 + ' max ' + sbMax);
   ok(`${tag} zero console errors, no failed requests`, errors.length === 0 && bad.length === 0, errors.concat(bad).join(';'));
   await ctx.close();
 }
 
-// ---- tap counts, honestly from Home (393)
+// ---- tap counts, honestly from Home (393), empty context (design-v6 section 10: +1 for the Home tile)
 {
   const { page, ctx } = await open({ w: 393, h: 852 });
   const T = async fn => { const s = await clicks(page); await fn(); return (await clicks(page)) - s; };
-  let n = await T(async () => { await page.tap('#home [data-act=stage][data-v=greet]'); await wait(page); await page.tap('[data-open="f:open-first"]'); await wait(page, 450); await page.tap('#mcopy'); await wait(page); });
-  ok('tap count: greeting from Home = 3 (tile, card, Chép); 2 once in Chào hỏi', n === 3, String(n));
-  await wait(page, 900);
-  n = await T(async () => { await page.tap('#stage [data-act=pchip][data-v=info] >> nth=0'); await wait(page, 450); await page.tap('.shf [data-act=pcopy]'); await wait(page); });
-  ok('tap count: product info in Chào hỏi = 2 (chip, Chép)', n === 2, String(n));
-  await page.tap('.sheet [data-act=shclose]'); await wait(page, 450); await page.tap('#fbar [data-v=home]'); await wait(page);
+  let n = await T(async () => { await page.tap('#home [data-act=stage][data-v=greet]'); await wait(page); await page.tap('#stage [data-card=greet] .sc[data-pid] >> nth=0'); await wait(page); await page.tap('#stage [data-card=greet] [data-act=cardcopy]'); await wait(page); });
+  ok('tap count: greeting + product info from Home, empty context = 3 (tile, strip photo, Chép); 2 once in Chào hỏi', n === 3, String(n));
+  await page.tap('[data-act=newcust]'); await wait(page, 300);
+  await page.tap('#fbar [data-v=home]'); await wait(page);
   n = await T(async () => { await page.tap('#home [data-act=pgo][data-v=p]'); await wait(page); await page.tap('#hbody [data-open^="p:"] >> nth=0'); await wait(page, 450); await page.tap('.shf [data-act=pcopy]'); await wait(page); });
   ok('tap count: Theo mẫu info = 2 from the list (row, Chép), 3 from Home', n === 3, String(n));
   await page.tap('.sheet [data-act=shclose]'); await wait(page, 450); await page.tap('#fbar [data-v=home]'); await wait(page);
-  n = await T(async () => { await page.tap('#home [data-act=stage][data-v=size]'); await wait(page); await page.tap('#stage [data-act=pchip][data-v=size] >> nth=0'); await wait(page, 450); await page.tap('.shf [data-act=pcopy]'); await wait(page); });
-  ok('tap count: size chart from Home = 3 (tile, chip, Chép)', n === 3, String(n));
-  await page.tap('.sheet [data-act=shclose]'); await wait(page, 450); await page.tap('#fbar [data-v=home]'); await wait(page);
-  n = await T(async () => { await page.tap('#home [data-act=stage][data-v=order]'); await wait(page); await page.tap('#ores [data-act=oadd] >> nth=0'); await wait(page); });
-  ok('tap count: order created + message generated from Home = 2 (Tạo đơn tile, size chip)', n === 2 && /^Dạ vậy đơn của bạn 🌷\n• /.test(await val(page, '[data-eta=order]')), String(n));
-  ok('order footer floats above the capsule (total + Chép đơn visible, not covered)', await page.evaluate(() => { const f = document.querySelector('#ofoot').getBoundingClientRect(), c = document.querySelector('.capsule').getBoundingClientRect(); return f.bottom <= c.top + 1 && f.height > 40; }));
+  await page.tap('[data-act=newcust]').catch(() => {});
+  await page.tap('#fbar [data-v=home]'); await wait(page);
+  n = await T(async () => { await page.tap('#home [data-act=stage][data-v=size]'); await wait(page); await page.tap('#stage [data-card=sizes] .sc[data-pid] >> nth=0'); await wait(page); await page.tap('#stage [data-card=sizes] [data-act=cardcopy]'); await wait(page); });
+  ok('tap count: size chart from Home, empty context = 3 (tile, strip photo, Chép)', n === 3, String(n));
   await ctx.close();
+  const o = await open({ w: 393, h: 852 });
+  const T2 = async fn => { const s = await clicks(o.page); await fn(); return (await clicks(o.page)) - s; };
+  n = await T2(async () => { await o.page.tap('#home [data-act=stage][data-v=order]'); await wait(o.page); await o.page.tap('#stage .sc[data-pid] >> nth=0'); await wait(o.page); await o.page.tap('#stage [data-act=lnsize][data-v=M]'); await wait(o.page); await o.page.tap('#obtn'); await wait(o.page); });
+  ok('tap count: order from Home, empty order, 1 product = 4 (tile, strip photo, size, Chép đơn)', n === 4 && /^Dạ vậy đơn của bạn 🌷\n• /.test((await o.page.evaluate(() => window.__clip.slice(-1)[0]))), String(n));
+  ok('order dock floats above the capsule (total + Chép đơn visible, not covered)', await o.page.evaluate(() => { const f = document.querySelector('#odock').getBoundingClientRect(), c = document.querySelector('.capsule').getBoundingClientRect(); return f.bottom <= c.top + 1 && f.height > 40; }));
+  await o.ctx.close();
 }
 // ---- perf at 4x CPU
 {

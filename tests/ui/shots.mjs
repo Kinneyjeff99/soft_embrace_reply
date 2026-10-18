@@ -1,71 +1,70 @@
-// Regenerates shots/ (current screens only): 393x852 and 430x932, light and dark, as a home-screen app (59/34 insets), plus the
-// safe-area wrapper simulations. icon-preview.png comes from tools/make_icons.py and is kept.
+// Regenerates shots/ (current screens only): 393x852 and 430x932, light and dark, as a home-screen app (59/34 insets).
+// The 20-screenshot QA list of design-v6 section 16 (shots/{w}-{mode}-v6-NN-*.png) + the screens v6 did not change (home, Sản phẩm, product sheet, set sheet, settings) + the safe-area wrapper simulations.
 import { serve, launch, newPage } from './lib.mjs';
 import fs from 'node:fs';
+process.env.NO_SYNTH = '1';
 const OUT = '/home/user/soft_embrace_reply/shots';
 for (const f of fs.readdirSync(OUT)) if (f !== 'icon-preview.png') fs.unlinkSync(OUT + '/' + f);
 const { srv, url } = await serve(); const b = await launch();
 const INS = { top: 59, bottom: 34 };
+const REC = (...ids) => ids.map((p, i) => ({ p, at: Date.now() - i * 1000 }));
 for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true]) {
-  let n = 0; const mode = dark ? 'dark' : 'light';
-  const sh = async (p, name) => { await p.waitForTimeout(550); await p.screenshot({ path: `${OUT}/${w}-${mode}-${String(++n).padStart(2, '0')}-${name}.png` }); };
-  const { page: p, ctx } = await newPage(b, { w, h, dark, insets: INS, standalone: true }); await p.goto(url); await p.waitForTimeout(450);
+  const cnt = {}; const mode = dark ? 'dark' : 'light';
+  const { page: p, ctx, errors } = await newPage(b, { w, h, dark, insets: INS, standalone: true, storage: { rp: REC('lace-top', 'lace-skirt-cream', 'butter-top', 'fleur-slip-dress-blue'), set: { lang: 'vi', fee: 25000, bank: { name: 'Vietcombank', no: '0123456789', holder: 'SOFT EMBRACE' } } } });
+  await p.goto(url); await p.waitForTimeout(450);
+  const sh = async (name, tag = 'v6-') => { if (name !== 'new-customer-toast' && name !== 'greet-empty') await p.evaluate(() => { document.querySelector('#toast').innerHTML = ''; }); await p.waitForTimeout(550); await p.screenshot({ path: `${OUT}/${w}-${mode}-${tag}${String(cnt[tag] = (cnt[tag] || 0) + 1).padStart(2, '0')}-${name}.png` }); };
   const tap = async (s, ms = 250) => { await p.tap(s); await p.waitForTimeout(ms); };
+  const stage = id => tap(`#stseg [data-v=${id}]`, 300);
   const close = async () => { await p.tap('.sheet >> nth=-1 >> [data-act=shclose]'); await p.waitForTimeout(450); };
-  await sh(p, 'home');
-  await tap('#home [data-v=size]'); await sh(p, 'stage-tu-van-size');
-  await tap('[data-open="f:ask-measurements"]', 500); await sh(p, 'message-sheet'); await close();
-  await tap('#stseg [data-v=greet]'); await tap('[data-act=pchoose]', 500); await sh(p, 'product-picker-filters'); await close();
-  await tap('#stseg [data-v=order]'); await sh(p, 'tao-don-empty');
-  await tap('#ores [data-act=oadd] >> nth=0'); await tap('#ores [data-act=oadd] >> nth=1');
-  await p.fill('[data-in=info]', 'Nguyễn Thị A, 0900 000 000, 12 Lê Lợi, Q1, TP.HCM'); await p.waitForTimeout(150);
-  await tap('#stage .ddrow[data-lead=order]', 500); await tap('.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-order-2"]', 700);
-  await p.evaluate(() => { document.querySelector('#qr').scrollTop = 0; }); await sh(p, 'tao-don-order-stage');
-  await p.evaluate(() => { document.querySelector('#qr').scrollTop = 520; }); await sh(p, 'tao-don-message-box');
-  await p.evaluate(() => { document.querySelector('#qr').scrollTop = 0; });
-  await tap('#olines .lrow', 500); await sh(p, 'line-editor-sheet'); await close();
-  await tap('#fbar [data-v=pi]'); await sh(p, 'san-pham-theo-mau');
-  await p.evaluate(() => { document.querySelector('#pi').scrollTop = 1250; }); await sh(p, 'san-pham-scrolled'); await p.evaluate(() => { document.querySelector('#pi').scrollTop = 0; });
-  await tap('#pfilt [data-v=skirt]'); await sh(p, 'san-pham-filter-vay'); await tap('#pfilt [data-v=all]');
-  await tap('[data-open="p:lace-top"]', 600); await sh(p, 'product-sheet-thong-tin');
-  await tap('.sheet #pseg [data-v=size]'); await sh(p, 'product-sheet-bang-size');
-  await tap('.sheet #pseg [data-v=both]'); await sh(p, 'product-sheet-ca-hai'); await tap('.sheet #pseg [data-v=info]');
-  await tap('.sheet [data-lead=info]', 600); await sh(p, 'opening-line-picker');
-  await tap('.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-info-3"]', 150); await sh(p, 'strip-arrival');
-  await p.waitForTimeout(900); await p.fill('.sheet [data-eta=info]', 'Bản sửa tay của mình 🌷\n' + await p.$eval('.sheet [data-eta=info]', e => e.value)); await sh(p, 'product-sheet-edited-strip');
-  await p.evaluate(() => { document.querySelector('.sheet .shb').scrollTop = 9999; }); await sh(p, 'product-sheet-sections');
-  await close();
-  await tap('[data-act=pview][data-v=s]'); await sh(p, 'theo-set');
-  await tap('[data-act=setsugg] >> nth=0', 600); await sh(p, 'set-sheet-fresh');
-  await tap('.bcard[data-b=a] .bbtn .btn'); await p.waitForTimeout(500); await tap('.bcard[data-b=a] .bbtn .btn', 900); await sh(p, 'set-sheet-after-tin-1');
-  await p.evaluate(() => { document.querySelector('.sheet .shb').scrollTop = 99999; }); await sh(p, 'set-sheet-cards');
-  for (const bb of ['b', 'c', 'd']) { await tap(`.bcard[data-b=${bb}] .bbtn .btn`, 120); }
-  await sh(p, 'set-sheet-done'); await close();
-  await tap('#nav [data-act=settings]', 500); await sh(p, 'settings');
-  await tap('[data-p="leads"]', 350); await tap('[data-p="leadlist:info"]', 350); await sh(p, 'settings-cau-mo-dau'); await close();
-  await tap('#fbar [data-v=home]'); await sh(p, 'home-with-order-badge');
+  const top = () => p.evaluate(() => { document.querySelector('#qr').scrollTop = 0; });
+  await tap('#home [data-v=greet]');
+  await sh('greet-empty');
+  await tap('[data-card=greet] .sc[data-pid] >> nth=0'); await sh('greet-one');
+  await tap('[data-card=greet] .sc[data-pid] >> nth=1'); await tap('[data-card=greet] .sc[data-pid] >> nth=2'); await top(); await sh('greet-two-long');
+  await tap('#ctxbar .ctxbar', 800); await tap('.sheet .trow [data-act=pksize][data-v=M] >> nth=0'); await sh('picker-context'); await close();
+  await tap('[data-act=newcust]', 500); await stage('order'); await tap('[data-act=oadd2]', 800); await tap('.sheet .pcell[data-pid="lace-top"] >> nth=0'); await sh('picker-order-tray');
+  await p.fill('.sheet [data-pkq]', 'zzzz'); await sh('picker-search-empty'); await close();
+  await stage('size'); await top(); await sh('size-empty');
+  await tap('[data-card=sizes] .sc[data-pid="lace-top"]'); await tap('[data-card=sizes] .sc[data-pid="lace-skirt-cream"]'); await top(); await sh('size-two');
+  await tap('[data-card=sizes] input[data-in=sizeask]', 200).catch(() => {}); await p.evaluate(() => document.querySelector('[data-card=fit-size]').scrollIntoView({ block: 'start' })); await tap('[data-card=fit-size] [data-act=fitsize][data-v=M]', 400); await sh('size-fit');
+  await stage('info'); await top(); await sh('info');
+  await tap('[data-act=newcust]', 500); await stage('order'); await top(); await sh('order-empty');
+  await stage('greet'); await tap('[data-card=greet] .sc[data-pid="lace-top"]'); await tap('[data-card=greet] .sc[data-pid="lace-skirt-cream"]'); await stage('order'); await top();
+  await tap('#stage [data-line="lace-top:"] [data-act=lnsize][data-v=M]'); await top(); await sh('order-sizeless');
+  await tap('#stage [data-line="lace-skirt-cream:"] [data-act=lnsize][data-v=S]'); await top(); await sh('order-ready');
+  await p.evaluate(() => { document.querySelector('#qr').scrollTop = 99999; }); await sh('order-scrolled-end');
+  await tap('[data-act=shipopen]', 600); await tap('.sheet [data-act=shippick][data-v=custom]', 400); await p.fill('.sheet [data-in=custom]', '30000'); await sh('order-ship-sheet'); await tap('.sheet [data-act=shipdone]', 550);
+  await p.evaluate(() => { navigator.clipboard.readText = () => Promise.resolve('Nguyễn Thị Ngọc Anh\n0900 000 000\n12 Lê Lợi, Q1, TP.HCM'); });
+  await tap('.recvrow [data-act=pasteinfo]', 400); await p.evaluate(() => { document.querySelector('#qr').scrollTop = 99999; }); await sh('order-receiver-open');
+  await tap('#obtn', 400); await tap('[data-act=toastact]', 500);
+  await tap('[data-card=pay] .mb[data-b="1"] [data-act=cardcopy]', 400); await top(); await sh('checkout');
+  await stage('size'); await tap('[data-card=fit-size] .mact [data-act=cardedit]', 700); await p.fill('.sheet [data-eta]', 'Dạ bạn mặc size M mẫu Lace Top sẽ vừa vặn nhen 🌷'); await sh('edit-sheet'); await close();
+  await tap('[data-card=sizes] [data-act=cardcopy]', 700); await sh('stage-done-marks');
+  await tap('[data-act=newcust]', 500); await sh('new-customer-toast');
+  // screens v6 did not change
+  await tap('[data-act=toastact]', 400); await tap('#fbar [data-v=home]'); await sh('home-resume', '');
+  await p.evaluate(() => { window.__SE.st.draft.lines.length = 0; window.__SE.st.draft.done = {}; }); await p.reload(); await p.waitForTimeout(500); await sh('home', '');
+  await tap('#fbar [data-v=pi]'); await sh('san-pham-theo-mau', '');
+  await tap('[data-open="p:lace-top"]', 700); await sh('product-sheet-thong-tin', ''); await tap('.sheet #pseg [data-v=size]'); await sh('product-sheet-bang-size', ''); await close();
+  await tap('[data-act=pview][data-v=s]'); await tap('[data-act=setsugg] >> nth=0', 700); await sh('set-sheet', ''); await close();
+  await tap('#nav [data-act=settings]', 600); await sh('settings', ''); await close();
+  if (errors.length) console.log('ERRORS', w, mode, errors.join(';'));
   await ctx.close();
-  { // English
-    const o = await newPage(b, { w, h, dark, insets: INS, standalone: true, storage: { set: { lang: 'en', fee: 25000, bank: { name: '', no: '', holder: '' } } } }); await o.page.goto(url); await o.page.waitForTimeout(450);
-    await o.page.tap('#home [data-v=greet]'); await o.page.waitForTimeout(250); await o.page.tap('[data-open="f:open-first"]'); await sh(o.page, 'english-message-sheet'); await o.ctx.close();
-  }
 }
-// ---- safe-area wrapper simulations (spec 4.3)
+// ---- safe-area wrapper simulations + SE + keyboard (design-v5 4.3 / design-v6 7.4)
 {
   const base = { dark: true, standalone: true };
   let o = await newPage(b, { w: 430, h: 932, ...base, insets: INS });
   await o.page.route('**/host.html', r => r.fulfill({ contentType: 'text/html', body: '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><html style="padding:59px 0 34px;background:#1C1D1C"><body style="margin:0;background:#1C1D1C"><iframe src="index.html" style="position:fixed;left:0;right:0;top:59px;bottom:34px;width:100%;height:calc(100% - 93px);border:0"></iframe></body></html>' }));
   await o.page.goto(url + 'host.html'); await o.page.waitForTimeout(800); await o.page.screenshot({ path: OUT + '/430-host-frame-dark.png' }); await o.ctx.close();
-  o = await newPage(b, { w: 430, h: 932, ...base, insets: INS }); await o.page.addInitScript(() => { document.documentElement.style.padding = '59px 0 34px'; }); await o.page.goto(url); await o.page.waitForTimeout(600); await o.page.screenshot({ path: OUT + '/430-host-root-padded-dark.png' }); await o.ctx.close();
-  o = await newPage(b, { w: 430, h: 932, ...base, insets: INS }); await o.page.goto(url); await o.page.waitForTimeout(300);
-  await o.page.addStyleTag({ content: '#app{bottom:34px!important}' }); await o.page.evaluate(() => window.__SE.measure()); await o.page.waitForTimeout(300); await o.page.screenshot({ path: OUT + '/430-host-shrunk-box-dark.png' }); await o.ctx.close();
   o = await newPage(b, { w: 393, h: 852, dark: false, standalone: true, insets: INS }); await o.page.route('**/host.html', r => r.fulfill({ contentType: 'text/html', body: '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><html style="padding:59px 0 34px;background:#F6F4EE"><body style="margin:0;background:#F6F4EE"><iframe src="index.html" style="position:fixed;left:0;right:0;top:59px;bottom:34px;width:100%;height:calc(100% - 93px);border:0"></iframe></body></html>' }));
   await o.page.goto(url + 'host.html'); await o.page.waitForTimeout(800); await o.page.screenshot({ path: OUT + '/393-host-frame-light.png' }); await o.ctx.close();
-  o = await newPage(b, { w: 375, h: 667, standalone: true, insets: { top: 20, bottom: 0 } }); await o.page.goto(url); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/375-se-pwa.png' });
-  await o.page.tap('#fbar [data-v=pi]'); await o.page.waitForTimeout(250); await o.page.tap('[data-open="p:lace-top"]'); await o.page.waitForTimeout(700); await o.page.screenshot({ path: OUT + '/375-se-product-sheet.png' }); await o.ctx.close();
+  o = await newPage(b, { w: 375, h: 667, standalone: true, insets: { top: 20, bottom: 0 }, storage: { rp: REC('lace-top') } }); await o.page.goto(url); await o.page.waitForTimeout(500);
+  await o.page.evaluate(() => document.querySelector('#home [data-v=order]').click()); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/375-se-order-empty.png' }); await o.ctx.close();
   o = await newPage(b, { w: 430, h: 932, dark: true, standalone: true, insets: INS }); await o.page.goto(url + '#debug=insets'); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/430-debug-insets-overlay-dark.png' }); await o.ctx.close();
-  o = await newPage(b, { w: 430, h: 932, dark: true, fakeVV: true, standalone: true, insets: INS }); await o.page.goto(url); await o.page.waitForTimeout(400);
-  await o.page.tap('#home [data-v=order]'); await o.page.waitForTimeout(250); await o.page.tap('#ores [data-act=oadd] >> nth=0'); await o.page.focus('[data-eta=order]'); await o.page.evaluate(() => window.__setKb(336)); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/430-keyboard-open-dark.png' }); await o.ctx.close();
+  o = await newPage(b, { w: 430, h: 932, dark: true, fakeVV: true, standalone: true, insets: INS, storage: { draft: { lines: [{ pid: 'lace-top', size: 'M', qty: 1 }, { pid: 'lace-skirt-cream', size: 'S', qty: 1 }], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: Date.now() } } }); await o.page.goto(url); await o.page.waitForTimeout(400);
+  await o.page.evaluate(() => document.querySelector('#home [data-v=order]').click()); await o.page.waitForTimeout(300); await o.page.tap('[data-act=recvtoggle]'); await o.page.waitForTimeout(200);
+  await o.page.focus('[data-in=info]'); await o.page.evaluate(() => window.__setKb(336)); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/430-order-receiver-keyboard-dark.png' }); await o.ctx.close();
 }
 await b.close(); srv.close();
 console.log(fs.readdirSync(OUT).length + ' files in shots/');

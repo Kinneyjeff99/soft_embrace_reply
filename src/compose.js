@@ -13,6 +13,14 @@
   FL.forEach(function (e) { FM[e.id] = e; });
   var nfV = new Intl.NumberFormat('vi-VN'), nfE = new Intl.NumberFormat('en-US');
 
+  /* unfilled data shows as a bracketed word in the preview ([size]); a message that still contains one cannot be copied (design-v6 5.4) */
+  var TOKW = { item: 'món', size: 'size', sizeA: 'size 1', sizeB: 'size 2', trackingCode: 'mã vận đơn', imageLinks: 'link hình', otherItem: 'mẫu thay thế', fitStyle: 'kiểu dáng', price: 'giá', total: 'tổng' };
+  var TOKRE = /\[(món|size|size 1|size 2|mã vận đơn|link hình|mẫu thay thế|kiểu dáng|giá|tổng)\]/g;
+  function tok(k) { return '[' + TOKW[k] + ']'; }
+  function tokKeys(text) { var out = []; String(text).replace(TOKRE, function (m, w) { Object.keys(TOKW).forEach(function (k) { if (TOKW[k] === w && out.indexOf(k) < 0) out.push(k); }); return m; }); return out; }
+  /* greeting-only replies drop the product slot and the dangling colon */
+  function greetOnly(tpl) { return tpl.replace(/\s*for \{\{item\}\}/g, '').replace(/\{\{itemInfo\}\}/g, '').replace(/\{\{item\}\}/g, '').replace(/[:：]\s*$/, ''); }
+
   function ovs() { return st.ov || {}; }
   function pv(o, f) { var x = ovs()[o.id]; return x && x[f] !== undefined ? x[f] : o[f]; }
   function clean(t) { return String(t == null ? '' : t).replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n').trim(); }
@@ -45,13 +53,18 @@
     var ship = d.ship === 'fee' ? st.set.fee : d.ship === 'custom' ? (d.custom || 0) : 0;
     return { sub: sub, ship: ship, total: sub + ship, count: d.lines.length, qty: n };
   }
-  function totalStr(l) { return l === 'en' ? nfE.format(calc().total) : money(calc().total, 'vi'); }
+  /* lines that have a size are "ordered"; a line without one is still "being asked about" (badge counts the first kind) */
+  function readyCount() { var n = 0; st.draft.lines.forEach(function (L) { if (PM[L.pid] && L.size) n += L.qty; }); return n; }
+  function sizelessCount() { var n = 0; st.draft.lines.forEach(function (L) { if (PM[L.pid] && !L.size) n++; }); return n; }
+  function hasLines() { return st.draft.lines.some(function (L) { return PM[L.pid]; }); }
+  function totalStr(l) { if (!hasLines()) return tok('total'); return l === 'en' ? nfE.format(calc().total) : money(calc().total, 'vi'); }
   function linesText(l) {
+    if (!hasLines()) return '• ' + tok('item') + ' – size ' + tok('size') + ': ' + tok('price');
     return st.draft.lines.map(function (L) {
       var p = PM[L.pid]; if (!p) return '';
       var nm = pv(p, 'name') + (p.variant ? ' – ' + VAR[p.variant][l] : '');
-      return '• ' + nm + ' – size ' + L.size + (L.qty > 1 ? ' x' + L.qty : '') + ': ' + money(pv(p, 'price') * L.qty, l);
-    }).join('\n');
+      return '• ' + nm + ' – size ' + (L.size || tok('size')) + (L.qty > 1 ? ' x' + L.qty : '') + ': ' + money(pv(p, 'price') * L.qty, l);
+    }).filter(Boolean).join('\n');
   }
   function shipLine(l) {
     var d = st.draft, vi = l === 'vi';
@@ -158,7 +171,7 @@
        leadIds  = the lead-in chosen per "<action>:<lang>" key, committed only after a successful copy */
   function composeCopy(action, ref, l) {
     ref = ref || {};
-    var out = { text: '', lead: '', parts: [], fellBack: null, trunc: false, missing: null, partial: null, leadIds: {} };
+    var out = { text: '', lead: '', parts: [], fellBack: null, trunc: false, missing: null, partial: null, leadIds: {}, pending: [], bubbles: null };
     function lead(a) {
       var k = a + ':' + l, id = ref.sel && Object.prototype.hasOwnProperty.call(ref.sel, k) ? ref.sel[k] : leadSel(a, l);
       var hit = id ? leadList(a, l).filter(function (x) { return x.id === id; })[0] : null;
@@ -173,6 +186,67 @@
       return out;
     }
     var p = ref.pid ? PM[ref.pid] : null, t, t2;
+    function pidsOf() { return (ref.pids || []).filter(function (id, i, a) { return PM[id] && a.indexOf(id) === i; }); }
+    /* greeting: three variants over 0..4 products. new/back keep the greeting template; info is the product blocks only (optional "Câu trước thông tin") */
+    if (action === 'greet') {
+      var gp = pidsOf(), blocks = [], lost = [], other1 = false, v = ref.v || 'new';
+      gp.forEach(function (id) {
+        var q = PM[id], tx = ptext(q, 'desc', l).trim();
+        if (!tx) { lost.push(id); if (ptext(q, 'desc', other(l)).trim()) other1 = true; return; }
+        blocks.push(tx); if (ptrunc(q, 'desc', l)) out.trunc = true;
+      });
+      if (gp.length && !blocks.length) { if (other1) out.missing = l; return finish(); }
+      out.partial = lost.length ? lost : null;
+      var info = blocks.join('\n\n');
+      if (v === 'info') {
+        if (!blocks.length) { out.pending = ['item']; return finish(); }
+        pushLead(lead('info')); pushBody(info); return finish();
+      }
+      var ge = entryText(FM[v === 'back' ? 'open-returning' : 'open-first'], l);
+      if (ge.fell) { out.missing = l; return finish(); }
+      var gt = ge.text;
+      if (blocks.length) {
+        if (!/\{\{itemInfo\}\}/.test(gt)) gt += '\n\n{{itemInfo}}';
+        gt = gt.replace(/[ \t]*\{\{itemInfo\}\}/g, function () { return '\n\n' + info; }).replace(/\{\{item\}\}/g, function () { return gp.map(function (id) { return pitem(PM[id], l); }).join(' + '); });
+      } else gt = greetOnly(gt);
+      pushBody(gt);
+      /* EXTENSION POINT (not implemented on purpose): design-v6 7.1 proposes splitting a message longer than ~1,000 characters into one bubble per
+         product ("Gửi 2 tin"). The Instagram DM limit is an UNVERIFIED assumption, so nothing is split: out.bubbles stays null and the whole text is one message.
+         When the limit is confirmed on a real phone, fill out.bubbles = [{text}] here (split between product blocks, never inside one) and let the card render a sequence. */
+      return finish();
+    }
+    /* size charts of 1..4 products in ONE message; with two or more every chart is labelled by its product (same shape as set bubble b) */
+    if (action === 'sizes') {
+      var sp = pidsOf(), sb = [], slost = [], sother = false;
+      if (!sp.length) { out.pending = ['item']; return finish(); }
+      sp.forEach(function (id) {
+        var q = PM[id], tx = ptext(q, 'size', l).trim();
+        if (!tx) { slost.push(id); if (ptext(q, 'size', other(l)).trim()) sother = true; return; }
+        sb.push(sp.length > 1 ? pname(q, l) + '\n' + tx : tx); if (ptrunc(q, 'size', l)) out.trunc = true;
+      });
+      if (!sb.length) { if (sother) out.missing = l; return finish(); }
+      out.partial = slost.length ? slost : null;
+      pushLead(lead('size')); pushBody(sb.join('\n\n'));
+      if (ref.ask) { var ae = entryText(FM['ask-measurements'], l); if (!ae.fell) pushBody(ae.text); }
+      return finish();
+    }
+    /* any flow message with its blanks filled from the context: unfilled data stays visible as [size], [món], [mã vận đơn] and is listed in out.pending */
+    if (action === 'entry') {
+      var ent = entryText(FM[ref.tid], l), fl = ref.fills || {};
+      if (ent.fell) { out.missing = l; return finish(); }
+      var tp = ref.pid ? PM[ref.pid] : null;
+      var body = ent.text.replace(/\{\{(\w+)\}\}/g, function (m, k) {
+        var val = null, key = k;
+        if (k === 'itemInfo') { key = 'item'; val = tp && ptext(tp, 'desc', l).trim(); if (tp && ptrunc(tp, 'desc', l)) out.trunc = true; }
+        else if (k === 'sizeChart') { key = 'item'; val = tp && ptext(tp, 'size', l).trim(); if (tp && ptrunc(tp, 'size', l)) out.trunc = true; }
+        else if (k === 'item') val = tp && pitem(tp, l);
+        else if (k === 'otherItem') val = fl.otherItem && PM[fl.otherItem] ? pitem(PM[fl.otherItem], l) : null;
+        else val = fl[k];
+        if (val == null || val === '') { if (out.pending.indexOf(key) < 0) out.pending.push(key); return TOKW[key] ? tok(key) : '[' + key + ']'; }
+        return String(val);
+      });
+      pushBody(body); return finish();
+    }
     if (action === 'info' || action === 'size' || action === 'both') {
       if (!p) return finish();
       var w = action === 'size' ? 'size' : 'desc';
@@ -198,6 +272,7 @@
       return finish();
     }
     if (action === 'order') {
+      if (!hasLines()) out.pending.push('item'); else if (sizelessCount()) out.pending.push('size');
       pushLead(lead('order')); pushBody(orderText(l));
       return finish();
     }
@@ -215,17 +290,19 @@
      cards: {id} = a message from SEED.flow, {kind:'info'|'size'} = product chooser, {kind:'composer'} = the order composer.
      more = secondary items behind "Thêm". alts = variants of one card (greeting after payment: ready-to-wear vs custom). */
   var STAGES = [
-    { id: 'greet', lab: [['Chào hỏi']], desc: 'Khách vừa nhắn lần đầu hoặc quay lại.', cards: [{ id: 'open-first', t: 'Khách mới' }, { id: 'open-returning', t: 'Khách cũ' }, { kind: 'info', t: 'Gửi thông tin mẫu', s: 'Chạm một mẫu rồi chạm Chép' }], more: [] },
-    { id: 'size', lab: [['Tư vấn', 'size']], desc: 'Khách hỏi về size, form dáng, số đo.', cards: [{ id: 'ask-measurements', t: 'Xin số đo' }, { kind: 'size', t: 'Gửi bảng size', s: 'Chạm một mẫu rồi chạm Chép' }, { id: 'fit-size', t: 'Vừa size' }, { id: 'between-sizes', t: 'Giữa 2 size' }],
-      more: [{ id: 'will-think', t: 'Khách cần cân nhắc' }, { id: 'over-size-has-option', t: 'Quá size · có mẫu khác' }, { id: 'over-size-no-option', t: 'Quá size · không có mẫu khác' }, { id: 'too-small-size', t: 'Quá nhỏ' }] },
-    { id: 'info', lab: [['Xin', 'thông tin']], desc: 'Xin tên, số điện thoại, địa chỉ để lên đơn.', cards: [{ id: 'shipping-info', t: 'Xin thông tin giao hàng' }, { id: 'shipping-fee', t: 'Hỏi địa chỉ để báo phí ship' }], more: [{ id: 'extra-photos', t: 'Gửi thêm hình / link' }] },
-    { id: 'order', lab: [['Tạo đơn']], desc: 'Chọn món, phí ship, rồi chép tin chốt đơn.', cards: [{ kind: 'composer' }], more: [] },
-    { id: 'out', lab: [['Check out']], desc: 'Sau khi khách chuyển khoản.', cards: [{ id: 'paid-ack', t: 'Đã nhận thanh toán' }, { id: 'paid-thanks', t: 'Cảm ơn · gói đơn', alts: [['paid-thanks', 'Có sẵn'], ['thanks-custom', 'May đo']] }, { id: 'tracking-note', t: 'Gửi mã vận đơn · tin 1' }, { id: 'tracking-code', t: 'Mã vận đơn · tin 2' }, { id: 'ask-feedback', t: 'Xin hình feedback' }],
-      more: [{ id: 'thanks-generic', t: 'Lời chúc kèm (tuỳ chọn)' }, { id: 'return-policy', t: 'Nhắc chính sách đổi trả' }, { id: 'order-confirm', t: 'Đã nhận (ngắn)' }, { id: 'thanks-rtw', t: 'Cảm ơn · gộp 1 tin' }] }
+    { id: 'greet', lab: [['Chào hỏi']], desc: 'Khách vừa nhắn lần đầu hoặc quay lại.', cards: [{ id: 'greet', kind: 'greet', t: 'Chào khách', ids: ['open-first', 'open-returning'] }], more: [], nav: [{ id: 'extra-photos', t: 'Gửi thêm hình / link' }] },
+    { id: 'size', lab: [['Tư vấn', 'size']], desc: 'Khách hỏi về size, form dáng, số đo.', cards: [{ id: 'sizes', kind: 'sizes', t: 'Gửi bảng size' }, { id: 'fit-size', kind: 'entry', t: 'Vừa size', inputs: ['item', 'size'] }, { id: 'between-sizes', kind: 'entry', t: 'Giữa 2 size', inputs: ['sizeA', 'sizeB'] }, { id: 'ask-measurements', kind: 'entry', t: 'Xin số đo', compact: true }],
+      more: [{ id: 'will-think', kind: 'entry', compact: true, t: 'Khách cần cân nhắc' }, { id: 'over-size-has-option', kind: 'entry', compact: true, t: 'Quá size · có mẫu khác' }, { id: 'over-size-no-option', kind: 'entry', compact: true, t: 'Quá size · không có mẫu khác' }, { id: 'too-small-size', kind: 'entry', compact: true, t: 'Quá nhỏ' }] },
+    { id: 'info', lab: [['Xin', 'thông tin']], desc: 'Xin tên, số điện thoại, địa chỉ để lên đơn.', cards: [{ id: 'shipping-info', kind: 'entry', compact: true, t: 'Xin thông tin giao hàng' }, { id: 'shipping-fee', kind: 'entry', compact: true, t: 'Hỏi địa chỉ để báo phí ship' }], more: [{ id: 'extra-photos', kind: 'entry', compact: true, t: 'Gửi thêm hình / link', inputs: ['imageLinks'] }], nav: [{ kind: 'paste', t: 'Khách gửi địa chỉ rồi? Dán vào đơn' }] },
+    { id: 'order', lab: [['Tạo đơn']], desc: 'Chọn món, phí ship, rồi chép tin chốt đơn.', cards: [{ id: 'order', kind: 'composer', t: 'Tin chốt đơn', ids: ['order-recap'] }], more: [] },
+    { id: 'out', lab: [['Check out']], desc: 'Sau khi khách chuyển khoản.', cards: [{ id: 'pay', kind: 'seq', t: 'Xác nhận thanh toán', items: ['paid-ack', ['paid-thanks', 'thanks-custom']] }, { id: 'track', kind: 'seq', t: 'Gửi mã vận đơn', items: ['tracking-note', 'tracking-code'], field: 'trackingCode' }, { id: 'ask-feedback', kind: 'entry', compact: true, t: 'Xin hình feedback' }],
+      more: [{ id: 'thanks-generic', kind: 'entry', compact: true, t: 'Lời chúc kèm (tuỳ chọn)' }, { id: 'return-policy', kind: 'entry', compact: true, t: 'Nhắc chính sách đổi trả' }, { id: 'order-confirm', kind: 'entry', compact: true, t: 'Đã nhận (ngắn)' }, { id: 'thanks-rtw', kind: 'entry', compact: true, t: 'Cảm ơn gộp 1 tin' }] }
   ];
+  /* every flow message id a stage card stands for */
+  function cardIds(c) { var o = [].concat(c.ids || [], c.id && c.kind === 'entry' ? [c.id] : []); (c.items || []).forEach(function (x) { o = o.concat(x); }); return o; }
   function stageOf(id) {
     var r = '';
-    STAGES.forEach(function (g) { g.cards.concat(g.more).forEach(function (c) { if (c.id === id || (c.alts && c.alts.some(function (a) { return a[0] === id; }))) r = g.id; }); });
+    STAGES.forEach(function (g) { g.cards.concat(g.more, g.nav || []).forEach(function (c) { if (cardIds(c).indexOf(id) > -1 || c.id === id) r = r || g.id; }); });
     return r;
   }
   /* ---------- product list: newest first, category filter, collection sections, photos (round 4) ----------
@@ -254,7 +331,7 @@
 
   return {
     PS: PS, CATS: CATS, CATL: CATL, newest: newest, byCat: byCat, catCounts: catCounts, collections: collections, imgOf: imgOf,
-    STAGES: STAGES, stageOf: stageOf, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
+    STAGES: STAGES, stageOf: stageOf, cardIds: cardIds, TOKW: TOKW, TOKRE: TOKRE, tok: tok, tokKeys: tokKeys, greetOnly: greetOnly, readyCount: readyCount, sizelessCount: sizelessCount, hasLines: hasLines, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
     VAR: VAR, PL: PL, PM: PM, FL: FL, FM: FM, nfV: nfV, nfE: nfE,
     pv: pv, clean: clean, other: other, money: money, moneyP: moneyP, colorOf: colorOf, colorEn: colorEn, pname: pname, pitem: pitem, psizes: psizes,
     ptext: ptext, ptrunc: ptrunc, normEn: normEn, entryText: entryText, calc: calc, totalStr: totalStr, linesText: linesText, shipLine: shipLine, orderText: orderText,

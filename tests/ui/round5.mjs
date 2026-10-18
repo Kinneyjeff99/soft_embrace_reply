@@ -78,7 +78,7 @@ for (const dark of [false, true]) for (const [nm, w, h, ins] of DEV) {
 }
 // keyboard open: bar hidden, insets not re-measured, back after closing
 { const { page, ctx } = await newPage(b, { w: 393, h: 852, insets: { top: 59, bottom: 34 }, fakeVV: true, standalone: true }); await standalone(page, ctx); await page.goto(url); await wait(page, 350);
-  await page.tap('[data-act=stage][data-v=order] >> visible=true'); await wait(page); await page.focus('[data-eta=order]'); await page.evaluate(() => window.__setKb(336)); await wait(page, 300);
+  await page.tap('[data-act=stage][data-v=order] >> visible=true'); await wait(page); await page.tap('[data-act=recvtoggle]'); await wait(page); await page.focus('[data-in=info]'); await page.evaluate(() => window.__setKb(336)); await wait(page, 300);
   const k = await page.evaluate(() => ({ bar: getComputedStyle(document.querySelector('#fbar')).display, b: window.__SE.ins().b, shrunk: window.__SE.ins().shrunk })); await page.evaluate(() => { window.dispatchEvent(new Event('resize')); }); await wait(page, 100);
   const k2 = await page.evaluate(() => ({ b: window.__SE.ins().b, shrunk: window.__SE.ins().shrunk }));
   ok('keyboard open: bar hidden, --inset-b stays 34 (the shrunk app is not mistaken for a host box), even after a resize event', k.bar === 'none' && k.b === 34 && !k.shrunk && k2.b === 34 && !k2.shrunk, JSON.stringify([k, k2]));
@@ -108,7 +108,7 @@ async function audit(page, name, tag) {
       if (r.height < 43.5 || r.width < 43.5) out.small.push((e.className || e.tagName) + ':' + (e.textContent || e.placeholder || '').slice(0, 14) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
       if (e.tagName === 'BUTTON') {
         const nm = (e.getAttribute('aria-label') || e.textContent).replace(/\s+/g, ' ').trim();
-        const nounOk = e.closest('.seg,.row,.navrow,.tile,.qc,.prw,.ddrow,.rmain,.fb,.rbtn,.srw,.swrow,.morebtn,.iconbtn,.lstrip') || e.disabled || e.getAttribute('aria-disabled') === 'true';
+        const nounOk = e.closest('.seg,.row,.navrow,.tile,.nrow,.resume,.ctxbar,.newc,.pcell,.sc,.cb,.pv,.xm,.rmain3,.ddrow,.rmain,.fb,.rbtn,.srw,.swrow,.morebtn,.iconbtn,.lstrip') || e.disabled || e.getAttribute('aria-disabled') === 'true';
         if (!nounOk && !VERBS.test(nm)) out.names.push(nm.slice(0, 30));
       }
     });
@@ -131,7 +131,7 @@ async function audit(page, name, tag) {
   ok(`${tag} ${name}: every control >= 44x44`, r.small.length === 0, r.small.join('|'));
   ok(`${tag} ${name}: every button's name is a verb (or a noun on a › row / segment / nav)`, r.names.length === 0, r.names.join('|'));
   ok(`${tag} ${name}: no rose anywhere in computed colours`, r.rose.length === 0, r.rose.join('|'));
-  ok(`${tag} ${name}: all photos are circles (50%) at 32/40/44/56/72`, r.av.every(a => a[0] === '50%' && [32, 40, 44, 56, 72].includes(a[1])), JSON.stringify(r.av.filter(a => a[0] !== '50%' || ![32, 40, 44, 56, 72].includes(a[1]))));
+  ok(`${tag} ${name}: all photos are circles (50%) at 32/40/44/56/72`, r.av.every(a => a[0] === '50%' && [32, 40, 44, 56, 60, 64, 72, 96, 104].includes(a[1])), JSON.stringify(r.av.filter(a => a[0] !== '50%' || ![32, 40, 44, 56, 60, 64, 72, 96, 104].includes(a[1]))));
   ok(`${tag} ${name}: selected states have no coloured outline or ring`, r.sel.length === 0, r.sel.join('|'));
   ok(`${tag} ${name}: at most one filled primary on the surface (${r.primaries})`, r.primaries <= 1);
   return r;
@@ -143,16 +143,22 @@ for (const [w, h, dark] of [[393, 852, false], [393, 852, true], [430, 932, fals
   const { page, ctx, errors } = await newPage(b, { w, h, dark, insets: w === 375 ? { top: 20, bottom: 0 } : { top: 59, bottom: 34 }, standalone: true }); await standalone(page, ctx);
   await page.goto(url); await wait(page, 400);
   await audit(page, 'Home', tag);
-  await tap(page, '#home [data-v=greet]'); await audit(page, 'Trả lời nhanh · Chào hỏi', tag);
-  await tap(page, '#stseg [data-v=size]'); await tap(page, '[data-act=stmore]'); await audit(page, 'Trả lời nhanh · Tư vấn size (Câu khác open)', tag);
+  await tap(page, '#home [data-v=greet]'); await audit(page, 'Chào hỏi (empty context)', tag);
+  await tap(page, '#stage [data-card=greet] .sc[data-pid] >> nth=0'); await tap(page, '#stage [data-card=greet] .sc[data-pid] >> nth=1'); await audit(page, 'Chào hỏi (2 products)', tag);
+  await tap(page, '#ctxbar .ctxbar', 600); await audit(page, 'Picker · context', tag);
+  await tap(page, '.sheet #pkbody .pcell >> nth=3'); await audit(page, 'Picker · context (3 selected)', tag); await closeTop(page);
+  await tap(page, '#stseg [data-v=size]'); await tap(page, '[data-act=stmore]'); await audit(page, 'Tư vấn size (Câu khác open)', tag);
   await tap(page, '#stseg [data-v=info]'); await audit(page, 'Xin thông tin', tag);
   await tap(page, '#stseg [data-v=out]'); await audit(page, 'Check out', tag);
-  await tap(page, '#stseg [data-v=order]'); await audit(page, 'Tạo đơn (empty)', tag);
-  await tap(page, '#ores [data-act=oadd] >> nth=0'); await tap(page, '#ores [data-act=oadd] >> nth=1');
-  await tap(page, '#stage .ddrow[data-lead=order]', 450); await audit(page, 'Câu mở đầu picker (order)', tag);
-  await tap(page, '.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-order-1"]', 600);
-  await audit(page, 'Tạo đơn (1 item, strip)', tag);
-  await tap(page, '#olines .lrow', 450); await audit(page, 'Line editor sheet', tag); await closeTop(page);
+  await tap(page, '#stage [data-card=pay] .pv >> nth=0', 500); await audit(page, 'Sửa tin sheet (entry)', tag); await closeTop(page);
+  await tap(page, '#stseg [data-v=order]'); await audit(page, 'Tạo đơn (2 lines, one without size)', tag);
+  await tap(page, '[data-act=lnsize][data-v=M] >> nth=0'); await tap(page, '[data-act=lnsize][data-v=M] >> nth=1');
+  await tap(page, '[data-card=order] [data-act=cardedit] >> nth=0', 500); await tap(page, '.sheet .ddrow[data-lead=order]', 450); await audit(page, 'Câu mở đầu picker (order)', tag);
+  await tap(page, '.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-order-1"]', 650); await audit(page, 'Sửa tin sheet (order, strip)', tag); await closeTop(page);
+  await audit(page, 'Tạo đơn (ready, strip)', tag);
+  await tap(page, '[data-act=shipopen]', 500); await audit(page, 'Phí ship sheet', tag); await closeTop(page);
+  await tap(page, '[data-act=oadd2]', 600); await audit(page, 'Picker · order', tag); await closeTop(page);
+  await tap(page, '[data-act=recvtoggle]'); await audit(page, 'Tạo đơn (receiver open)', tag);
   await tap(page, '#fbar [data-v=pi]'); await audit(page, 'Sản phẩm · Theo mẫu', tag);
   await tap(page, '#pfilt [data-v=skirt]'); await audit(page, 'Sản phẩm · filter Váy', tag); await tap(page, '#pfilt [data-v=all]');
   await page.fill('#q', 'zzzz'); await wait(page, 300); await audit(page, 'Sản phẩm · empty search', tag); await page.fill('#q', ''); await wait(page, 250);

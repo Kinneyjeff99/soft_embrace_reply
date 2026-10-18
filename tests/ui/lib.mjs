@@ -26,9 +26,12 @@ export async function newPage(browser, { w = 393, h = 852, dark = false, reduced
   // real env(safe-area-inset-*) emulation (Chromium CDP): insets = { top, bottom }
   if (insets || standalone) { const cdp = await ctx.newCDPSession(page); ctx.__cdp = cdp; if (insets) await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: insets.top || 0, bottom: insets.bottom || 0, left: 0, right: 0 } }); }
   if (standalone) await page.addInitScript(() => { Object.defineProperty(navigator, 'standalone', { value: true, configurable: true }); });
+  // every UI test runs with #debug=dupes: a repeated keyed group, a duplicated card/strip/ctx bar or a stacked duplicate sheet logs console.error('dupe') and fails the test's zero-console-errors check
+  const g0 = page.goto.bind(page);
+  page.goto = (u, o) => g0(/#/.test(u) ? (/debug=dupes/.test(u) ? u : u + '&debug=dupes') : u + '#debug=dupes', o);
   const errors = [];
   page.on('console', m => { if (['error', 'warning'].includes(m.type()) && !/Service Worker registration blocked/.test(m.text())) errors.push(m.type() + ': ' + m.text()); });
-  page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  page.on('pageerror', e => errors.push('pageerror: ' + e.message + (process.env.STACK ? ' ' + e.stack : '')));
   page.on('requestfailed', r => errors.push('requestfailed: ' + r.url()));
   if (storage) await page.addInitScript(s => { try { if (!localStorage.getItem('se.v1')) localStorage.setItem('se.v1', s); } catch (e) {} }, JSON.stringify(storage));
   if (stubClip) await page.addInitScript(() => {

@@ -227,14 +227,19 @@ test('STAGES: exactly the 5 stages in sales-flow order with the founder labels',
   assert.deepEqual(C.STAGES.map(g => g.id), ['greet', 'size', 'info', 'order', 'out']);
   assert.deepEqual(C.STAGES.map(g => g.lab[0].join(' ')), ['Chào hỏi', 'Tư vấn size', 'Xin thông tin', 'Tạo đơn', 'Check out']);
 });
-test('STAGES: every referenced message exists, primary cards 2-5 (composer stage has one), no id in two stages', () => {
+test('STAGES (v6): one hero per Chào hỏi / Tư vấn size, composer on Tạo đơn, two sequence cards on Check out, every referenced message exists', () => {
   const { C } = mk(); const seen = {};
-  for (const g of C.STAGES) {
-    assert.ok(g.id === 'order' ? g.cards.length === 1 && g.cards[0].kind === 'composer' : g.cards.length >= 2 && g.cards.length <= 5, g.id);
-    for (const c of g.cards.concat(g.more)) {
-      for (const id of [c.id, ...(c.alts || []).map(a => a[0])].filter(Boolean)) { assert.ok(C.FM[id], 'missing ' + id); assert.ok(!seen[id] || seen[id] === g.id, 'dup ' + id); seen[id] = g.id; }
-    }
-  }
+  const g = id => C.STAGES.find(x => x.id === id);
+  assert.deepEqual(g('greet').cards.map(c => c.kind), ['greet']);
+  assert.deepEqual(g('size').cards.map(c => c.id), ['sizes', 'fit-size', 'between-sizes', 'ask-measurements']);
+  assert.deepEqual(g('size').more.map(c => c.id), ['will-think', 'over-size-has-option', 'over-size-no-option', 'too-small-size']);
+  assert.deepEqual(g('info').cards.map(c => c.id), ['shipping-info', 'shipping-fee']);
+  assert.deepEqual(g('order').cards.map(c => c.kind), ['composer']);
+  assert.deepEqual(g('out').cards.map(c => c.id), ['pay', 'track', 'ask-feedback']);
+  assert.deepEqual(g('out').cards[0].items, ['paid-ack', ['paid-thanks', 'thanks-custom']]);
+  assert.deepEqual(g('out').cards[1].items, ['tracking-note', 'tracking-code']);
+  for (const st of C.STAGES) for (const c of st.cards.concat(st.more, st.nav || [])) for (const id of C.cardIds(c)) { assert.ok(C.FM[id], 'missing ' + id); if (!(c.id === 'extra-photos')) { assert.ok(!seen[id] || seen[id] === st.id, 'dup ' + id); seen[id] = st.id; } }
+  assert.ok(!C.cardIds({ id: 'x', kind: 'info' }).length, 'the old product chip cards are gone');
 });
 test('STAGES: required items sit in the right stage', () => {
   const { C } = mk();
@@ -411,6 +416,120 @@ test('spec numbers: on-primary 7.59 (light, Davy) and 11.37 (dark, Vanilla); Jet
   assert.ok(Math.abs(CR('#2A2B2A', '#F2E7AB') - 11.37) < .02);
   assert.equal(lightT.primary, '#4D5162'); assert.equal(darkT.primary, '#F2E7AB'); assert.equal(darkT.bg, '#1C1D1C');
 });
-test('service worker cache name carries the v5 bump', () => {
-  assert.ok(/const CACHE = 'se-v5-[0-9a-f]{10}'/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
+test('service worker cache name carries the v6 bump', () => {
+  assert.ok(/const CACHE = 'se-v6-[0-9a-f]{10}'/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
+});
+
+// ---------- Round 6 (design-v6): greet, sizes, entry, order tokens, paired messages, context totals ----------
+const mk6 = lines => mk({ draft: { lines: lines || [], ship: 'courier', custom: 0, info: '', bank: false, copiedAt: 0, done: {}, at: 0 } });
+const T = (C, a, ref, l = 'vi') => C.composeCopy(a, ref, l);
+test('greet: 3 variants x 0/1/2 products x VI/EN (preview == clipboard source, no tokens left, no triple newline)', () => {
+  const { C } = mk6(); let n = 0;
+  for (const v of ['new', 'back', 'info']) for (const pids of [[], ['lace-top'], ['lace-top', 'lace-skirt-cream']]) for (const l of ['vi', 'en']) {
+    const r = T(C, 'greet', { v, pids, sel: { 'info:vi': null, 'info:en': null } }, l); n++;
+    assert.ok(!/\{\{/.test(r.text) && !/\n{3,}/.test(r.text) && !/^\s|\s$/.test(r.text), v + pids + l);
+    if (v === 'info' && !pids.length) { assert.equal(r.text, ''); assert.deepEqual(r.pending, ['item']); continue; }
+    for (const id of pids) assert.ok(r.text.includes(C.clean(P(id)[l === 'vi' ? 'descVi' : 'descEn'])), 'info of ' + id);
+    if (v === 'new' && l === 'vi') assert.ok(r.text.startsWith('Soft Embrace chào bạn,'));
+    if (v === 'back' && l === 'vi') assert.ok(r.text.startsWith('Dạ chào bạn,'));
+    if (v === 'info') assert.ok(!/chào bạn|Hi /i.test(r.text.split('\n')[0]));
+    assert.equal(r.bubbles, null, 'never auto-split');
+  }
+  assert.equal(n, 18);
+});
+test('greet without a product is the greeting only: slot and dangling colon removed (vi and en)', () => {
+  const { C } = mk6();
+  assert.equal(T(C, 'greet', { v: 'new', pids: [] }).text, 'Soft Embrace chào bạn,\n\nCảm ơn bạn đã quan tâm đến sản phẩm của chúng mình, Soft xin gửi bạn thông tin sản phẩm ạ');
+  assert.ok(!/\{\{|for \{\{/.test(T(C, 'greet', { v: 'back', pids: [] }, 'en').text));
+});
+test('greet with two products: both infos, joined by a blank line, in context order; info variant takes the opening line', () => {
+  const { C } = mk6(); const r = T(C, 'greet', { v: 'new', pids: ['lace-top', 'lace-skirt-cream'] });
+  assert.ok(r.text.indexOf('Lace Top 🦢') < r.text.indexOf('Lace Skirt'));
+  assert.ok(r.text.includes(C.clean(P('lace-top').descVi) + '\n\n' + C.clean(P('lace-skirt-cream').descVi)));
+  const i = T(C, 'greet', { v: 'info', pids: ['lace-top', 'lace-skirt-cream'], sel: { 'info:vi': 'li-info-3' } });
+  assert.ok(i.text.startsWith('Soft gửi bạn thông tin mẫu ạ 🌷\n\nLace Top 🦢') && i.lead === 'Soft gửi bạn thông tin mẫu ạ 🌷');
+});
+test('greet: a product with no EN info is left out and listed in partial; all missing -> missing', () => {
+  const { st, C } = mk6(); st.ov['lace-skirt-cream'] = { descEn: '' };
+  const r = T(C, 'greet', { v: 'new', pids: ['lace-top', 'lace-skirt-cream'] }, 'en');
+  assert.deepEqual(r.partial, ['lace-skirt-cream']); assert.ok(r.text.includes('Lace Top') && !r.text.includes('Lace Skirt'));
+  st.ov['lace-top'] = { descEn: '' };
+  assert.equal(T(C, 'greet', { v: 'new', pids: ['lace-top', 'lace-skirt-cream'] }, 'en').missing, 'en');
+});
+test('sizes: one product = the chart exactly as before; two products = labelled blocks in context order (acceptance 6)', () => {
+  const { C } = mk6();
+  assert.equal(T(C, 'sizes', { pids: ['lace-top'], sel: { 'size:vi': null } }).text, C.clean(P('lace-top').sizeVi));
+  const r = T(C, 'sizes', { pids: ['lace-top', 'lace-skirt-cream'], sel: { 'size:vi': null } });
+  assert.equal(r.text, 'Lace Top\n' + C.clean(P('lace-top').sizeVi) + '\n\nLace Skirt · Kem\n' + C.clean(P('lace-skirt-cream').sizeVi));
+  assert.ok(r.text.startsWith('Lace Top\n') && r.text.includes('\n\nLace Skirt · Kem\n'));
+  assert.equal(T(C, 'sizes', { pids: ['lace-skirt-cream', 'lace-top'], sel: { 'size:vi': null } }).text.indexOf('Lace Skirt · Kem\n'), 0, 'order follows the context');
+});
+test('sizes: opening line + measurement request; EN partial and missing; empty context is a pending item', () => {
+  const { st, C } = mk6();
+  const r = T(C, 'sizes', { pids: ['lace-top'], ask: true, sel: { 'size:vi': 'li-size-1' } });
+  assert.equal(r.text, 'Dạ mình gửi bảng size để bạn tiện tham khảo nhen:\n\n' + C.clean(P('lace-top').sizeVi) + '\n\nNếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕');
+  assert.deepEqual(T(C, 'sizes', { pids: [] }).pending, ['item']); assert.equal(T(C, 'sizes', { pids: [] }).text, '');
+  st.ov['lace-skirt-cream'] = { sizeEn: '' };
+  const e = T(C, 'sizes', { pids: ['lace-top', 'lace-skirt-cream'], sel: { 'size:en': null } }, 'en');
+  assert.deepEqual(e.partial, ['lace-skirt-cream']); assert.ok(e.text.startsWith('Lace Top\n'));
+  st.ov['lace-top'] = { sizeEn: '' }; assert.equal(T(C, 'sizes', { pids: ['lace-top', 'lace-skirt-cream'] }, 'en').missing, 'en');
+});
+test('sizes with 4 charts and the greeting with 4 infos are NOT split (the 1,000 character Instagram limit is unverified): bubbles stays null', () => {
+  const { C } = mk6(); const four = ['embroidery-pants', 'lace-skirt-cream', 'lace-top', 'fleur-slip-dress-blue'];
+  const g = T(C, 'greet', { v: 'new', pids: four }); const z = T(C, 'sizes', { pids: four });
+  assert.ok(g.text.length > 1000, 'long: ' + g.text.length); assert.equal(g.bubbles, null); assert.equal(z.bubbles, null);
+  assert.ok(!/EXTENSION POINT/.test(g.text));
+  assert.ok(/EXTENSION POINT \(not implemented on purpose\)/.test(readFileSync(new URL('../src/compose.js', import.meta.url), 'utf8')), 'the extension point is commented');
+});
+test('entry: fit-size fills size + chart of the chosen product; unfilled data stays visible as [size] / [món] and is listed in pending', () => {
+  const { C } = mk6();
+  const a = T(C, 'entry', { tid: 'fit-size', pid: 'lace-top', fills: { size: 'M' } });
+  assert.ok(a.text.startsWith('Dạ vậy bạn mặc size M mẫu này') && a.text.includes(C.clean(P('lace-top').sizeVi)) && !/\[/.test(a.text) && a.pending.length === 0);
+  const b = T(C, 'entry', { tid: 'fit-size', pid: 'lace-top', fills: {} }); assert.ok(b.text.includes('size [size] mẫu') && !b.text.includes('[món]')); assert.deepEqual(b.pending, ['size']);
+  const c = T(C, 'entry', { tid: 'fit-size', pid: null, fills: {} }); assert.deepEqual(c.pending.sort(), ['item', 'size']); assert.ok(c.text.includes('[món]') && c.text.includes('[size]'));
+  const d = T(C, 'entry', { tid: 'between-sizes', pid: 'lace-top', fills: { sizeA: 'M', sizeB: 'L' } });
+  assert.ok(d.text.includes('size M mẫu này sẽ vừa vặn') && d.text.includes('chọn size L'));
+  const e = T(C, 'entry', { tid: 'tracking-code', pid: null, fills: {} }); assert.equal(e.text, '[mã vận đơn]'); assert.deepEqual(e.pending, ['trackingCode']);
+  assert.equal(T(C, 'entry', { tid: 'tracking-code', fills: { trackingCode: 'GHN123' } }).text, 'GHN123');
+  assert.equal(T(C, 'entry', { tid: 'extra-photos', fills: {} }).text.includes('[link hình]'), true);
+  assert.equal(T(C, 'entry', { tid: 'paid-ack' }, 'en').missing, 'en');
+});
+test('paired messages (Check out): pay = tin 1 + tin 2 (variant by made-to-order), track = note + code, all one message each', () => {
+  const { C } = mk6();
+  assert.equal(T(C, 'entry', { tid: 'paid-ack' }).text, 'ui dạ mình nhận được rùi ạ');
+  assert.equal(T(C, 'entry', { tid: 'paid-thanks' }).text, 'cảm ơn bạn nhìu, Soft sẽ tranh thủ gói đơn gửi đến bạn ạ 💗');
+  assert.ok(/may/.test(T(C, 'entry', { tid: 'thanks-custom' }).text));
+  assert.equal(T(C, 'entry', { tid: 'tracking-note' }).text, 'dạ mình gửi mvđ của Giao Hàng Nhanh để bạn tiện theo dõi nhen');
+  assert.equal(T(C, 'entry', { tid: 'tracking-code', fills: { trackingCode: ' GHN9 ' } }).text, 'GHN9');
+});
+test('order: totals count sizeless lines, tokens for what is missing, readyCount counts only lines with a size (badge)', () => {
+  const { st, C } = mk6([{ pid: 'lace-top', size: 'M', qty: 1 }, { pid: 'lace-skirt-cream', size: null, qty: 1 }]);
+  assert.equal(C.calc().total, 850000); assert.equal(C.calc().count, 2); assert.equal(C.readyCount(), 1); assert.equal(C.sizelessCount(), 1);
+  const r = T(C, 'order', {}); assert.ok(r.text.includes('• Lace Top – size M: 380.000đ\n• Lace Skirt – Kem – size [size]: 470.000đ') && r.text.includes('Tổng cộng là 850.000đ'));
+  assert.deepEqual(r.pending, ['size']);
+  st.draft.lines[1].size = 'S'; assert.deepEqual(T(C, 'order', {}).pending, []); assert.equal(C.readyCount(), 2);
+  st.draft.lines[0].qty = 2; assert.equal(C.readyCount(), 3); assert.equal(C.calc().total, 1230000); assert.ok(/ x2: 760\.000đ/.test(T(C, 'order', {}).text));
+  st.draft.lines = []; const e = T(C, 'order', {}); assert.ok(e.text.includes('• [món] – size [size]: [giá]') && e.text.includes('Tổng cộng là [tổng]')); assert.deepEqual(e.pending, ['item']);
+  assert.equal(C.readyCount(), 0);
+});
+test('order shipping line and receiver info still compose with sizeless lines; EN has tokens too', () => {
+  const { st, C } = mk6([{ pid: 'lace-top', size: null, qty: 1 }]); st.set.fee = 25000; st.draft.ship = 'fee'; st.draft.info = 'A, 090';
+  const t = T(C, 'order', {}).text; assert.ok(t.includes('Shipping: 25.000đ') && t.includes('Giao đến:\nA, 090') && t.includes('size [size]') && t.includes('Tổng cộng là 405.000đ'));
+  assert.ok(T(C, 'order', {}, 'en').text.includes('size [size]'));
+});
+test('tokKeys finds only the known bracket words (the EN "[bust / waist / hip]" is not a blank)', () => {
+  const { C } = mk6();
+  assert.deepEqual(C.tokKeys('x [size] y [món] [mã vận đơn] [bust / waist / hip]').sort(), ['item', 'size', 'trackingCode']);
+  assert.deepEqual(C.tokKeys(SEED.flow.find(e => e.id === 'ask-measurements').en), []);
+});
+test('STAGES.stageOf maps every message of the new cards (greet hero, sequence bubbles, entries)', () => {
+  const { C } = mk6();
+  for (const [id, g] of Object.entries({ 'open-first': 'greet', 'open-returning': 'greet', 'ask-measurements': 'size', 'fit-size': 'size', 'paid-ack': 'out', 'thanks-custom': 'out', 'tracking-code': 'out', 'order-recap': 'order', 'shipping-info': 'info', 'ask-feedback': 'out' })) assert.equal(C.stageOf(id), g, id);
+});
+test('v6 sources: no pushSheet without the re-entry guard, no += / insertAdjacentHTML into live regions, dupes assertion present', () => {
+  const js = SRCF('app.js');
+  assert.ok(/top0\.k === k0 \|\| now0 - lastPush < 350/.test(js), 'sheet guard');
+  assert.ok(!/insertAdjacentHTML|\.innerHTML \+=/.test(js), 'idempotent render: no appending into live regions');
+  assert.ok(/function assertUnique/.test(js) && /console\.error\('dupe'/.test(js));
+  assert.ok(!/function ctx\(|setCtx|hintDone\(|candidates\(|oresHtml|renderMsg/.test(js), 'old context code is gone');
 });
