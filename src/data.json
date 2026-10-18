@@ -485,7 +485,7 @@
    "titleVi": "Hỏi số đo để tư vấn size",
    "labelVi": "Xin số đo",
    "vi": "Nếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕",
-   "en": "We’d be happy to help with sizing too. Could you send us your [bust / waist / hip] measurements and height? We’ll take a look and suggest the best fit.",
+   "en": "We’d be happy to help with sizing too. Could you send us your bust, waist and hip measurements and your height? We’ll take a look and suggest the best fit.",
    "attach": null,
    "seed": "sheet"
   },
@@ -504,7 +504,7 @@
    "titleVi": "Vừa size (đúng số đo / chênh 1cm)",
    "labelVi": "Vừa size",
    "vi": "Dạ vậy bạn mặc size {{size}} mẫu này sẽ thoải mái/vừa vặn nhe\n\nMình gửi bạn tham khảo bảng size nha\n\n{{sizeChart}}",
-   "en": "I’d recommend a size {{size}} for you. Based on your measurements, it should fit comfortably without feeling too snug. Here’s the size chart for reference: {{sizeChart}}",
+   "en": "I’d recommend a size {{size}} for you. Based on your measurements, it should fit comfortably without feeling too snug. Here’s the size chart for reference:\n\n{{sizeChart}}",
    "attach": "Size chart",
    "tag": {
     "vi": "TH Khách hàng có đúng số đo hoặc chênh lệch 1cm so với sản phẩm",
@@ -518,7 +518,7 @@
    "titleVi": "Ở giữa 2 size",
    "labelVi": "Giữa 2 size",
    "vi": "Dạ vậy bạn mặc size {{sizeA}} mẫu này sẽ vừa vặn nhen. Còn nếu bạn thích mặc thoải mái thì có thể chọn size {{sizeB}} ạ\n\nMình gửi bạn tham khảo bảng size nha\n{{sizeChart}}",
-   "en": "You’re between {{sizeA}} and {{sizeB}}, so it really comes down to the fit you prefer: {{sizeA}} will sit closer to the body, while {{sizeB}} will feel a little more relaxed. I’d lean towards {{sizeB}} for you. Here’s the size chart for reference: {{sizeChart}}",
+   "en": "You’re between {{sizeA}} and {{sizeB}}, so it really comes down to the fit you prefer: {{sizeA}} will sit closer to the body, while {{sizeB}} will feel a little more relaxed. I’d lean towards {{sizeB}} for you. Here’s the size chart for reference:\n\n{{sizeChart}}",
    "attach": "Size chart",
    "tag": {
     "vi": "TH Khách hàng ở giữa số đo 2 size",
@@ -820,7 +820,7 @@
  "sets": [],
  "setMeasure": {
   "vi": "Nếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕",
-  "en": ""
+  "en": "We’d be happy to help with sizing too. Could you send us your bust, waist and hip measurements and your height? We’ll take a look and suggest the best fit."
  },
  "setSuggestions": [
   [

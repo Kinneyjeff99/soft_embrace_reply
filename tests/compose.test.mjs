@@ -106,10 +106,11 @@ test('set bubble b: every size chart labelled by product name', () => {
   const { C } = mk(); const r = C.composeCopy('set', { set: SET, bubble: 'b', sel: { 'size:vi': 'li-size-1' } }, 'vi');
   assert.equal(r.text, ['Dạ mình gửi bảng size để bạn tiện tham khảo nhen:', 'Lace Top\n' + C.clean(P('lace-top').sizeVi), 'Lace Skirt · Kem\n' + C.clean(P('lace-skirt-cream').sizeVi)].join('\n\n'));
 });
-test('set bubble c: measurement request is her IG02 sentence; EN not invented', () => {
+test('set bubble c: measurement request is her IG02 sentence; EN is the sheet sentence (round 7: no more silent stop in EN)', () => {
   const { C } = mk();
   assert.equal(C.composeCopy('set', { set: SET, bubble: 'c' }, 'vi').text, 'Nếu bạn cần tư vấn thêm về size, cho Soft xin số đo 3 vòng, chiều cao và cân nặng nhen 💕');
-  assert.equal(C.composeCopy('set', { set: SET, bubble: 'c' }, 'en').missing, 'en');
+  const en = C.composeCopy('set', { set: SET, bubble: 'c' }, 'en');
+  assert.equal(en.missing, null); assert.equal(en.text, SEED.flow.find(e => e.id === 'ask-measurements').en); assert.deepEqual(en.pending, []);
 });
 test('set bubble d: post link(s); absent when none', () => {
   const { C } = mk();
@@ -278,7 +279,7 @@ test('set bubble override (bov) replaces b/c/d text per language; a uses set.ov;
   const { st, C } = mk(); const set = { id: 's', items: ['lace-top', 'lace-skirt-cream'], price: null, name: '', postUrl: '', checked: true, ov: { vi: null, en: null }, bov: { c: { vi: 'Xin số đo nhen' } } };
   assert.equal(C.composeCopy('set', { set, bubble: 'c' }, 'vi').text, 'Xin số đo nhen');
   assert.equal(C.setBubble(set, 'c', 'vi').auto, false);
-  assert.equal(C.composeCopy('set', { set, bubble: 'c' }, 'en').missing, 'en', 'EN has no bubble c text, the VI override is not used');
+  assert.ok(!/Xin số đo nhen/.test(C.composeCopy('set', { set, bubble: 'c' }, 'en').text), 'the VI override is never used in EN');
   assert.ok(C.composeCopy('set', { set, bubble: 'b' }, 'vi').text.startsWith('Lace Top'));
   set.bov.d = { vi: 'https://x.y/z' }; assert.equal(C.composeCopy('set', { set, bubble: 'd' }, 'vi').text, 'https://x.y/z');
 });
@@ -416,8 +417,9 @@ test('spec numbers: on-primary 7.59 (light, Davy) and 11.37 (dark, Vanilla); Jet
   assert.ok(Math.abs(CR('#2A2B2A', '#F2E7AB') - 11.37) < .02);
   assert.equal(lightT.primary, '#4D5162'); assert.equal(darkT.primary, '#F2E7AB'); assert.equal(darkT.bg, '#1C1D1C');
 });
-test('service worker cache name carries the v6 bump', () => {
-  assert.ok(/const CACHE = 'se-v6-[0-9a-f]{10}'/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
+test('service worker cache name carries the v7 bump; navigations are network-first', () => {
+  assert.ok(/const CACHE = 'se-v7-[0-9a-f]{10}'/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
+  assert.ok(/r\.mode === 'navigate'[\s\S]*Promise\.race\(\[fetch\(r\)/.test(readFileSync(new URL('sw.js', DIST), 'utf8')));
 });
 
 // ---------- Round 6 (design-v6): greet, sizes, entry, order tokens, paired messages, context totals ----------
@@ -517,10 +519,45 @@ test('order shipping line and receiver info still compose with sizeless lines; E
   const t = T(C, 'order', {}).text; assert.ok(t.includes('Shipping: 25.000đ') && t.includes('Giao đến:\nA, 090') && t.includes('size [size]') && t.includes('Tổng cộng là 405.000đ'));
   assert.ok(T(C, 'order', {}, 'en').text.includes('size [size]'));
 });
-test('tokKeys finds only the known bracket words (the EN "[bust / waist / hip]" is not a blank)', () => {
+test('tokKeys finds only the known bracket words; the general net (blanks) finds every other [word] / {{word}}', () => {
   const { C } = mk6();
   assert.deepEqual(C.tokKeys('x [size] y [món] [mã vận đơn] [bust / waist / hip]').sort(), ['item', 'size', 'trackingCode']);
-  assert.deepEqual(C.tokKeys(SEED.flow.find(e => e.id === 'ask-measurements').en), []);
+  assert.deepEqual(C.blanks('x [size] y [món] [bust / waist / hip] {{foo}} [bust / waist / hip]'), ['[bust / waist / hip]', '{{foo}}']);
+  assert.deepEqual(C.blanks('Giá 380.000đ (S, M) — không có ngoặc vuông'), []);
+  assert.deepEqual(C.blanks('a [] b [' + 'x'.repeat(41) + ']'), [], 'empty or very long brackets are not placeholders');
+});
+test('R7 P1-2: no generated text carries a literal placeholder: the EN measurement request is clean everywhere', () => {
+  const { C } = mk6([{ pid: 'lace-top', size: 'M', qty: 1 }]);
+  const ask = SEED.flow.find(e => e.id === 'ask-measurements');
+  assert.ok(!/\[|\]|\{\{/.test(ask.en) && /bust, waist and hip measurements and your height/.test(ask.en));
+  const r = C.composeCopy('sizes', { pids: ['lace-top'], ask: true }, 'en');
+  assert.deepEqual(r.pending, []); assert.deepEqual(r.blanks, []); assert.ok(r.text.includes('bust, waist and hip'));
+  const ent = C.composeCopy('entry', { tid: 'ask-measurements' }, 'en'); assert.deepEqual(ent.pending, []);
+  for (const l of ['vi', 'en']) for (const e of SEED.flow) { const t = (e[l] || ''); assert.ok(!/\[[^\]\n]{1,40}\]/.test(t), e.id + ' ' + l + ' has a literal [placeholder]'); }
+  for (const p of SEED.products) for (const k of ['descVi', 'descEn', 'sizeVi', 'sizeEn']) assert.deepEqual(C.blanks(p[k] || ''), [], p.id + ' ' + k);
+});
+test('R7 P1-2: general bracket net: a leftover [word] or {{word}} in a generated message is pending "blank" and blocks copy', () => {
+  const { st, C } = mk6([{ pid: 'lace-top', size: 'M', qty: 1 }]);
+  st.ov['fit-size'] = { vi: 'Bạn mặc size {{size}} nhé [điền kiểu dáng ở đây]\n\n{{sizeChart}}', en: 'Size {{size}} {{unknownKey}} {{sizeChart}}' };
+  const vi = C.composeCopy('entry', { tid: 'fit-size', pid: 'lace-top', fills: { size: 'M' } }, 'vi');
+  assert.deepEqual(vi.blanks, ['[điền kiểu dáng ở đây]']); assert.ok(vi.pending.includes('blank'));
+  const en = C.composeCopy('entry', { tid: 'fit-size', pid: 'lace-top', fills: { size: 'M' } }, 'en');
+  assert.ok(en.pending.includes('unknownKey') && /\[unknownKey\]/.test(en.text), 'an unknown {{key}} was already shown as [key] and pending');
+  st.ov['fit-size'] = undefined;
+  st.ov['lace-top'] = { descVi: 'Lace Top [giá bao nhiêu?]' };
+  const g = C.composeCopy('greet', { v: 'info', pids: ['lace-top'] }, 'vi'); assert.ok(g.pending.includes('blank') && g.blanks[0] === '[giá bao nhiêu?]');
+  const sb = C.composeCopy('set', { set: { id: 's', items: ['lace-top', 'lace-skirt-cream'], price: null, name: '', postUrl: '', checked: true, ov: {} }, bubble: 'a' }, 'vi'); assert.ok(sb.pending.includes('blank'));
+  st.ov['lace-top'] = {}; assert.deepEqual(C.composeCopy('info', { pid: 'lace-top' }, 'vi').pending, []);
+});
+test('R7 P1-3: the order message always states the shipping line, even when her saved template has none', () => {
+  const { st, C } = mk6([{ pid: 'lace-top', size: 'M', qty: 1 }]);
+  st.draft.ship = 'courier'; assert.ok(/• Shipping: khách trả shipper/.test(T(C, 'order', {}).text));
+  st.ov.__ord = { vi: 'Đơn của bạn:\n{{orderLines}}\nTổng cộng là {{total}}', en: 'Order:\n{{orderLines}}\nTotal: VND {{total}}' };
+  let t = T(C, 'order', {}).text; assert.ok(/• Lace Top.*\n• Shipping: khách trả shipper\nTổng cộng là 380\.000đ/.test(t), t);
+  st.draft.ship = 'custom'; st.draft.custom = 24000; t = T(C, 'order', {}).text; assert.ok(/• Shipping: 24\.000đ\nTổng cộng là 404\.000đ/.test(t), t);
+  st.draft.ship = 'free'; assert.ok(/• Shipping: miễn phí/.test(T(C, 'order', {}).text));
+  assert.ok(/• Shipping — free\nTotal: VND 380,000/.test(T(C, 'order', {}, 'en').text), T(C, 'order', {}, 'en').text);
+  delete st.ov.__ord;
 });
 test('STAGES.stageOf maps every message of the new cards (greet hero, sequence bubbles, entries)', () => {
   const { C } = mk6();

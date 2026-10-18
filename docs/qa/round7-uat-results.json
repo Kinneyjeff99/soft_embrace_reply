@@ -1,0 +1,7680 @@
+{
+ "at": "2026-10-18T21:56:09.920Z",
+ "seconds": 813,
+ "pass": 920,
+ "fail": 0,
+ "results": [
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Chào hỏi opens with the greeting card, no product yet (\"Chưa kèm mẫu\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "preview shows exactly the message that will be copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "clipboard = Khách mới greeting + Lace Top info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1 greeting + product info (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Lace Top (strip photo) > Chép"
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Lace Top info block equals the founder's real IG07 message minus the link",
+   "pass": true,
+   "note": "len got 228 / want 283; first diff at 228: got \"ize: S, M, L\" want \"ize: S, M, L\\n\\nhttps://instagram.com/soft\""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1b Theo mẫu > Lace Top > Chép thông tin = info only (no greeting)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1b info only via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin | no greeting included"
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1b with post link toggled = IG07 verbatim (info + link)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1b greeting lead-in + IG07 = greeting + info + link",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S1b greeting + info + link via product sheet (taps from app open, informational)",
+   "pass": true,
+   "taps": 8,
+   "limit": null,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin > Kèm link bài viết > Chép > Câu mở đầu: Đổi > chọn câu chào > Chép"
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Chào hỏi opens with the greeting card, no product yet (\"Chưa kèm mẫu\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "preview shows exactly the message that will be copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "clipboard = Khách mới greeting + Lace Top info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1 greeting + product info (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Lace Top (strip photo) > Chép"
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Lace Top info block equals the founder's real IG07 message minus the link",
+   "pass": true,
+   "note": "len got 228 / want 283; first diff at 228: got \"ize: S, M, L\" want \"ize: S, M, L\\n\\nhttps://instagram.com/soft\""
+  },
+  {
+   "sc": "S1",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1b Theo mẫu > Lace Top > Chép thông tin = info only (no greeting)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1b info only via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin | no greeting included"
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1b with post link toggled = IG07 verbatim (info + link)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1b greeting lead-in + IG07 = greeting + info + link",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S1b greeting + info + link via product sheet (taps from app open, informational)",
+   "pass": true,
+   "taps": 8,
+   "limit": null,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin > Kèm link bài viết > Chép > Câu mở đầu: Đổi > chọn câu chào > Chép"
+  },
+  {
+   "sc": "S1b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Chào hỏi opens with the greeting card, no product yet (\"Chưa kèm mẫu\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "preview shows exactly the message that will be copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "clipboard = Khách mới greeting + Lace Top info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1 greeting + product info (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Lace Top (strip photo) > Chép"
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Lace Top info block equals the founder's real IG07 message minus the link",
+   "pass": true,
+   "note": "len got 228 / want 283; first diff at 228: got \"ize: S, M, L\" want \"ize: S, M, L\\n\\nhttps://instagram.com/soft\""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1b Theo mẫu > Lace Top > Chép thông tin = info only (no greeting)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1b info only via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin | no greeting included"
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1b with post link toggled = IG07 verbatim (info + link)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1b greeting lead-in + IG07 = greeting + info + link",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S1b greeting + info + link via product sheet (taps from app open, informational)",
+   "pass": true,
+   "taps": 8,
+   "limit": null,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin > Kèm link bài viết > Chép > Câu mở đầu: Đổi > chọn câu chào > Chép"
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Chào hỏi opens with the greeting card, no product yet (\"Chưa kèm mẫu\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "preview shows exactly the message that will be copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "clipboard = Khách mới greeting + Lace Top info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1 greeting + product info (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Lace Top (strip photo) > Chép"
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Lace Top info block equals the founder's real IG07 message minus the link",
+   "pass": true,
+   "note": "len got 228 / want 283; first diff at 228: got \"ize: S, M, L\" want \"ize: S, M, L\\n\\nhttps://instagram.com/soft\""
+  },
+  {
+   "sc": "S1",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1b Theo mẫu > Lace Top > Chép thông tin = info only (no greeting)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1b info only via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin | no greeting included"
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1b with post link toggled = IG07 verbatim (info + link)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1b greeting lead-in + IG07 = greeting + info + link",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S1b greeting + info + link via product sheet (taps from app open, informational)",
+   "pass": true,
+   "taps": 8,
+   "limit": null,
+   "note": "Home > Theo mẫu > Lace Top row (scroll) > Chép thông tin > Kèm link bài viết > Chép > Câu mở đầu: Đổi > chọn câu chào > Chép"
+  },
+  {
+   "sc": "S1b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "language is visible on the copy button (\"Chép · EN\")",
+   "pass": true,
+   "note": "Chép · ENĐã chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "preview == expected EN returning greeting",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "clipboard = returning-customer EN greeting + Butter Top EN info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S2 returning customer EN info (taps from app open)",
+   "pass": true,
+   "taps": 5,
+   "limit": 5,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Khách cũ > EN > Butter Top (strip) > Chép | limit not stated; 3 greeting-less would be the floor"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S2b \"Chỉ thông tin\" EN = Butter Top EN info only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S2 info-only variant taps (informational)",
+   "pass": true,
+   "taps": 7,
+   "limit": null,
+   "note": "Chỉ thông tin > Chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "language is visible on the copy button (\"Chép · EN\")",
+   "pass": true,
+   "note": "Chép · ENĐã chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "preview == expected EN returning greeting",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "clipboard = returning-customer EN greeting + Butter Top EN info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S2 returning customer EN info (taps from app open)",
+   "pass": true,
+   "taps": 5,
+   "limit": 5,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Khách cũ > EN > Butter Top (strip) > Chép | limit not stated; 3 greeting-less would be the floor"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S2b \"Chỉ thông tin\" EN = Butter Top EN info only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S2 info-only variant taps (informational)",
+   "pass": true,
+   "taps": 7,
+   "limit": null,
+   "note": "Chỉ thông tin > Chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "language is visible on the copy button (\"Chép · EN\")",
+   "pass": true,
+   "note": "Chép · ENĐã chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "preview == expected EN returning greeting",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "clipboard = returning-customer EN greeting + Butter Top EN info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S2 returning customer EN info (taps from app open)",
+   "pass": true,
+   "taps": 5,
+   "limit": 5,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Khách cũ > EN > Butter Top (strip) > Chép | limit not stated; 3 greeting-less would be the floor"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S2b \"Chỉ thông tin\" EN = Butter Top EN info only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S2 info-only variant taps (informational)",
+   "pass": true,
+   "taps": 7,
+   "limit": null,
+   "note": "Chỉ thông tin > Chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "language is visible on the copy button (\"Chép · EN\")",
+   "pass": true,
+   "note": "Chép · ENĐã chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "preview == expected EN returning greeting",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "clipboard = returning-customer EN greeting + Butter Top EN info (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S2 returning customer EN info (taps from app open)",
+   "pass": true,
+   "taps": 5,
+   "limit": 5,
+   "scrolls": 0,
+   "note": "Home > Chào hỏi > Khách cũ > EN > Butter Top (strip) > Chép | limit not stated; 3 greeting-less would be the floor"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S2b \"Chỉ thông tin\" EN = Butter Top EN info only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S2 info-only variant taps (informational)",
+   "pass": true,
+   "taps": 7,
+   "limit": null,
+   "note": "Chỉ thông tin > Chép"
+  },
+  {
+   "sc": "S2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "size hero preview == Lace Skirt size chart",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "clipboard = Lace Skirt (Kem) size chart only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S3 size chart for one product (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Tư vấn size > Lace Skirt Kem (strip photo) > Chép"
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S3b \"Vừa size\" M message with Lace Skirt chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S3b extra taps for the \"size M\" message",
+   "pass": true,
+   "taps": 2,
+   "limit": null,
+   "note": "taps after the chart was copied"
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S3-alt Theo mẫu > Lace Skirt > Bảng size > Chép = chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S3-alt size chart via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Skirt row (scroll) > Bảng size > Chép bảng size | limit 3 was unreasonable for this alternative: the product sheet opens on Thông tin (the more common job), so Bảng size is one extra tap; the main S3 path is 3"
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "size hero preview == Lace Skirt size chart",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "clipboard = Lace Skirt (Kem) size chart only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S3 size chart for one product (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Tư vấn size > Lace Skirt Kem (strip photo) > Chép"
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S3b \"Vừa size\" M message with Lace Skirt chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S3b extra taps for the \"size M\" message",
+   "pass": true,
+   "taps": 2,
+   "limit": null,
+   "note": "taps after the chart was copied"
+  },
+  {
+   "sc": "S3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S3-alt Theo mẫu > Lace Skirt > Bảng size > Chép = chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S3-alt size chart via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Skirt row (scroll) > Bảng size > Chép bảng size | limit 3 was unreasonable for this alternative: the product sheet opens on Thông tin (the more common job), so Bảng size is one extra tap; the main S3 path is 3"
+  },
+  {
+   "sc": "S3b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "size hero preview == Lace Skirt size chart",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "clipboard = Lace Skirt (Kem) size chart only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S3 size chart for one product (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Tư vấn size > Lace Skirt Kem (strip photo) > Chép"
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S3b \"Vừa size\" M message with Lace Skirt chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S3b extra taps for the \"size M\" message",
+   "pass": true,
+   "taps": 2,
+   "limit": null,
+   "note": "taps after the chart was copied"
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S3-alt Theo mẫu > Lace Skirt > Bảng size > Chép = chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S3-alt size chart via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Skirt row (scroll) > Bảng size > Chép bảng size | limit 3 was unreasonable for this alternative: the product sheet opens on Thông tin (the more common job), so Bảng size is one extra tap; the main S3 path is 3"
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "size hero preview == Lace Skirt size chart",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "clipboard = Lace Skirt (Kem) size chart only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S3 size chart for one product (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Tư vấn size > Lace Skirt Kem (strip photo) > Chép"
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S3b \"Vừa size\" M message with Lace Skirt chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S3b extra taps for the \"size M\" message",
+   "pass": true,
+   "taps": 2,
+   "limit": null,
+   "note": "taps after the chart was copied"
+  },
+  {
+   "sc": "S3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S3-alt Theo mẫu > Lace Skirt > Bảng size > Chép = chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S3-alt size chart via Theo mẫu (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Theo mẫu > Lace Skirt row (scroll) > Bảng size > Chép bảng size | limit 3 was unreasonable for this alternative: the product sheet opens on Thông tin (the more common job), so Bảng size is one extra tap; the main S3 path is 3"
+  },
+  {
+   "sc": "S3b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S4 set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 7,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set Lace Top + Lace Skirt > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S4 default set price = sum 850.000đ and no saving line",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "set price line shows retail prices and the set price",
+   "pass": true,
+   "note": "Giá lẻ 380.000đ + 470.000đ = 850.000đ → Giá set 800.000đ"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S4b set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 8,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set custom 800.000đ > Giá set > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S4b custom price 800.000đ shows retail and set lines + saving",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S4 set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 7,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set Lace Top + Lace Skirt > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S4 default set price = sum 850.000đ and no saving line",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "set price line shows retail prices and the set price",
+   "pass": true,
+   "note": "Giá lẻ 380.000đ + 470.000đ = 850.000đ → Giá set 800.000đ"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S4b set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 8,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set custom 800.000đ > Giá set > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S4b custom price 800.000đ shows retail and set lines + saving",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S4 set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 7,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set Lace Top + Lace Skirt > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S4 default set price = sum 850.000đ and no saving line",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "set price line shows retail prices and the set price",
+   "pass": true,
+   "note": "Giá lẻ 380.000đ + 470.000đ = 850.000đ → Giá set 800.000đ"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S4b set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 8,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set custom 800.000đ > Giá set > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S4b custom price 800.000đ shows retail and set lines + saving",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S4 set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 7,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set Lace Top + Lace Skirt > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S4 default set price = sum 850.000đ and no saving line",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "set price line shows retail prices and the set price",
+   "pass": true,
+   "note": "Giá lẻ 380.000đ + 470.000đ = 850.000đ → Giá set 800.000đ"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "set sheet has 4 bubbles (a,b,c,d), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c,d"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 4 = post link (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 4 tin"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S4b set message sequence (4 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 8,
+   "limit": 8,
+   "scrolls": 1,
+   "note": "Home > Theo set > suggested set custom 800.000đ > Giá set > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3 > Chép tin 4"
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S4b custom price 800.000đ shows retail and set lines + saving",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S4b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "set sheet has 3 bubbles (a,b,c), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 3 tin"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S5 set message sequence (3 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 6,
+   "limit": 7,
+   "scrolls": 2,
+   "note": "Home > Theo set > suggested set Butter Top + Embroidery Pants (scroll) > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S5 source prices are 390.000đ and 520.000đ and the set quote is 910.000đ",
+   "pass": true,
+   "note": "Butter Top 🧈\n\n• Áo lệch vai, xếp ly ở vai và thân áo tạo độ chuyển mềm. May 2 lớp cùng chất vải và dây thắt chỉnh độ ôm.\n• Chất liệu: Tơ cotton\n• Màu: Vàng bơ\nGiá: 390.000đ\nSize: S, M, L\n\nEmbroidery Pants ☁️\n\n• Quần dáng relaxed, cạp vừa/trễ, lưng sau có thun thoải mái. May 2 lớp đứng form nhưng vẫn giữ được độ rũ tự nhiên.\n• Chất liệu: Tơ thêu, lót cotton boi\n• Màu: Trắng gạo\nGiá: 520.000đ\nSize: S, M, L\n\n• Giá set: 910.000đ"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "set sheet has 3 bubbles (a,b,c), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 3 tin"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S5 set message sequence (3 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 6,
+   "limit": 7,
+   "scrolls": 2,
+   "note": "Home > Theo set > suggested set Butter Top + Embroidery Pants (scroll) > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S5 source prices are 390.000đ and 520.000đ and the set quote is 910.000đ",
+   "pass": true,
+   "note": "Butter Top 🧈\n\n• Áo lệch vai, xếp ly ở vai và thân áo tạo độ chuyển mềm. May 2 lớp cùng chất vải và dây thắt chỉnh độ ôm.\n• Chất liệu: Tơ cotton\n• Màu: Vàng bơ\nGiá: 390.000đ\nSize: S, M, L\n\nEmbroidery Pants ☁️\n\n• Quần dáng relaxed, cạp vừa/trễ, lưng sau có thun thoải mái. May 2 lớp đứng form nhưng vẫn giữ được độ rũ tự nhiên.\n• Chất liệu: Tơ thêu, lót cotton boi\n• Màu: Trắng gạo\nGiá: 520.000đ\nSize: S, M, L\n\n• Giá set: 910.000đ"
+  },
+  {
+   "sc": "S5",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "set sheet has 3 bubbles (a,b,c), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 3 tin"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S5 set message sequence (3 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 6,
+   "limit": 7,
+   "scrolls": 2,
+   "note": "Home > Theo set > suggested set Butter Top + Embroidery Pants (scroll) > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S5 source prices are 390.000đ and 520.000đ and the set quote is 910.000đ",
+   "pass": true,
+   "note": "Butter Top 🧈\n\n• Áo lệch vai, xếp ly ở vai và thân áo tạo độ chuyển mềm. May 2 lớp cùng chất vải và dây thắt chỉnh độ ôm.\n• Chất liệu: Tơ cotton\n• Màu: Vàng bơ\nGiá: 390.000đ\nSize: S, M, L\n\nEmbroidery Pants ☁️\n\n• Quần dáng relaxed, cạp vừa/trễ, lưng sau có thun thoải mái. May 2 lớp đứng form nhưng vẫn giữ được độ rũ tự nhiên.\n• Chất liệu: Tơ thêu, lót cotton boi\n• Màu: Trắng gạo\nGiá: 520.000đ\nSize: S, M, L\n\n• Giá set: 910.000đ"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "set sheet has 3 bubbles (a,b,c), each with its own copy button",
+   "pass": true,
+   "note": "a,b,c"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "unchecked set price: first tap does not copy (\"Chạm lại để chép\")",
+   "pass": true,
+   "note": "writes 0 label Chạm lại để chép"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 1 = info of both + set price in ONE message (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 2 = both size charts labelled by product (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 = measurement request IG02 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "bubble 3 equals IG02",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "footer says all copied",
+   "pass": true,
+   "note": "Đã chép đủ 3 tin"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S5 set message sequence (3 bubbles) (taps from app open)",
+   "pass": true,
+   "taps": 6,
+   "limit": 7,
+   "scrolls": 2,
+   "note": "Home > Theo set > suggested set Butter Top + Embroidery Pants (scroll) > Chép tin 1 (arms) (scroll) > Chép tin 1 (confirm) > Chép tin 2 > Chép tin 3"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S5 source prices are 390.000đ and 520.000đ and the set quote is 910.000đ",
+   "pass": true,
+   "note": "Butter Top 🧈\n\n• Áo lệch vai, xếp ly ở vai và thân áo tạo độ chuyển mềm. May 2 lớp cùng chất vải và dây thắt chỉnh độ ôm.\n• Chất liệu: Tơ cotton\n• Màu: Vàng bơ\nGiá: 390.000đ\nSize: S, M, L\n\nEmbroidery Pants ☁️\n\n• Quần dáng relaxed, cạp vừa/trễ, lưng sau có thun thoải mái. May 2 lớp đứng form nhưng vẫn giữ được độ rũ tự nhiên.\n• Chất liệu: Tơ thêu, lót cotton boi\n• Màu: Trắng gạo\nGiá: 520.000đ\nSize: S, M, L\n\n• Giá set: 910.000đ"
+  },
+  {
+   "sc": "S5",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Tạo đơn opens with the message visible first (placeholder [món] for the empty order)",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• [món] – size [size]: [giá]\n• Shipping: khách trả shipper"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order preview == expected recap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order button label is \"Đơn\" with badge 1",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "dock shows total 444.000đ",
+   "pass": true,
+   "note": "Tổng · 1 món444.000đChép đơn · VIĐã chép"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "clipboard = OBS03 order recap: Lace Trim Blouse Kem M 420.000đ + ship 24.000đ = 444.000đ + transfer-note instruction (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "message has \"Dạ vậy đơn của bạn\", total 444.000đ and the Instagram-name transfer note",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• Lace Trim Blouse – Kem – size M: 420.000đ\n• Shipping: 24.000đ\nTổng cộng là 444.000đ\n\nNội dung chuyển khoản bạn note tên Instagram và cho Soft xin ảnh chụp màn hình hóa đơn chuyển khoản là được ạ"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S6 one-item order (taps from app open)",
+   "pass": true,
+   "taps": 9,
+   "limit": 99,
+   "scrolls": 0,
+   "note": "Home > Tạo đơn > Thêm món > Lace Trim Blouse Kem > size M > Thêm 1 món vào đơn > Phí ship > Khác… > Xong > Chép đơn | no limit stated"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "badge counts 3 pieces",
+   "pass": true,
+   "note": "Đơn3"
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S6b 2 items (Lace Top M x2 + Butter Top S) free ship = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S6c same order, custom ship 30.000đ = 1.180.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S6d courier-paid ship (default wording) = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order preview is still one group (no duplicate cards)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Tạo đơn opens with the message visible first (placeholder [món] for the empty order)",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• [món] – size [size]: [giá]\n• Shipping: khách trả shipper"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order preview == expected recap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order button label is \"Đơn\" with badge 1",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "dock shows total 444.000đ",
+   "pass": true,
+   "note": "Tổng · 1 món444.000đChép đơn · VIĐã chép"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "clipboard = OBS03 order recap: Lace Trim Blouse Kem M 420.000đ + ship 24.000đ = 444.000đ + transfer-note instruction (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "message has \"Dạ vậy đơn của bạn\", total 444.000đ and the Instagram-name transfer note",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• Lace Trim Blouse – Kem – size M: 420.000đ\n• Shipping: 24.000đ\nTổng cộng là 444.000đ\n\nNội dung chuyển khoản bạn note tên Instagram và cho Soft xin ảnh chụp màn hình hóa đơn chuyển khoản là được ạ"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S6 one-item order (taps from app open)",
+   "pass": true,
+   "taps": 9,
+   "limit": 99,
+   "scrolls": 0,
+   "note": "Home > Tạo đơn > Thêm món > Lace Trim Blouse Kem > size M > Thêm 1 món vào đơn > Phí ship > Khác… > Xong > Chép đơn | no limit stated"
+  },
+  {
+   "sc": "S6",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "badge counts 3 pieces",
+   "pass": true,
+   "note": "Đơn3"
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S6b 2 items (Lace Top M x2 + Butter Top S) free ship = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S6c same order, custom ship 30.000đ = 1.180.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S6d courier-paid ship (default wording) = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order preview is still one group (no duplicate cards)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Tạo đơn opens with the message visible first (placeholder [món] for the empty order)",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• [món] – size [size]: [giá]\n• Shipping: khách trả shipper"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order preview == expected recap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order button label is \"Đơn\" with badge 1",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "dock shows total 444.000đ",
+   "pass": true,
+   "note": "Tổng · 1 món444.000đChép đơn · VIĐã chép"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "clipboard = OBS03 order recap: Lace Trim Blouse Kem M 420.000đ + ship 24.000đ = 444.000đ + transfer-note instruction (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "message has \"Dạ vậy đơn của bạn\", total 444.000đ and the Instagram-name transfer note",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• Lace Trim Blouse – Kem – size M: 420.000đ\n• Shipping: 24.000đ\nTổng cộng là 444.000đ\n\nNội dung chuyển khoản bạn note tên Instagram và cho Soft xin ảnh chụp màn hình hóa đơn chuyển khoản là được ạ"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S6 one-item order (taps from app open)",
+   "pass": true,
+   "taps": 9,
+   "limit": 99,
+   "scrolls": 0,
+   "note": "Home > Tạo đơn > Thêm món > Lace Trim Blouse Kem > size M > Thêm 1 món vào đơn > Phí ship > Khác… > Xong > Chép đơn | no limit stated"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "badge counts 3 pieces",
+   "pass": true,
+   "note": "Đơn3"
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S6b 2 items (Lace Top M x2 + Butter Top S) free ship = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S6c same order, custom ship 30.000đ = 1.180.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S6d courier-paid ship (default wording) = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order preview is still one group (no duplicate cards)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Tạo đơn opens with the message visible first (placeholder [món] for the empty order)",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• [món] – size [size]: [giá]\n• Shipping: khách trả shipper"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order preview == expected recap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order button label is \"Đơn\" with badge 1",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "dock shows total 444.000đ",
+   "pass": true,
+   "note": "Tổng · 1 món444.000đChép đơn · VIĐã chép"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "clipboard = OBS03 order recap: Lace Trim Blouse Kem M 420.000đ + ship 24.000đ = 444.000đ + transfer-note instruction (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "message has \"Dạ vậy đơn của bạn\", total 444.000đ and the Instagram-name transfer note",
+   "pass": true,
+   "note": "Dạ vậy đơn của bạn 🌷\n• Lace Trim Blouse – Kem – size M: 420.000đ\n• Shipping: 24.000đ\nTổng cộng là 444.000đ\n\nNội dung chuyển khoản bạn note tên Instagram và cho Soft xin ảnh chụp màn hình hóa đơn chuyển khoản là được ạ"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S6 one-item order (taps from app open)",
+   "pass": true,
+   "taps": 9,
+   "limit": 99,
+   "scrolls": 0,
+   "note": "Home > Tạo đơn > Thêm món > Lace Trim Blouse Kem > size M > Thêm 1 món vào đơn > Phí ship > Khác… > Xong > Chép đơn | no limit stated"
+  },
+  {
+   "sc": "S6",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "badge counts 3 pieces",
+   "pass": true,
+   "note": "Đơn3"
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S6b 2 items (Lace Top M x2 + Butter Top S) free ship = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S6c same order, custom ship 30.000đ = 1.180.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S6d courier-paid ship (default wording) = 1.150.000đ (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order preview is still one group (no duplicate cards)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S6b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7 bubble 1 = IG03 \"ui dạ mình nhận được rùi ạ\" (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7 bubble 2 = IG04 thanks, ready-to-wear (exact, separate message)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7 payment received (IG03 then IG04) (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Check out > Chép tin 1 > Chép tin 2"
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "both bubbles were separate clipboard writes",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7b custom (may đo) thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7c switching back to Có sẵn gives IG04 again (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "made-to-order item in the order defaults the thanks to \"May đo\"",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S7d made-to-order default thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7 bubble 1 = IG03 \"ui dạ mình nhận được rùi ạ\" (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7 bubble 2 = IG04 thanks, ready-to-wear (exact, separate message)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7 payment received (IG03 then IG04) (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Check out > Chép tin 1 > Chép tin 2"
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "both bubbles were separate clipboard writes",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7b custom (may đo) thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7c switching back to Có sẵn gives IG04 again (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "made-to-order item in the order defaults the thanks to \"May đo\"",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S7d made-to-order default thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7 bubble 1 = IG03 \"ui dạ mình nhận được rùi ạ\" (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7 bubble 2 = IG04 thanks, ready-to-wear (exact, separate message)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7 payment received (IG03 then IG04) (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Check out > Chép tin 1 > Chép tin 2"
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "both bubbles were separate clipboard writes",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7b custom (may đo) thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7c switching back to Có sẵn gives IG04 again (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "made-to-order item in the order defaults the thanks to \"May đo\"",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S7d made-to-order default thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7 bubble 1 = IG03 \"ui dạ mình nhận được rùi ạ\" (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7 bubble 2 = IG04 thanks, ready-to-wear (exact, separate message)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7 payment received (IG03 then IG04) (taps from app open)",
+   "pass": true,
+   "taps": 3,
+   "limit": 3,
+   "scrolls": 0,
+   "note": "Home > Check out > Chép tin 1 > Chép tin 2"
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "both bubbles were separate clipboard writes",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7b custom (may đo) thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7c switching back to Có sẵn gives IG04 again (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "made-to-order item in the order defaults the thanks to \"May đo\"",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S7d made-to-order default thanks (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S7d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "code bubble is blocked while empty (\"Dán mã\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S8 bubble 1 = IG05 Giao Hàng Nhanh note (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "pasted code is in the field and bubble 2 shows it",
+   "pass": true,
+   "note": "GHNZ5Q7K2M9T"
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S8 bubble 2 = the pasted tracking code only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S8 tracking IG05 then code (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép tin 1 (scroll) > Dán > Chép tin 2"
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "code bubble is blocked while empty (\"Dán mã\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S8 bubble 1 = IG05 Giao Hàng Nhanh note (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "pasted code is in the field and bubble 2 shows it",
+   "pass": true,
+   "note": "GHNZ5Q7K2M9T"
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S8 bubble 2 = the pasted tracking code only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S8 tracking IG05 then code (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép tin 1 (scroll) > Dán > Chép tin 2"
+  },
+  {
+   "sc": "S8",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "code bubble is blocked while empty (\"Dán mã\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S8 bubble 1 = IG05 Giao Hàng Nhanh note (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "pasted code is in the field and bubble 2 shows it",
+   "pass": true,
+   "note": "GHNZ5Q7K2M9T"
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S8 bubble 2 = the pasted tracking code only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S8 tracking IG05 then code (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép tin 1 (scroll) > Dán > Chép tin 2"
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "code bubble is blocked while empty (\"Dán mã\")",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S8 bubble 1 = IG05 Giao Hàng Nhanh note (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "pasted code is in the field and bubble 2 shows it",
+   "pass": true,
+   "note": "GHNZ5Q7K2M9T"
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S8 bubble 2 = the pasted tracking code only (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S8 tracking IG05 then code (taps from app open)",
+   "pass": true,
+   "taps": 4,
+   "limit": 4,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép tin 1 (scroll) > Dán > Chép tin 2"
+  },
+  {
+   "sc": "S8",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S9 feedback request = IG06 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "S9 feedback request (taps from app open)",
+   "pass": true,
+   "taps": 2,
+   "limit": 2,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép (scroll)"
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S9 feedback request = IG06 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "S9 feedback request (taps from app open)",
+   "pass": true,
+   "taps": 2,
+   "limit": 2,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép (scroll)"
+  },
+  {
+   "sc": "S9",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S9 feedback request = IG06 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "S9 feedback request (taps from app open)",
+   "pass": true,
+   "taps": 2,
+   "limit": 2,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép (scroll)"
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S9 feedback request = IG06 (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "S9 feedback request (taps from app open)",
+   "pass": true,
+   "taps": 2,
+   "limit": 2,
+   "scrolls": 1,
+   "note": "Home > Check out > Chép (scroll)"
+  },
+  {
+   "sc": "S9",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "product sheet EN: \"Chưa có bản EN\" with explicit \"Chép bản VI\" / \"Thêm bản EN\" choices",
+   "pass": true,
+   "note": "Chưa có bản EN của Thông tinChép bản VIThêm bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "main footer button is disabled (\"Chưa có bản EN\"), not a copy button",
+   "pass": true,
+   "note": "Chưa có bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tapping the disabled main button copies nothing (no silent VI)",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "explicit \"Chép bản VI\" copies the VI text (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "EN card without EN text: notice + button names the language that will be copied (\"Chép bản VI\")",
+   "pass": true,
+   "note": "1Tin 1 · Đã nhậnTiếp theoui dạ mình nhận được rùi ạChưa có bản EN của tin này.Thêm bản ENChép bản VIĐã chép"
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "nothing was copied just by showing the card",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "explicit tap copies the VI bubble (IG03, exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tracking code bubble with no code: \"Dán mã\" does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "\"Vừa size\" without product/size shows the missing item on the button, not a copy button",
+   "pass": true,
+   "note": "Chọn mẫu"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tapping it does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "empty order: dock says \"Chọn món\", no copy button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tapping \"Chọn món\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order with a sizeless line: dock \"Chọn size cho 1 món\", message shows [size], badge empty",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tapping \"Chọn size\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "in-place box: capsule shows \"Còn chỗ trống\" (aria-disabled) while the edit has [size]",
+   "pass": true,
+   "note": "Còn chỗ trống"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "tapping the blocked capsule copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "\"Đã sửa\" marker and \"Khôi phục\" appear after typing",
+   "pass": true,
+   "note": "Đã sửaKhôi phụcLưu làm mẫu"
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "edited text is exactly what is copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Khôi phục puts the original text back in the box",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "after Khôi phục the original info is copied (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "in-place box: edited greeting is what is copied (exact), one Chép button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "stage card shows \"Đã sửa · Khôi phục · Lưu làm mẫu\" state, no save-as-template for the greeting",
+   "pass": true,
+   "note": "Chào bạn ạ, Soft gửi bạn Lace Top nhé 🤍"
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "after Khôi phục the stage preview is the generated greeting again",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "IG01 lead-in equals the seed lead-in li-size-1",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "lead-in strip is shown above the box with the chosen sentence",
+   "pass": true,
+   "note": "Dạ mình gửi bảng size để bạn tiện tham khảo nhen:"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "failed copy shows the error toast and the manual-copy sheet",
+   "pass": true,
+   "note": "toast true"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "lead-in is NOT remembered after a failed copy",
+   "pass": true,
+   "note": "{}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "clipboard = IG01 lead-in + blank line + Embroidery Pants chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "lead-in is remembered after the successful copy",
+   "pass": true,
+   "note": "{\"size:vi\":\"li-size-1\"}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "after reload the remembered lead-in is already in the preview",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "unchecked set: a double tap (60ms apart) arms the guard but never copies the unchecked price",
+   "pass": true,
+   "note": "0 writes"
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "set bubble containing a typed \"[giá]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "product sheet text containing a typed \"[size]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on Home tile: one stage, one greeting card",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on \"Tất cả mẫu\": exactly one picker sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on a picker photo with an empty context: finishes once (one line, picker closed, no duplicate rows)",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":1,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on \"Xong\" (several products): picker closed, exactly two lines in the context",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap (100ms) on the context bar: one picker (no duplicate), second tap must not act on picker content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (30ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (30ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (100ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (100ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (200ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (200ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (340ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double tap (340ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "rapid stage/language hopping leaves one card of each kind and no duplicate groups",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap (30ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap (100ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap (200ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap (340ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on a ship option: sheet closes, one odock",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on a product row: one product sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on Chép: no duplicate UI; clipboard writes are identical texts",
+   "pass": true,
+   "note": "2 writes {\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "double-tap on a suggested set: one set sheet, set created once",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} sets 1"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "no console errors during all double/rapid-tap sequences (#debug=dupes active)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "error toast \"Chưa chép được…\" is shown",
+   "pass": true,
+   "note": "Chưa chép được. Chạm giữ đoạn văn để chép tay nhé."
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "manual-copy sheet \"Chép tay\" opens with exactly the message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "the manual-copy text is pre-selected for long-press copy",
+   "pass": true,
+   "note": "selection 303"
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "step is NOT marked sent after a failed copy (no ✓ on Chào hỏi)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "legacy execCommand fallback succeeds silently: success toast, no manual sheet",
+   "pass": true,
+   "note": "exec 2"
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "after the fallback success the step is marked sent",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order copy failure: error + manual sheet with the full order message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "failed order copy does not mark \"copied\" (no Check out suggestion)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "product sheet EN: \"Chưa có bản EN\" with explicit \"Chép bản VI\" / \"Thêm bản EN\" choices",
+   "pass": true,
+   "note": "Chưa có bản EN của Thông tinChép bản VIThêm bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "main footer button is disabled (\"Chưa có bản EN\"), not a copy button",
+   "pass": true,
+   "note": "Chưa có bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tapping the disabled main button copies nothing (no silent VI)",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "explicit \"Chép bản VI\" copies the VI text (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "EN card without EN text: notice + button names the language that will be copied (\"Chép bản VI\")",
+   "pass": true,
+   "note": "1Tin 1 · Đã nhậnTiếp theoui dạ mình nhận được rùi ạChưa có bản EN của tin này.Thêm bản ENChép bản VIĐã chép"
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "nothing was copied just by showing the card",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "explicit tap copies the VI bubble (IG03, exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tracking code bubble with no code: \"Dán mã\" does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "\"Vừa size\" without product/size shows the missing item on the button, not a copy button",
+   "pass": true,
+   "note": "Chọn mẫu"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tapping it does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "empty order: dock says \"Chọn món\", no copy button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tapping \"Chọn món\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order with a sizeless line: dock \"Chọn size cho 1 món\", message shows [size], badge empty",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tapping \"Chọn size\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b3",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "in-place box: capsule shows \"Còn chỗ trống\" (aria-disabled) while the edit has [size]",
+   "pass": true,
+   "note": "Còn chỗ trống"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "tapping the blocked capsule copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "\"Đã sửa\" marker and \"Khôi phục\" appear after typing",
+   "pass": true,
+   "note": "Đã sửaKhôi phụcLưu làm mẫu"
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "edited text is exactly what is copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Khôi phục puts the original text back in the box",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "after Khôi phục the original info is copied (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "in-place box: edited greeting is what is copied (exact), one Chép button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "stage card shows \"Đã sửa · Khôi phục · Lưu làm mẫu\" state, no save-as-template for the greeting",
+   "pass": true,
+   "note": "Chào bạn ạ, Soft gửi bạn Lace Top nhé 🤍"
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "after Khôi phục the stage preview is the generated greeting again",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "IG01 lead-in equals the seed lead-in li-size-1",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "lead-in strip is shown above the box with the chosen sentence",
+   "pass": true,
+   "note": "Dạ mình gửi bảng size để bạn tiện tham khảo nhen:"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "failed copy shows the error toast and the manual-copy sheet",
+   "pass": true,
+   "note": "toast true"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "lead-in is NOT remembered after a failed copy",
+   "pass": true,
+   "note": "{}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "clipboard = IG01 lead-in + blank line + Embroidery Pants chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "lead-in is remembered after the successful copy",
+   "pass": true,
+   "note": "{\"size:vi\":\"li-size-1\"}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "after reload the remembered lead-in is already in the preview",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "unchecked set: a double tap (60ms apart) arms the guard but never copies the unchecked price",
+   "pass": true,
+   "note": "0 writes"
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "set bubble containing a typed \"[giá]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "product sheet text containing a typed \"[size]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on Home tile: one stage, one greeting card",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on \"Tất cả mẫu\": exactly one picker sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on a picker photo with an empty context: finishes once (one line, picker closed, no duplicate rows)",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":1,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on \"Xong\" (several products): picker closed, exactly two lines in the context",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap (100ms) on the context bar: one picker (no duplicate), second tap must not act on picker content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (30ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (30ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (100ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (100ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (200ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (200ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (340ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double tap (340ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "rapid stage/language hopping leaves one card of each kind and no duplicate groups",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap (30ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap (100ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap (200ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap (340ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on a ship option: sheet closes, one odock",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on a product row: one product sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on Chép: no duplicate UI; clipboard writes are identical texts",
+   "pass": true,
+   "note": "2 writes {\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "double-tap on a suggested set: one set sheet, set created once",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} sets 1"
+  },
+  {
+   "sc": "S10f",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "no console errors during all double/rapid-tap sequences (#debug=dupes active)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "error toast \"Chưa chép được…\" is shown",
+   "pass": true,
+   "note": "Chưa chép được. Chạm giữ đoạn văn để chép tay nhé."
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "manual-copy sheet \"Chép tay\" opens with exactly the message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "the manual-copy text is pre-selected for long-press copy",
+   "pass": true,
+   "note": "selection 303"
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "step is NOT marked sent after a failed copy (no ✓ on Chào hỏi)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "legacy execCommand fallback succeeds silently: success toast, no manual sheet",
+   "pass": true,
+   "note": "exec 2"
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "after the fallback success the step is marked sent",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order copy failure: error + manual sheet with the full order message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "failed order copy does not mark \"copied\" (no Check out suggestion)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "product sheet EN: \"Chưa có bản EN\" with explicit \"Chép bản VI\" / \"Thêm bản EN\" choices",
+   "pass": true,
+   "note": "Chưa có bản EN của Thông tinChép bản VIThêm bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "main footer button is disabled (\"Chưa có bản EN\"), not a copy button",
+   "pass": true,
+   "note": "Chưa có bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tapping the disabled main button copies nothing (no silent VI)",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "explicit \"Chép bản VI\" copies the VI text (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "EN card without EN text: notice + button names the language that will be copied (\"Chép bản VI\")",
+   "pass": true,
+   "note": "1Tin 1 · Đã nhậnTiếp theoui dạ mình nhận được rùi ạChưa có bản EN của tin này.Thêm bản ENChép bản VIĐã chép"
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "nothing was copied just by showing the card",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "explicit tap copies the VI bubble (IG03, exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tracking code bubble with no code: \"Dán mã\" does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "\"Vừa size\" without product/size shows the missing item on the button, not a copy button",
+   "pass": true,
+   "note": "Chọn mẫu"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tapping it does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "empty order: dock says \"Chọn món\", no copy button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tapping \"Chọn món\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order with a sizeless line: dock \"Chọn size cho 1 món\", message shows [size], badge empty",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tapping \"Chọn size\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "in-place box: capsule shows \"Còn chỗ trống\" (aria-disabled) while the edit has [size]",
+   "pass": true,
+   "note": "Còn chỗ trống"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "tapping the blocked capsule copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "\"Đã sửa\" marker and \"Khôi phục\" appear after typing",
+   "pass": true,
+   "note": "Đã sửaKhôi phụcLưu làm mẫu"
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "edited text is exactly what is copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Khôi phục puts the original text back in the box",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "after Khôi phục the original info is copied (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "in-place box: edited greeting is what is copied (exact), one Chép button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "stage card shows \"Đã sửa · Khôi phục · Lưu làm mẫu\" state, no save-as-template for the greeting",
+   "pass": true,
+   "note": "Chào bạn ạ, Soft gửi bạn Lace Top nhé 🤍"
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "after Khôi phục the stage preview is the generated greeting again",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "IG01 lead-in equals the seed lead-in li-size-1",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "lead-in strip is shown above the box with the chosen sentence",
+   "pass": true,
+   "note": "Dạ mình gửi bảng size để bạn tiện tham khảo nhen:"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "failed copy shows the error toast and the manual-copy sheet",
+   "pass": true,
+   "note": "toast true"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "lead-in is NOT remembered after a failed copy",
+   "pass": true,
+   "note": "{}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "clipboard = IG01 lead-in + blank line + Embroidery Pants chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "lead-in is remembered after the successful copy",
+   "pass": true,
+   "note": "{\"size:vi\":\"li-size-1\"}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "after reload the remembered lead-in is already in the preview",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "unchecked set: a double tap (60ms apart) arms the guard but never copies the unchecked price",
+   "pass": true,
+   "note": "0 writes"
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "set bubble containing a typed \"[giá]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "product sheet text containing a typed \"[size]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on Home tile: one stage, one greeting card",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on \"Tất cả mẫu\": exactly one picker sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on a picker photo with an empty context: finishes once (one line, picker closed, no duplicate rows)",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":1,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on \"Xong\" (several products): picker closed, exactly two lines in the context",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap (100ms) on the context bar: one picker (no duplicate), second tap must not act on picker content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (30ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (30ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (100ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (100ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (200ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (200ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (340ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double tap (340ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "rapid stage/language hopping leaves one card of each kind and no duplicate groups",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap (30ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap (100ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap (200ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap (340ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on a ship option: sheet closes, one odock",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on a product row: one product sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on Chép: no duplicate UI; clipboard writes are identical texts",
+   "pass": true,
+   "note": "2 writes {\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "double-tap on a suggested set: one set sheet, set created once",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} sets 1"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "no console errors during all double/rapid-tap sequences (#debug=dupes active)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "error toast \"Chưa chép được…\" is shown",
+   "pass": true,
+   "note": "Chưa chép được. Chạm giữ đoạn văn để chép tay nhé."
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "manual-copy sheet \"Chép tay\" opens with exactly the message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "the manual-copy text is pre-selected for long-press copy",
+   "pass": true,
+   "note": "selection 303"
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "step is NOT marked sent after a failed copy (no ✓ on Chào hỏi)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "legacy execCommand fallback succeeds silently: success toast, no manual sheet",
+   "pass": true,
+   "note": "exec 2"
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "after the fallback success the step is marked sent",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order copy failure: error + manual sheet with the full order message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "failed order copy does not mark \"copied\" (no Check out suggestion)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "product sheet EN: \"Chưa có bản EN\" with explicit \"Chép bản VI\" / \"Thêm bản EN\" choices",
+   "pass": true,
+   "note": "Chưa có bản EN của Thông tinChép bản VIThêm bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "main footer button is disabled (\"Chưa có bản EN\"), not a copy button",
+   "pass": true,
+   "note": "Chưa có bản EN"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tapping the disabled main button copies nothing (no silent VI)",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "explicit \"Chép bản VI\" copies the VI text (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "EN card without EN text: notice + button names the language that will be copied (\"Chép bản VI\")",
+   "pass": true,
+   "note": "1Tin 1 · Đã nhậnTiếp theoui dạ mình nhận được rùi ạChưa có bản EN của tin này.Thêm bản ENChép bản VIĐã chép"
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "nothing was copied just by showing the card",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "explicit tap copies the VI bubble (IG03, exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10a2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tracking code bubble with no code: \"Dán mã\" does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "\"Vừa size\" without product/size shows the missing item on the button, not a copy button",
+   "pass": true,
+   "note": "Chọn mẫu"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tapping it does not copy",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "empty order: dock says \"Chọn món\", no copy button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tapping \"Chọn món\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order with a sizeless line: dock \"Chọn size cho 1 món\", message shows [size], badge empty",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tapping \"Chọn size\" copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b3",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "in-place box: capsule shows \"Còn chỗ trống\" (aria-disabled) while the edit has [size]",
+   "pass": true,
+   "note": "Còn chỗ trống"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "tapping the blocked capsule copies nothing",
+   "pass": true,
+   "note": "0 unexpected clipboard writes"
+  },
+  {
+   "sc": "S10b4",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "\"Đã sửa\" marker and \"Khôi phục\" appear after typing",
+   "pass": true,
+   "note": "Đã sửaKhôi phụcLưu làm mẫu"
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "edited text is exactly what is copied",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Khôi phục puts the original text back in the box",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "after Khôi phục the original info is copied (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "in-place box: edited greeting is what is copied (exact), one Chép button",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "stage card shows \"Đã sửa · Khôi phục · Lưu làm mẫu\" state, no save-as-template for the greeting",
+   "pass": true,
+   "note": "Chào bạn ạ, Soft gửi bạn Lace Top nhé 🤍"
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "after Khôi phục the stage preview is the generated greeting again",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10c2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "IG01 lead-in equals the seed lead-in li-size-1",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "lead-in strip is shown above the box with the chosen sentence",
+   "pass": true,
+   "note": "Dạ mình gửi bảng size để bạn tiện tham khảo nhen:"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "failed copy shows the error toast and the manual-copy sheet",
+   "pass": true,
+   "note": "toast true"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "lead-in is NOT remembered after a failed copy",
+   "pass": true,
+   "note": "{}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "clipboard = IG01 lead-in + blank line + Embroidery Pants chart (exact)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "lead-in is remembered after the successful copy",
+   "pass": true,
+   "note": "{\"size:vi\":\"li-size-1\"}"
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "after reload the remembered lead-in is already in the preview",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10d",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "unchecked set: a double tap (60ms apart) arms the guard but never copies the unchecked price",
+   "pass": true,
+   "note": "0 writes"
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "set bubble containing a typed \"[giá]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "product sheet text containing a typed \"[size]\" placeholder must not be copied (R40)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10e",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on Home tile: one stage, one greeting card",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on \"Tất cả mẫu\": exactly one picker sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":0,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on a picker photo with an empty context: finishes once (one line, picker closed, no duplicate rows)",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":1,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on \"Xong\" (several products): picker closed, exactly two lines in the context",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap (100ms) on the context bar: one picker (no duplicate), second tap must not act on picker content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (30ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (30ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (100ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (100ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (200ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (200ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (340ms) on \"Câu mở đầu\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0} hits: leadopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double tap (340ms) on \"context bar\": one sheet, kept open, second tap did not act on its content",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":2} hits: ctxpick>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "rapid stage/language hopping leaves one card of each kind and no duplicate groups",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"greet\"],\"lines\":2,\"dupes\":[],\"rows\":0,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap (30ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap (100ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap (200ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap (340ms) on \"Phí ship\": one sheet, kept open, shipping NOT changed silently",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} ship courier->courier hits: shipopen>sh settle in"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on a ship option: sheet closes, one odock",
+   "pass": true,
+   "note": "{\"sheets\":0,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on a product row: one product sheet",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on Chép: no duplicate UI; clipboard writes are identical texts",
+   "pass": true,
+   "note": "2 writes {\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0}"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "double-tap on a suggested set: one set sheet, set created once",
+   "pass": true,
+   "note": "{\"sheets\":1,\"cards\":[\"order\"],\"lines\":2,\"dupes\":[],\"rows\":2,\"tray\":0} sets 1"
+  },
+  {
+   "sc": "S10f",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "no console errors during all double/rapid-tap sequences (#debug=dupes active)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "error toast \"Chưa chép được…\" is shown",
+   "pass": true,
+   "note": "Chưa chép được. Chạm giữ đoạn văn để chép tay nhé."
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "manual-copy sheet \"Chép tay\" opens with exactly the message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "the manual-copy text is pre-selected for long-press copy",
+   "pass": true,
+   "note": "selection 303"
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "step is NOT marked sent after a failed copy (no ✓ on Chào hỏi)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "legacy execCommand fallback succeeds silently: success toast, no manual sheet",
+   "pass": true,
+   "note": "exec 2"
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "after the fallback success the step is marked sent",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order copy failure: error + manual sheet with the full order message",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "failed order copy does not mark \"copied\" (no Check out suggestion)",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S10g2",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "logo image is present and loaded",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "settings gear is present in the header",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "floating bar has at most 4 items",
+   "pass": true,
+   "note": "4"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "order button label is \"Đơn\"",
+   "pass": true,
+   "note": "Đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home has a subtitle",
+   "pass": true,
+   "note": "Khách đang ở bước nào? Chạm để mở câu trả lời."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Chào hỏi is reachable in 1 tap",
+   "pass": true,
+   "note": "Chào hỏi"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Chào hỏi screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Tư vấn size is reachable in 1 tap",
+   "pass": true,
+   "note": "Tư vấn size"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Tư vấn size screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Xin thông tin is reachable in 1 tap",
+   "pass": true,
+   "note": "Xin thông tin"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Xin thông tin screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Tạo đơn is reachable in 1 tap",
+   "pass": true,
+   "note": "Tạo đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Tạo đơn screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Check out is reachable in 1 tap",
+   "pass": true,
+   "note": "Check out"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Check out screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Theo mẫu is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Theo mẫu has a subtitle",
+   "pass": true,
+   "note": "Chọn mẫu khách hỏi để chép thông tin hoặc size."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home > Theo set is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Theo set has a subtitle",
+   "pass": true,
+   "note": "Ghép hai món thành một set cho khách."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Theo mẫu lists all 20 products newest first (released desc)",
+   "pass": true,
+   "note": "butter-top,fleur-slip-dress-blue,fleur-slip-dress-yellow,embroidery-pants,lace-trim-blouse-cream,lace-trim-blouse-blue,flowy-skirt-taupe,flowy-skirt-cream,still-cami-top-white,still-cami-top-taupe,lace-skirt-cream,lace-skirt-black,lace-top,shimmer-top,noir-midi-skirt,ivory-dot-midi-skirt,ivory-dot-blouse,noir-dotty-top,soft-halter-top-white,soft-halter-top-blue"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "collection headers in newest-first order with counts",
+   "pass": true,
+   "note": "Summer 26 · 10|Spring 26 · 4|Fall 25 · 6"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "filter segments Áo/Váy/Đầm/Quần show counts 11/6/2/1",
+   "pass": true,
+   "note": "Tất cả20|Áo11|Váy6|Đầm2|Quần1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "counts agree with data.json categories",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "filter top shows 11 rows",
+   "pass": true,
+   "note": "11"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "filter skirt shows 6 rows",
+   "pass": true,
+   "note": "6"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "filter dress shows 2 rows",
+   "pass": true,
+   "note": "2"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "filter pants shows 1 rows",
+   "pass": true,
+   "note": "1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "20 real product photos load (no 404, none broken)",
+   "pass": true,
+   "note": "{\"n\":20,\"ok\":20,\"cls\":0,\"rows\":20} "
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "no layout shift while photos load (CLS < 0.005)",
+   "pass": true,
+   "note": "CLS 0"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "control: swipe on a product row scrolls the list (test validity)",
+   "pass": true,
+   "note": "scrollTop 0 -> 361"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "vertical swipe that starts on the Áo/Váy/Đầm/Quần chips scrolls the list",
+   "pass": true,
+   "note": "scrollTop 0 -> 371"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "vertical swipe that starts on the photo strip scrolls the page",
+   "pass": true,
+   "note": "scrollTop 0 -> 288"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "photo strip is not a horizontal scroller (no carousel fighting the page)",
+   "pass": true,
+   "note": "{\"ox\":\"visible\",\"ta\":\"auto\",\"sw\":329,\"cw\":329}"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Đơn button shows a badge with the item count",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "no horizontal overflow on any screen",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "logo image is present and loaded",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "settings gear is present in the header",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "floating bar has at most 4 items",
+   "pass": true,
+   "note": "4"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "order button label is \"Đơn\"",
+   "pass": true,
+   "note": "Đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home has a subtitle",
+   "pass": true,
+   "note": "Khách đang ở bước nào? Chạm để mở câu trả lời."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Chào hỏi is reachable in 1 tap",
+   "pass": true,
+   "note": "Chào hỏi"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Chào hỏi screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Tư vấn size is reachable in 1 tap",
+   "pass": true,
+   "note": "Tư vấn size"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Tư vấn size screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Xin thông tin is reachable in 1 tap",
+   "pass": true,
+   "note": "Xin thông tin"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Xin thông tin screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Tạo đơn is reachable in 1 tap",
+   "pass": true,
+   "note": "Tạo đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Tạo đơn screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Check out is reachable in 1 tap",
+   "pass": true,
+   "note": "Check out"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Check out screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Theo mẫu is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Theo mẫu has a subtitle",
+   "pass": true,
+   "note": "Chọn mẫu khách hỏi để chép thông tin hoặc size."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home > Theo set is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Theo set has a subtitle",
+   "pass": true,
+   "note": "Ghép hai món thành một set cho khách."
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Theo mẫu lists all 20 products newest first (released desc)",
+   "pass": true,
+   "note": "butter-top,fleur-slip-dress-blue,fleur-slip-dress-yellow,embroidery-pants,lace-trim-blouse-cream,lace-trim-blouse-blue,flowy-skirt-taupe,flowy-skirt-cream,still-cami-top-white,still-cami-top-taupe,lace-skirt-cream,lace-skirt-black,lace-top,shimmer-top,noir-midi-skirt,ivory-dot-midi-skirt,ivory-dot-blouse,noir-dotty-top,soft-halter-top-white,soft-halter-top-blue"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "collection headers in newest-first order with counts",
+   "pass": true,
+   "note": "Summer 26 · 10|Spring 26 · 4|Fall 25 · 6"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "filter segments Áo/Váy/Đầm/Quần show counts 11/6/2/1",
+   "pass": true,
+   "note": "Tất cả20|Áo11|Váy6|Đầm2|Quần1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "counts agree with data.json categories",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "filter top shows 11 rows",
+   "pass": true,
+   "note": "11"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "filter skirt shows 6 rows",
+   "pass": true,
+   "note": "6"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "filter dress shows 2 rows",
+   "pass": true,
+   "note": "2"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "filter pants shows 1 rows",
+   "pass": true,
+   "note": "1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "20 real product photos load (no 404, none broken)",
+   "pass": true,
+   "note": "{\"n\":20,\"ok\":20,\"cls\":0,\"rows\":20} "
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "no layout shift while photos load (CLS < 0.005)",
+   "pass": true,
+   "note": "CLS 0"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "control: swipe on a product row scrolls the list (test validity)",
+   "pass": true,
+   "note": "scrollTop 0 -> 353"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "vertical swipe that starts on the Áo/Váy/Đầm/Quần chips scrolls the list",
+   "pass": true,
+   "note": "scrollTop 0 -> 361"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "vertical swipe that starts on the photo strip scrolls the page",
+   "pass": true,
+   "note": "scrollTop 0 -> 280"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "photo strip is not a horizontal scroller (no carousel fighting the page)",
+   "pass": true,
+   "note": "{\"ox\":\"visible\",\"ta\":\"auto\",\"sw\":329,\"cw\":329}"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Đơn button shows a badge with the item count",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "no horizontal overflow on any screen",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "logo image is present and loaded",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "settings gear is present in the header",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "floating bar has at most 4 items",
+   "pass": true,
+   "note": "4"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "order button label is \"Đơn\"",
+   "pass": true,
+   "note": "Đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home has a subtitle",
+   "pass": true,
+   "note": "Khách đang ở bước nào? Chạm để mở câu trả lời."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Chào hỏi is reachable in 1 tap",
+   "pass": true,
+   "note": "Chào hỏi"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Chào hỏi screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Tư vấn size is reachable in 1 tap",
+   "pass": true,
+   "note": "Tư vấn size"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Tư vấn size screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Xin thông tin is reachable in 1 tap",
+   "pass": true,
+   "note": "Xin thông tin"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Xin thông tin screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Tạo đơn is reachable in 1 tap",
+   "pass": true,
+   "note": "Tạo đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Tạo đơn screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Check out is reachable in 1 tap",
+   "pass": true,
+   "note": "Check out"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "subtitle / helper line is shown on the Check out screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Theo mẫu is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Theo mẫu has a subtitle",
+   "pass": true,
+   "note": "Chọn mẫu khách hỏi để chép thông tin hoặc size."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home > Theo set is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Theo set has a subtitle",
+   "pass": true,
+   "note": "Ghép hai món thành một set cho khách."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Theo mẫu lists all 20 products newest first (released desc)",
+   "pass": true,
+   "note": "butter-top,fleur-slip-dress-blue,fleur-slip-dress-yellow,embroidery-pants,lace-trim-blouse-cream,lace-trim-blouse-blue,flowy-skirt-taupe,flowy-skirt-cream,still-cami-top-white,still-cami-top-taupe,lace-skirt-cream,lace-skirt-black,lace-top,shimmer-top,noir-midi-skirt,ivory-dot-midi-skirt,ivory-dot-blouse,noir-dotty-top,soft-halter-top-white,soft-halter-top-blue"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "collection headers in newest-first order with counts",
+   "pass": true,
+   "note": "Summer 26 · 10|Spring 26 · 4|Fall 25 · 6"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "filter segments Áo/Váy/Đầm/Quần show counts 11/6/2/1",
+   "pass": true,
+   "note": "Tất cả20|Áo11|Váy6|Đầm2|Quần1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "counts agree with data.json categories",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "filter top shows 11 rows",
+   "pass": true,
+   "note": "11"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "filter skirt shows 6 rows",
+   "pass": true,
+   "note": "6"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "filter dress shows 2 rows",
+   "pass": true,
+   "note": "2"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "filter pants shows 1 rows",
+   "pass": true,
+   "note": "1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "20 real product photos load (no 404, none broken)",
+   "pass": true,
+   "note": "{\"n\":20,\"ok\":20,\"cls\":0,\"rows\":20} "
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "no layout shift while photos load (CLS < 0.005)",
+   "pass": true,
+   "note": "CLS 0"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "control: swipe on a product row scrolls the list (test validity)",
+   "pass": true,
+   "note": "scrollTop 0 -> 370"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "vertical swipe that starts on the Áo/Váy/Đầm/Quần chips scrolls the list",
+   "pass": true,
+   "note": "scrollTop 0 -> 360"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "vertical swipe that starts on the photo strip scrolls the page",
+   "pass": true,
+   "note": "scrollTop 0 -> 280"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "photo strip is not a horizontal scroller (no carousel fighting the page)",
+   "pass": true,
+   "note": "{\"ox\":\"visible\",\"ta\":\"auto\",\"sw\":358,\"cw\":358}"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Đơn button shows a badge with the item count",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "no horizontal overflow on any screen",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "logo image is present and loaded",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "settings gear is present in the header",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "floating bar has at most 4 items",
+   "pass": true,
+   "note": "4"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "order button label is \"Đơn\"",
+   "pass": true,
+   "note": "Đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home has a subtitle",
+   "pass": true,
+   "note": "Khách đang ở bước nào? Chạm để mở câu trả lời."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Chào hỏi is reachable in 1 tap",
+   "pass": true,
+   "note": "Chào hỏi"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Chào hỏi screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Tư vấn size is reachable in 1 tap",
+   "pass": true,
+   "note": "Tư vấn size"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Tư vấn size screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Xin thông tin is reachable in 1 tap",
+   "pass": true,
+   "note": "Xin thông tin"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Xin thông tin screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Tạo đơn is reachable in 1 tap",
+   "pass": true,
+   "note": "Tạo đơn"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Tạo đơn screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Check out is reachable in 1 tap",
+   "pass": true,
+   "note": "Check out"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "subtitle / helper line is shown on the Check out screen (R23)",
+   "pass": true,
+   "note": "no subtitle element under the title on Trả lời nhanh screens"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Theo mẫu is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Theo mẫu has a subtitle",
+   "pass": true,
+   "note": "Chọn mẫu khách hỏi để chép thông tin hoặc size."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home > Theo set is reachable in 1 tap",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Theo set has a subtitle",
+   "pass": true,
+   "note": "Ghép hai món thành một set cho khách."
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Theo mẫu lists all 20 products newest first (released desc)",
+   "pass": true,
+   "note": "butter-top,fleur-slip-dress-blue,fleur-slip-dress-yellow,embroidery-pants,lace-trim-blouse-cream,lace-trim-blouse-blue,flowy-skirt-taupe,flowy-skirt-cream,still-cami-top-white,still-cami-top-taupe,lace-skirt-cream,lace-skirt-black,lace-top,shimmer-top,noir-midi-skirt,ivory-dot-midi-skirt,ivory-dot-blouse,noir-dotty-top,soft-halter-top-white,soft-halter-top-blue"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "collection headers in newest-first order with counts",
+   "pass": true,
+   "note": "Summer 26 · 10|Spring 26 · 4|Fall 25 · 6"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "filter segments Áo/Váy/Đầm/Quần show counts 11/6/2/1",
+   "pass": true,
+   "note": "Tất cả20|Áo11|Váy6|Đầm2|Quần1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "counts agree with data.json categories",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "filter top shows 11 rows",
+   "pass": true,
+   "note": "11"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "filter skirt shows 6 rows",
+   "pass": true,
+   "note": "6"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "filter dress shows 2 rows",
+   "pass": true,
+   "note": "2"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "filter pants shows 1 rows",
+   "pass": true,
+   "note": "1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "20 real product photos load (no 404, none broken)",
+   "pass": true,
+   "note": "{\"n\":20,\"ok\":20,\"cls\":0,\"rows\":20} "
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "no layout shift while photos load (CLS < 0.005)",
+   "pass": true,
+   "note": "CLS 0"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "control: swipe on a product row scrolls the list (test validity)",
+   "pass": true,
+   "note": "scrollTop 0 -> 359"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "vertical swipe that starts on the Áo/Váy/Đầm/Quần chips scrolls the list",
+   "pass": true,
+   "note": "scrollTop 0 -> 359"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "vertical swipe that starts on the photo strip scrolls the page",
+   "pass": true,
+   "note": "scrollTop 0 -> 290"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "photo strip is not a horizontal scroller (no carousel fighting the page)",
+   "pass": true,
+   "note": "{\"ox\":\"visible\",\"ta\":\"auto\",\"sw\":358,\"cw\":358}"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Đơn button shows a badge with the item count",
+   "pass": true,
+   "note": "Đơn1"
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "no horizontal overflow on any screen",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S11",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "plain browser tab (bottom inset 0): bar gap 12pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "plain browser tab (bottom inset 0): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "plain browser tab that reports a 34pt inset: bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "plain browser tab that reports a 34pt inset: no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "standalone home-screen app (59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "standalone home-screen app (59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): app stays full-bleed (no double count)",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "iframe wrapper: framed app uses a 12pt bar gap (host owns the edge)",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "iframe wrapper: no uncovered strip",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "plain browser tab (bottom inset 0): bar gap 12pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "plain browser tab (bottom inset 0): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "plain browser tab that reports a 34pt inset: bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "plain browser tab that reports a 34pt inset: no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "standalone home-screen app (59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "standalone home-screen app (59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): app stays full-bleed (no double count)",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "iframe wrapper: framed app uses a 12pt bar gap (host owns the edge)",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "iframe wrapper: no uncovered strip",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "plain browser tab (bottom inset 0): bar gap 12pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "plain browser tab (bottom inset 0): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "plain browser tab that reports a 34pt inset: bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "plain browser tab that reports a 34pt inset: no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "standalone home-screen app (59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "standalone home-screen app (59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): app stays full-bleed (no double count)",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "root-padded host wrapper (html padding 59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "iframe wrapper: framed app uses a 12pt bar gap (host owns the edge)",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "iframe wrapper: no uncovered strip",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "plain browser tab (bottom inset 0): bar gap 12pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "plain browser tab (bottom inset 0): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "plain browser tab that reports a 34pt inset: bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "plain browser tab that reports a 34pt inset: no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "standalone home-screen app (59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "standalone home-screen app (59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): bar gap 24pt above the app edge",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): app stays full-bleed (no double count)",
+   "pass": true,
+   "note": "{\"gap\":24,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "root-padded host wrapper (html padding 59/34): no uncovered strip at the bottom edge",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "iframe wrapper: framed app uses a 12pt bar gap (host owns the edge)",
+   "pass": true,
+   "note": "{\"gap\":12,\"appBottom\":0,\"capH\":60}"
+  },
+  {
+   "sc": "S12",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "iframe wrapper: no uncovered strip",
+   "pass": true,
+   "note": "0 px differ"
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Home: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Chào hỏi: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Tư vấn size: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Xin thông tin: all 29 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 29,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Tạo đơn: all 35 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Chào hỏi\" 6.11",
+   "sampled": 35,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Check out: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Theo mẫu: all 35 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 35,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Theo set: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Product sheet: all 57 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 57,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Set sheet: all 56 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 56,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Picker sheet: all 63 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 63,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "Settings sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Home: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Chào hỏi: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Tư vấn size: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Xin thông tin: all 29 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 29,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Tạo đơn: all 35 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; BUTTON \"S\" 6.17",
+   "sampled": 35,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Check out: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: BUTTON \"May đo\" 5.43 ; SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.43
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Theo mẫu: all 35 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 35,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Theo set: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Product sheet: all 57 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 57,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Set sheet: all 56 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 56,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Picker sheet: all 63 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 63,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "Settings sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "393x852",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Home: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Chào hỏi: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Tư vấn size: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Xin thông tin: all 29 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 29,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Tạo đơn: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Chào hỏi\" 6.11",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Check out: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Theo mẫu: all 41 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: n \"20\" 4.64 ; n \"11\" 4.64 ; n \"6\" 4.64",
+   "sampled": 41,
+   "below": 0,
+   "min": 4.64
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Theo set: all 33 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 33,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Product sheet: all 60 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 60,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Set sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Trả lời nhanh\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Picker sheet: all 68 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: n \"20\" 4.88 ; n \"11\" 4.88 ; n \"6\" 4.88",
+   "sampled": 68,
+   "below": 0,
+   "min": 4.88
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "Settings sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.06 ; SPAN \"Sản phẩm\" 5.06 ; SPAN \"Đơn\" 5.06",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.06
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "light",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Home: all 36 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 36,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Chào hỏi: all 31 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 31,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Tư vấn size: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Xin thông tin: all 29 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 29,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Tạo đơn: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; BUTTON \"S\" 6.17",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Check out: all 37 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: BUTTON \"May đo\" 5.43 ; SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7",
+   "sampled": 37,
+   "below": 0,
+   "min": 5.43
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Theo mẫu: all 41 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: n \"20\" 5.1 ; n \"11\" 5.1 ; n \"6\" 5.1",
+   "sampled": 41,
+   "below": 0,
+   "min": 5.1
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Theo set: all 33 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 33,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Product sheet: all 60 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 60,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Set sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Trả lời nhanh\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Picker sheet: all 68 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: n \"20\" 4.58 ; n \"11\" 4.58 ; n \"6\" 4.58",
+   "sampled": 68,
+   "below": 0,
+   "min": 4.58
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "Settings sheet: all 58 sampled text/CTA pairs reach 4.5:1",
+   "pass": true,
+   "note": "lowest: SPAN \"Trang chủ\" 5.7 ; SPAN \"Sản phẩm\" 5.7 ; SPAN \"Đơn\" 5.7",
+   "sampled": 58,
+   "below": 0,
+   "min": 5.7
+  },
+  {
+   "sc": "S13",
+   "vp": "430x932",
+   "theme": "dark",
+   "name": "zero console errors / failed requests",
+   "pass": true,
+   "note": ""
+  }
+ ]
+}

@@ -38,7 +38,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   await tap('.recvrow [data-act=pasteinfo]', 400); await p.evaluate(() => { document.querySelector('#qr').scrollTop = 99999; }); await sh('order-receiver-open');
   await tap('#obtn', 400); await tap('[data-act=toastact]', 500);
   await tap('[data-card=pay] .mb[data-b="1"] [data-act=cardcopy]', 400); await top(); await sh('checkout');
-  await stage('size'); await tap('[data-card=fit-size] .mact [data-act=cardedit]', 700); await p.fill('.sheet [data-eta]', 'Dạ bạn mặc size M mẫu Lace Top sẽ vừa vặn nhen 🌷'); await sh('edit-sheet'); await close();
+  await stage('size'); await p.fill('[data-card=fit-size] textarea.pv', 'Dạ bạn mặc size M mẫu Lace Top sẽ vừa vặn nhen 🌷'); await p.evaluate(() => document.querySelector('[data-card=fit-size]').scrollIntoView({ block: 'center' })); await sh('edit-in-place');
   await tap('[data-card=sizes] [data-act=cardcopy]', 700); await sh('stage-done-marks');
   await tap('[data-act=newcust]', 500); await sh('new-customer-toast');
   // screens v6 did not change
@@ -65,6 +65,18 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   o = await newPage(b, { w: 430, h: 932, dark: true, fakeVV: true, standalone: true, insets: INS, storage: { draft: { lines: [{ pid: 'lace-top', size: 'M', qty: 1 }, { pid: 'lace-skirt-cream', size: 'S', qty: 1 }], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: Date.now() } } }); await o.page.goto(url); await o.page.waitForTimeout(400);
   await o.page.evaluate(() => document.querySelector('#home [data-v=order]').click()); await o.page.waitForTimeout(300); await o.page.tap('[data-act=recvtoggle]'); await o.page.waitForTimeout(200);
   await o.page.focus('[data-in=info]'); await o.page.evaluate(() => window.__setKb(336)); await o.page.waitForTimeout(500); await o.page.screenshot({ path: OUT + '/430-order-receiver-keyboard-dark.png' }); await o.ctx.close();
+}
+// ---- Dynamic Type 1.41 (round 7) and the greeting with 4 products (box scrolls inside)
+for (const dark of [false, true]) {
+  const m = dark ? 'dark' : 'light', LN = [{ pid: 'lace-top', size: 'M', qty: 1 }, { pid: 'lace-skirt-cream', size: 'S', qty: 1 }];
+  let o = await newPage(b, { w: 393, h: 852, dark, standalone: true, insets: INS, storage: { rp: REC('lace-top', 'lace-skirt-cream', 'butter-top', 'fleur-slip-dress-blue'), draft: { lines: LN, ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: Date.now() } } });
+  await o.page.goto(url + '#ts=1.41'); await o.page.waitForTimeout(500);
+  await o.page.evaluate(() => document.querySelector('#home [data-v=greet]').click()); await o.page.waitForTimeout(400); await o.page.screenshot({ path: `${OUT}/393-${m}-text141-greet.png` });
+  await o.page.evaluate(() => document.querySelector('#stseg [data-v=order]').click()); await o.page.waitForTimeout(400); await o.page.screenshot({ path: `${OUT}/393-${m}-text141-order.png` });
+  await o.page.evaluate(() => document.querySelector('#fbar [data-v=home]').click()); await o.page.waitForTimeout(300); await o.page.screenshot({ path: `${OUT}/393-${m}-text141-home.png` }); await o.ctx.close();
+  o = await newPage(b, { w: 393, h: 852, dark, standalone: true, insets: INS, storage: { draft: { lines: [...LN, { pid: 'butter-top', size: 'S', qty: 1 }, { pid: 'embroidery-pants', size: 'S', qty: 1 }], ship: 'courier', custom: 0, info: '', bank: true, copiedAt: 0, done: {}, at: Date.now() } } });
+  await o.page.goto(url); await o.page.waitForTimeout(500); await o.page.evaluate(() => document.querySelector('#home [data-v=greet]').click()); await o.page.waitForTimeout(500);
+  await o.page.evaluate(() => { document.querySelector('[data-card=greet] textarea.pv').scrollTop = 120; }); await o.page.waitForTimeout(200); await o.page.screenshot({ path: `${OUT}/393-${m}-v7-greet-inplace-scrolled.png` }); await o.ctx.close();
 }
 await b.close(); srv.close();
 console.log(fs.readdirSync(OUT).length + ' files in shots/');

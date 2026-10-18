@@ -28,7 +28,7 @@ for (const [w, h] of [[393, 852], [430, 932], [375, 667]]) for (const dark of [f
   const tag = `${w}x${h} ${dark ? 'dark' : 'light'}`;
   {   // --- first screen, stage switcher (v6: one card anatomy, context bar, no description line)
     const { page, errors } = await fresh({ w, h, dark, insets: w === 375 ? { top: 20, bottom: 0 } : { top: 59, bottom: 34 } });
-    ok(`${tag} Quick replies: stage Chào hỏi selected, eyebrow + title say where you are`, await page.isVisible('#qr') && !(await page.isVisible('#pi')) && /Chào hỏi/.test(await page.textContent('.sg[aria-selected=true]')) && /Bước 1\/5/.test(await page.textContent('#qreb')) && (await page.textContent('#qrtitle')) === 'Chào hỏi' && !(await page.$('#qrsub')) && !(await page.$('#hint')));
+    ok(`${tag} Quick replies: stage Chào hỏi selected, eyebrow + title say where you are`, await page.isVisible('#qr') && !(await page.isVisible('#pi')) && /Chào hỏi/.test(await page.textContent('.sg[aria-selected=true]')) && /Bước 1\/5/.test(await page.textContent('#qreb')) && (await page.textContent('#qrtitle')) === 'Chào hỏi' && (await page.textContent('#qrsub')).length > 20 && !(await page.$('#hint')));
     const labels = await page.$$eval('.sg', e => e.map(x => x.textContent));
     ok(`${tag} stage labels exact, in sales-flow order`, JSON.stringify(labels) === JSON.stringify(STAGE_LABELS), labels.join('|'));
     const fit = await page.$eval('#stseg .seg', e => [e.scrollWidth, e.clientWidth]);
@@ -106,20 +106,22 @@ for (const [w, h] of [[393, 852], [430, 932], [375, 667]]) for (const dark of [f
   }
   {   // --- keyboard-safe layout (visualViewport resize emulation)
     const { page } = await fresh({ w, h, dark, fakeVV: true, insets: { top: 59, bottom: 34 } }); const KB = 336;
-    await page.tap('[data-card=greet] [data-act=cardedit] >> nth=0'); await page.waitForTimeout(450);
-    const top0 = await page.$eval('.sheet', e => e.getBoundingClientRect().top);
-    await page.focus('.sheet [data-eta]'); await page.evaluate(k => window.__setKb(k), KB); await page.waitForTimeout(250);
-    const r = await page.evaluate(() => { const b = document.querySelector('#mcopy').getBoundingClientRect(); return { bottom: b.bottom, top: document.querySelector('.sheet').getBoundingClientRect().top, ih: innerHeight, ta: document.querySelector('.sheet [data-eta]').getBoundingClientRect().bottom }; });
-    ok(`${tag} keyboard: Chép (sheet) stays above the keyboard`, r.bottom <= r.ih - KB + 1 && r.bottom > 0, JSON.stringify(r));
-    ok(`${tag} keyboard: sheet does not jump (top unchanged), textarea above button`, Math.abs(r.top - top0) < 1 && r.ta <= r.bottom, top0 + ' ' + r.top);
-    await page.fill('.sheet [data-eta]', 'gõ thử trong khi bàn phím mở'); await page.tap('#mcopy'); await page.waitForTimeout(100);
-    ok(`${tag} keyboard: Chép works while keyboard is open and copies the typed text`, (await clip(page)).slice(-1)[0] === 'gõ thử trong khi bàn phím mở');
+    await page.tap('[data-card=greet] [data-act=cardfocus]'); await page.waitForTimeout(150); await page.evaluate(k => window.__setKb(k), KB); await page.waitForTimeout(300);
+    const r = await page.evaluate(() => { const t = document.querySelector('[data-card=greet] textarea.pv').getBoundingClientRect(); return { focus: document.activeElement.matches('textarea.pv'), bottom: t.bottom, top: t.top, ih: innerHeight }; });
+    ok(`${tag} keyboard: the in-place greeting box is focused and sits above the keyboard`, r.focus && r.bottom <= r.ih - KB + 1 && r.top > 0, JSON.stringify(r));
+    await page.keyboard.type('gõ thử trong khi bàn phím mở'); await page.waitForTimeout(150);
+    ok(`${tag} keyboard: typing goes into the box and is the text that Chép copies`, (await page.inputValue('[data-card=greet] textarea.pv')).endsWith('gõ thử trong khi bàn phím mở'));
+    await page.tap('[data-card=greet] [data-act=cardcopy]'); await page.waitForTimeout(100);
+    ok(`${tag} keyboard: Chép works while the keyboard is open`, (await clip(page)).slice(-1)[0].endsWith('gõ thử trong khi bàn phím mở'));
     await page.evaluate(() => window.__setKb(0)); await page.waitForTimeout(700);
     await page.close();
     const o = await fresh({ w, h, dark, fakeVV: true, insets: { top: 59, bottom: 34 } });
     await stage(o.page, 'order'); await o.page.tap('[data-act=recvtoggle]'); await o.page.waitForTimeout(150); await o.page.focus('[data-in=info]'); await o.page.evaluate(k => window.__setKb(k), KB); await o.page.waitForTimeout(250);
-    const q = await o.page.evaluate(() => { const f = document.querySelector('#odock').getBoundingClientRect(), d = document.querySelector('#fbar'); return { bottom: f.bottom, ih: innerHeight, dock: getComputedStyle(d).display, vis: f.height > 30 }; });
-    ok(`${tag} keyboard: order dock (total + Chép đơn) sits above the keyboard, floating bar hidden`, q.bottom <= q.ih - KB + 1 && q.bottom >= q.ih - KB - 12 && q.vis && q.dock === 'none', JSON.stringify(q));
+    const q = await o.page.evaluate(() => { const d = document.querySelector('#odock'), t = document.querySelector('[data-in=info]').getBoundingClientRect(), f = document.querySelector('#fbar'); return { dock: getComputedStyle(d).display, bar: getComputedStyle(f).display, tb: t.bottom, tt: t.top, ih: innerHeight }; });
+    ok(`${tag} keyboard (P1-1): the order dock steps aside, the receiver box is fully above the keyboard, floating bar hidden`, q.dock === 'none' && q.bar === 'none' && q.tb <= q.ih - KB + 1 && q.tt > 40, JSON.stringify(q));
+    await o.page.keyboard.type('Nguyễn A, 090 123 4567, 12 Lê Lợi, Q1'); await o.page.waitForTimeout(200);
+    const q2 = await o.page.evaluate(() => { const t = document.querySelector('[data-in=info]'), r = t.getBoundingClientRect(); return { v: t.value, tb: r.bottom, ih: innerHeight, inOrder: /Giao đến:\nNguyễn A/.test(document.querySelector('[data-card=order] textarea.pv').value) }; });
+    ok(`${tag} keyboard (P1-1): typed address stays visible above the keyboard and lands in the order message`, q2.v.includes('12 Lê Lợi') && q2.tb <= q2.ih - KB + 1 && q2.inOrder, JSON.stringify(q2));
     await o.page.evaluate(() => window.__setKb(0)); await o.page.waitForTimeout(300);
     ok(`${tag} keyboard closed: floating bar back`, await o.page.isVisible('#fbar'));
     await o.page.context().close();
@@ -343,14 +345,14 @@ for (const [w, h] of [[393, 852], [430, 932], [375, 667]]) {
     const { page } = await fresh({ w, h });
     await page.tap('#lsw [data-v=en]'); await page.waitForTimeout(150);
     ok(`${tag} VI/EN is a segmented control with a thumb (no outline)`, (await page.$eval('#lsw', e => getComputedStyle(e.querySelector('button[aria-pressed=true]')).outlineStyle)) !== 'solid' && !!(await page.$('#lsw .th')));
-    ok(`${tag} header language switch (EN) applies to the cards`, /Hi lovely/.test(await page.textContent('[data-card=greet] .pv')));
+    ok(`${tag} header language switch (EN) applies to the cards`, /Hi lovely/.test(await page.inputValue('[data-card=greet] textarea.pv')));
     await page.tap('[data-act=settings]'); await page.waitForTimeout(450);
     ok(`${tag} gear icon button opens settings; "Câu mở đầu" page replaces "Câu đệm"`, /Tuỳ chỉnh/.test(await page.textContent('.sheet')) && /Câu mở đầu/.test(await page.textContent('.sheet')) && !/Câu đệm/.test(await page.textContent('.sheet')));
     await page.context().close();
   }
   {   // --- reduced motion
     const { page, errors } = await fresh({ w, h, reduced: true });
-    await page.tap('[data-card=greet] [data-act=cardedit] >> nth=0'); await page.waitForTimeout(500);
+    await page.tap('[data-act=settings]'); await page.waitForTimeout(500);
     ok(`${tag} reduced motion: sheet opens, no errors`, await page.isVisible('.sheet') && errors.length === 0, errors.join(';'));
     await closeSheet(page); await openProd(page, 'lace-top'); await pickLead(page, '.sheet', 'info', 'li-info-3');
     ok(`${tag} reduced motion: strip shows at rest tint, no running animation`, await page.evaluate(() => { const s = document.querySelector('.lstrip'); return !!s && s.getAnimations().every(a => a.playState === 'finished' || a.effect.getTiming().duration < 1); }));
@@ -381,18 +383,15 @@ for (const [w, h] of [[393, 852], [430, 932], [375, 667]]) {
   const cs = cc.slice().sort((a, b) => a - b);
   console.log('card copy handler 4x CPU ms:', cc.map(x => x.toFixed(1)).join(' '), 'median', cs[6].toFixed(1));
   ok('card copy handler (Chép on a stage card) median <16ms at 4x CPU', cs[6] < 16, 'median ' + cs[6].toFixed(1) + ' max ' + cs[11].toFixed(1));
-  await page.tap('[data-card=greet] [data-act=cardedit] >> nth=0'); await page.waitForTimeout(800);
   const ty = await page.evaluate(async () => {
-    const ta = document.querySelector('.sheet [data-eta]'), out = [];
+    const ta = document.querySelector('[data-card=greet] textarea.pv'), out = [];
     ta.focus();
     for (let i = 0; i < 12; i++) { const t0 = performance.now(); ta.value += 'x'; ta.dispatchEvent(new Event('input', { bubbles: true })); out.push(performance.now() - t0); await new Promise(r => requestAnimationFrame(r)); }
     return out;
   });
   const ts = ty.slice().sort((a, b) => a - b);
   console.log('typing input handler 4x CPU ms:', ty.map(x => x.toFixed(1)).join(' '));
-  ok('typing in the editable box: input handler median <16ms at 4x CPU', ts[6] < 16, 'median ' + ts[6].toFixed(1) + ' max ' + ts[11].toFixed(1));
-  const mc = await page.evaluate(async () => { const btn = document.querySelector('#mcopy'); const t0 = performance.now(); btn.click(); return performance.now() - t0; });
-  ok('card sheet copy handler <16ms at 4x CPU', mc < 16, mc.toFixed(1));
+  ok('typing in the in-place card box: input handler median <16ms at 4x CPU', ts[6] < 16, 'median ' + ts[6].toFixed(1) + ' max ' + ts[11].toFixed(1));
   await ctx.close();
 }
 await b.close(); srv.close();

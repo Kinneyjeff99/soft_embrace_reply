@@ -57,7 +57,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   ok(`${tag} Home -> each of the 5 stages in 1 tap`, Object.values(dest).every(d => d[0] === 1 && d[1]) && Object.entries(dest).every(([id, d], i) => d[2] === ['Chào hỏi', 'Tư vấn size', 'Xin thông tin', 'Tạo đơn', 'Check out'][i]), JSON.stringify(Object.values(dest).map(d => d.slice(0, 3))));
   for (const v of ['p', 's']) { const s0 = await clicks(page); await page.tap(`#home [data-act=pgo][data-v=${v}]`); await wait(page); const on = await page.$eval(`#pview [data-v=${v}]`, e => e.getAttribute('aria-selected')); subs['pi' + v] = await page.$eval('#pisub', e => [e.textContent, e.getBoundingClientRect().height]); ok(`${tag} Home -> Theo ${v === 'p' ? 'mẫu' : 'set'} in 1 tap`, (await clicks(page)) - s0 === 1 && await vis(page, '#pi') && on === 'true'); await page.tap('[data-act=top][data-v=home]'); await wait(page); }
   ok(`${tag} contextual subtitle on Home and Sản phẩm: non-empty, one line, different`, Object.values(subs).every(s => s[0].length > 8 && s[1] < 26) && new Set(Object.values(subs).map(s => s[0])).size === Object.keys(subs).length, Object.entries(subs).map(([k, v]) => k + '=' + v[0]).join(' | '));
-  ok(`${tag} Trả lời nhanh drops the description line (v6): no #qrsub`, !(await page.$('#qrsub')));
+  ok(`${tag} Trả lời nhanh has the one-line helper again (R23, round 7): #qrsub = the stage description`, (await page.textContent('#qrsub')).length > 20);
   // gear
   await page.tap('#nav [data-act=settings]'); await wait(page, 450);
   ok(`${tag} gear opens settings`, await vis(page, '.sheet') && /Tuỳ chỉnh/.test(await page.textContent('.sheet .sbar')));
@@ -141,11 +141,10 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   ok(`${tag} "Tất cả mẫu" opens the picker: ONE segmented filter, photo grid, no horizontal scrolling`, await vis(page, '.sheet #pkf') && (await page.$$('.sheet #pkbody .pcell .av img')).length >= 20 && (await page.$$eval('.sheet #pkf button', e => e.map(x => x.textContent.replace(/\d+/g, '').trim()))).join('|') === 'Tất cả|Áo|Váy|Đầm|Quần');
   await page.tap('.sheet #pkf [data-v=skirt]'); await wait(page, 150);
   ok(`${tag} picker filter (Váy)`, (await page.$$('.sheet #pkbody .pcell:not(.ppair)')).length === 6);
-  await page.tap('.sheet #pkbody .pcell:not(.ppair) >> nth=0'); await wait(page, 150); await page.tap('.sheet [data-act=pkdone]'); await wait(page, 600);
+  await page.tap('.sheet #pkbody .pcell:not(.ppair) >> nth=0'); await wait(page, 700); if (await page.$('.sheet [data-act=pkdone]')) { await page.tap('.sheet [data-act=pkdone]'); await wait(page, 600); }   // an empty context finishes on the first photo (round 7); with products already chosen Xong is still needed
   ok(`${tag} picking a product fills the context bar`, /Skirt|Váy/i.test(await page.textContent('#ctxbar .dv')));
-  await page.tap('#stage [data-card=greet] .pv'); await wait(page, 500);
-  ok(`${tag} the preview opens the Sửa tin sheet`, await vis(page, '.sheet .ebox'));
-  await page.tap('.sheet [data-act=ebedit]'); await page.evaluate(() => document.activeElement.blur());
+  ok(`${tag} the card preview is a textarea you can type in directly (no Sửa tin sheet any more)`, (await page.$eval('#stage [data-card=greet] .pv', e => e.tagName)) === 'TEXTAREA' && !(await page.$('.sheet')));
+  await page.tap('#fbar [data-v=pi]'); await wait(page, 300); await page.tap('[data-open="p:lace-top"]'); await wait(page, 600);
   // a vertical swipe starting on the dropdown row scrolls the sheet body
   await page.$eval('.sheet .shb', e => { e.scrollTop = 0; }); await wait(page, 100);
   const [lx, ly] = await center(page, '.sheet .ddrow');

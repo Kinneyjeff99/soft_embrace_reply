@@ -7,7 +7,7 @@ const { srv, url } = await serve(); const b = await launch();
 const W = (p, ms = 150) => p.waitForTimeout(ms);
 const INS = { top: 59, bottom: 34 };
 const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-const ACTS = ['stage', 'stmore', 'stripset', 'stripall', 'greetv', 'cardcopy', 'cardedit', 'cardmore', 'cardneed', 'fititem', 'fitsize', 'fillseg', 'thanksv', 'pastefill', 'pastego', 'ctxpick', 'pkcell', 'pkpair', 'pksize', 'pkrm', 'pkdone', 'pkcat', 'oadd2', 'lnrm', 'lnqty', 'lnsize', 'shipopen', 'shippick', 'shipdone', 'recvtoggle', 'pasteinfo', 'copyorder', 'newcust', 'shclose', 'shdim', 'toastact', 'lang', 'top', 'ebedit', 'ebreset', 'leadopen', 'leadpick', 'tok', 'dockneed', 'attach', 'pview', 'pcopy', 'pseg', 'addline', 'setpick', 'pickone', 'linktoggle'];
+const ACTS = ['stage', 'stmore', 'stripset', 'stripall', 'greetv', 'cardcopy', 'cardfocus', 'cardreset', 'cardsave', 'extrashow', 'cardneed', 'fititem', 'fitsize', 'fillseg', 'thanksv', 'pastefill', 'pastego', 'ctxpick', 'pkcell', 'pkpair', 'pksize', 'pkrm', 'pkdone', 'pkcat', 'oadd2', 'lnrm', 'lnqty', 'lnsize', 'shipopen', 'shippick', 'shipdone', 'recvtoggle', 'pasteinfo', 'copyorder', 'newcust', 'shclose', 'shdim', 'toastact', 'lang', 'top', 'ebedit', 'ebreset', 'leadopen', 'leadpick', 'dockneed', 'attach', 'pview', 'pcopy', 'pseg', 'addline', 'setpick', 'pickone', 'linktoggle'];
 async function invariants(page) {
   return page.evaluate(() => {
     const out = [], sheets = [...document.querySelectorAll('#sheets .sh.in')];
@@ -52,11 +52,11 @@ for (const [w, h, dark] of [[393, 852, false], [430, 932, true]]) {
     const { page, errors } = await newPage(b, { w, h, dark, insets: INS, standalone: true }); await page.goto(url); await W(page, 350);
     await page.tap('#home [data-v=greet]'); await W(page);
     for (const k of [0, 1, 2]) { await page.tap(`[data-card=greet] .sc[data-pid] >> nth=${k}`); await W(page, 120); }
-    await page.tap('[data-card=greet] .mact [data-act=cardedit]'); await W(page, 500);
-    ok(`${tag} Sửa tin sheet has exactly one [data-row=item]-free layout (no product chip group) and one context row`, (await page.$$('.sheet [data-row=item]')).length === 0 && (await page.$$('.sheet [data-row=ctx]')).length === 1 && (await page.$$('.sheet .chip, .sheet .lchip')).length === 0);
-    await page.tap('.sheet [data-act=shclose]'); await W(page, 450);
-    await page.dispatchEvent('[data-card=greet] .pv', 'click'); await W(page, 40); await page.dispatchEvent('[data-card=greet] .pv', 'click'); await W(page, 500);
-    ok(`${tag} double tap on a card preview opens ONE sheet`, (await page.$$('#sheets .sh')).length === 1);
+    await page.tap('[data-card=greet] .mact [data-act=cardfocus]'); await W(page, 300);
+    ok(`${tag} Sửa focuses the in-place box: no sheet at all, one box in the card`, (await page.$$('#sheets .sh')).length === 0 && (await page.$$('[data-card=greet] textarea.pv')).length === 1);
+    await page.evaluate(() => document.activeElement.blur());
+    await page.dispatchEvent('[data-card=greet] [data-act=stripall]', 'click'); await W(page, 40); await page.dispatchEvent('[data-card=greet] [data-act=stripall]', 'click'); await W(page, 500);
+    ok(`${tag} double tap on "Thêm mẫu" opens ONE sheet`, (await page.$$('#sheets .sh')).length === 1);
     await page.tap('.sheet [data-act=shclose]'); await W(page, 450);
     await page.dispatchEvent('#ctxbar .ctxbar', 'click'); await W(page, 30); await page.dispatchEvent('#ctxbar .ctxbar', 'click'); await W(page, 500);
     ok(`${tag} double tap on the context bar opens ONE picker`, (await page.$$('#sheets .sh')).length === 1);
@@ -82,8 +82,8 @@ for (const [w, h, dark] of [[393, 852, false], [430, 932, true]]) {
     await page.context().close();
     const o = await newPage(b, { w, h, dark, insets: INS, standalone: true }); await o.page.goto(url); await W(o.page, 350);
     await o.page.tap('#home [data-v=greet]'); await W(o.page, 200);
-    await o.page.tap('[data-card=greet] .mact [data-act=cardedit]'); await W(o.page, 500);
-    await o.page.evaluate(() => { const r = document.querySelector('.sheet [data-row=ctx]'); r.parentNode.appendChild(r.cloneNode(true)); }); await W(o.page, 200);
+    await o.page.tap('[data-act=settings]'); await W(o.page, 600);
+    await o.page.evaluate(() => { const sh = document.querySelector('.sheet .shb'); for (let i = 0; i < 2; i++) { const r = document.createElement('div'); r.dataset.row = 'zz'; sh.appendChild(r); } }); await W(o.page, 200);
     ok(`${tag} canary: a second keyed row inside a sheet is reported`, o.errors.some(e => /dupe/.test(e)), o.errors.join(';'));
     await o.page.context().close();
   }

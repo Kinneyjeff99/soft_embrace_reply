@@ -16,6 +16,11 @@
   /* unfilled data shows as a bracketed word in the preview ([size]); a message that still contains one cannot be copied (design-v6 5.4) */
   var TOKW = { item: 'món', size: 'size', sizeA: 'size 1', sizeB: 'size 2', trackingCode: 'mã vận đơn', imageLinks: 'link hình', otherItem: 'mẫu thay thế', fitStyle: 'kiểu dáng', price: 'giá', total: 'tổng' };
   var TOKRE = /\[(món|size|size 1|size 2|mã vận đơn|link hình|mẫu thay thế|kiểu dáng|giá|tổng)\]/g;
+  /* GENERAL net (round 7): any other [word] / {{word}} left in a message is an unfilled blank, whatever its name. The app's own blanks above are
+     handled with a precise prompt ("Chọn size"); everything else lands here as pending 'blank'. Square brackets cannot be told apart reliably from a
+     placeholder, so a bracket in a generated message always stops the copy until she has looked at the text. */
+  var UNKRE = /\[[^\[\]\n]{1,40}\]|\{\{[^{}\n]{1,40}\}\}/g, KNOWNRE = new RegExp('^' + TOKRE.source + '$');
+  function blanks(text) { var o = []; String(text == null ? '' : text).replace(UNKRE, function (m) { if (!KNOWNRE.test(m) && o.indexOf(m) < 0) o.push(m); return m; }); return o; }
   function tok(k) { return '[' + TOKW[k] + ']'; }
   function tokKeys(text) { var out = []; String(text).replace(TOKRE, function (m, w) { Object.keys(TOKW).forEach(function (k) { if (TOKW[k] === w && out.indexOf(k) < 0) out.push(k); }); return m; }); return out; }
   /* greeting-only replies drop the product slot and the dangling colon */
@@ -76,8 +81,10 @@
     var o = ovs().__ord || {};
     var t = o[l] !== undefined ? o[l] : SEED.orderTemplate[l];
     if (l === 'en') t = normEn(t);
+    /* the shipping line is ALWAYS in the message (round 7): a total that leaves shipping out must be visible as such, even if her saved template has no Shipping line */
+    var hadShip = /^\s*•\s*Shipping.*$/m.test(t);
     t = t.replace(/^\s*•\s*Shipping.*$/m, function () { return shipLine(l); });
-    t = t.replace('{{orderLines}}', function () { return linesText(l); }).replace('{{total}}', function () { return totalStr(l); });
+    t = t.replace('{{orderLines}}', function () { return linesText(l) + (hadShip ? '' : '\n' + shipLine(l)); }).replace('{{total}}', function () { return totalStr(l); });
     var d = st.draft;
     if (d.info.trim()) t += '\n\n' + (l === 'en' ? 'Ship to:' : 'Giao đến:') + '\n' + d.info.trim();
     var b = st.set.bank;
@@ -171,7 +178,7 @@
        leadIds  = the lead-in chosen per "<action>:<lang>" key, committed only after a successful copy */
   function composeCopy(action, ref, l) {
     ref = ref || {};
-    var out = { text: '', lead: '', parts: [], fellBack: null, trunc: false, missing: null, partial: null, leadIds: {}, pending: [], bubbles: null };
+    var out = { text: '', lead: '', parts: [], fellBack: null, trunc: false, missing: null, partial: null, leadIds: {}, pending: [], blanks: [], bubbles: null };
     function lead(a) {
       var k = a + ':' + l, id = ref.sel && Object.prototype.hasOwnProperty.call(ref.sel, k) ? ref.sel[k] : leadSel(a, l);
       var hit = id ? leadList(a, l).filter(function (x) { return x.id === id; })[0] : null;
@@ -183,6 +190,8 @@
     function finish() {
       if (out.missing) { out.text = ''; out.parts = []; out.lead = ''; return out; }
       out.text = clean(out.parts.map(function (x) { return x.text; }).join('\n\n'));
+      out.blanks = blanks(out.text);
+      if (out.blanks.length && out.pending.indexOf('blank') < 0) out.pending.push('blank');
       return out;
     }
     var p = ref.pid ? PM[ref.pid] : null, t, t2;
@@ -290,12 +299,12 @@
      cards: {id} = a message from SEED.flow, {kind:'info'|'size'} = product chooser, {kind:'composer'} = the order composer.
      more = secondary items behind "Thêm". alts = variants of one card (greeting after payment: ready-to-wear vs custom). */
   var STAGES = [
-    { id: 'greet', lab: [['Chào hỏi']], desc: 'Khách vừa nhắn lần đầu hoặc quay lại.', cards: [{ id: 'greet', kind: 'greet', t: 'Chào khách', ids: ['open-first', 'open-returning'] }], more: [], nav: [{ id: 'extra-photos', t: 'Gửi thêm hình / link' }] },
-    { id: 'size', lab: [['Tư vấn', 'size']], desc: 'Khách hỏi về size, form dáng, số đo.', cards: [{ id: 'sizes', kind: 'sizes', t: 'Gửi bảng size' }, { id: 'fit-size', kind: 'entry', t: 'Vừa size', inputs: ['item', 'size'] }, { id: 'between-sizes', kind: 'entry', t: 'Giữa 2 size', inputs: ['sizeA', 'sizeB'] }, { id: 'ask-measurements', kind: 'entry', t: 'Xin số đo', compact: true }],
+    { id: 'greet', lab: [['Chào hỏi']], desc: 'Chọn mẫu khách hỏi, rồi chép lời chào.', cards: [{ id: 'greet', kind: 'greet', t: 'Chào khách', ids: ['open-first', 'open-returning'] }], more: [], nav: [{ id: 'extra-photos', t: 'Gửi thêm hình / link' }] },
+    { id: 'size', lab: [['Tư vấn', 'size']], desc: 'Gửi bảng size hoặc xin số đo khách nhé.', cards: [{ id: 'sizes', kind: 'sizes', t: 'Gửi bảng size' }, { id: 'fit-size', kind: 'entry', t: 'Vừa size', inputs: ['item', 'size'] }, { id: 'between-sizes', kind: 'entry', t: 'Giữa 2 size', inputs: ['sizeA', 'sizeB'] }, { id: 'ask-measurements', kind: 'entry', t: 'Xin số đo', compact: true }],
       more: [{ id: 'will-think', kind: 'entry', compact: true, t: 'Khách cần cân nhắc' }, { id: 'over-size-has-option', kind: 'entry', compact: true, t: 'Quá size · có mẫu khác' }, { id: 'over-size-no-option', kind: 'entry', compact: true, t: 'Quá size · không có mẫu khác' }, { id: 'too-small-size', kind: 'entry', compact: true, t: 'Quá nhỏ' }] },
-    { id: 'info', lab: [['Xin', 'thông tin']], desc: 'Xin tên, số điện thoại, địa chỉ để lên đơn.', cards: [{ id: 'shipping-info', kind: 'entry', compact: true, t: 'Xin thông tin giao hàng' }, { id: 'shipping-fee', kind: 'entry', compact: true, t: 'Hỏi địa chỉ để báo phí ship' }], more: [{ id: 'extra-photos', kind: 'entry', compact: true, t: 'Gửi thêm hình / link', inputs: ['imageLinks'] }], nav: [{ kind: 'paste', t: 'Khách gửi địa chỉ rồi? Dán vào đơn' }] },
-    { id: 'order', lab: [['Tạo đơn']], desc: 'Chọn món, phí ship, rồi chép tin chốt đơn.', cards: [{ id: 'order', kind: 'composer', t: 'Tin chốt đơn', ids: ['order-recap'] }], more: [] },
-    { id: 'out', lab: [['Check out']], desc: 'Sau khi khách chuyển khoản.', cards: [{ id: 'pay', kind: 'seq', t: 'Xác nhận thanh toán', items: ['paid-ack', ['paid-thanks', 'thanks-custom']] }, { id: 'track', kind: 'seq', t: 'Gửi mã vận đơn', items: ['tracking-note', 'tracking-code'], field: 'trackingCode' }, { id: 'ask-feedback', kind: 'entry', compact: true, t: 'Xin hình feedback' }],
+    { id: 'info', lab: [['Xin', 'thông tin']], desc: 'Xin tên, SĐT, địa chỉ để lên đơn nhé.', cards: [{ id: 'shipping-info', kind: 'entry', compact: true, t: 'Xin thông tin giao hàng' }, { id: 'shipping-fee', kind: 'entry', compact: true, t: 'Hỏi địa chỉ để báo phí ship' }], more: [{ id: 'extra-photos', kind: 'entry', compact: true, t: 'Gửi thêm hình / link', inputs: ['imageLinks'] }], nav: [{ kind: 'paste', t: 'Khách gửi địa chỉ rồi? Dán vào đơn' }] },
+    { id: 'order', lab: [['Tạo đơn']], desc: 'Chọn món và ship, rồi chép tin chốt đơn.', cards: [{ id: 'order', kind: 'composer', t: 'Tin chốt đơn', ids: ['order-recap'] }], more: [] },
+    { id: 'out', lab: [['Check out']], desc: 'Cảm ơn khách, rồi gửi mã vận đơn nhé.', cards: [{ id: 'pay', kind: 'seq', t: 'Xác nhận thanh toán', items: ['paid-ack', ['paid-thanks', 'thanks-custom']] }, { id: 'track', kind: 'seq', t: 'Gửi mã vận đơn', items: ['tracking-note', 'tracking-code'], field: 'trackingCode' }, { id: 'ask-feedback', kind: 'entry', compact: true, t: 'Xin hình feedback' }],
       more: [{ id: 'thanks-generic', kind: 'entry', compact: true, t: 'Lời chúc kèm (tuỳ chọn)' }, { id: 'return-policy', kind: 'entry', compact: true, t: 'Nhắc chính sách đổi trả' }, { id: 'order-confirm', kind: 'entry', compact: true, t: 'Đã nhận (ngắn)' }, { id: 'thanks-rtw', kind: 'entry', compact: true, t: 'Cảm ơn gộp 1 tin' }] }
   ];
   /* every flow message id a stage card stands for */
@@ -331,7 +340,7 @@
 
   return {
     PS: PS, CATS: CATS, CATL: CATL, newest: newest, byCat: byCat, catCounts: catCounts, collections: collections, imgOf: imgOf,
-    STAGES: STAGES, stageOf: stageOf, cardIds: cardIds, TOKW: TOKW, TOKRE: TOKRE, tok: tok, tokKeys: tokKeys, greetOnly: greetOnly, readyCount: readyCount, sizelessCount: sizelessCount, hasLines: hasLines, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
+    STAGES: STAGES, stageOf: stageOf, cardIds: cardIds, TOKW: TOKW, TOKRE: TOKRE, tok: tok, tokKeys: tokKeys, blanks: blanks, greetOnly: greetOnly, readyCount: readyCount, sizelessCount: sizelessCount, hasLines: hasLines, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
     VAR: VAR, PL: PL, PM: PM, FL: FL, FM: FM, nfV: nfV, nfE: nfE,
     pv: pv, clean: clean, other: other, money: money, moneyP: moneyP, colorOf: colorOf, colorEn: colorEn, pname: pname, pitem: pitem, psizes: psizes,
     ptext: ptext, ptrunc: ptrunc, normEn: normEn, entryText: entryText, calc: calc, totalStr: totalStr, linesText: linesText, shipLine: shipLine, orderText: orderText,

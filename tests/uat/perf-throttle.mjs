@@ -53,7 +53,8 @@ async function flow(rate) {
   rows.push(await once(S, 'Home > Chào hỏi (stage switch)', '#home .tile[data-v=greet]'));
   rows.push(await once(S, 'open "Tất cả mẫu" picker', '#stage [data-card=greet] [data-act=stripall]', 900));
   await P.waitForSelector('.sheet .pcell[data-pid="lace-top"]');
-  rows.push(await once(S, 'pick a product (cell)', '.sheet .pcell[data-pid="lace-top"]'));
+  rows.push(await once(S, 'pick a product (cell; empty context: finishes by itself)', '.sheet .pcell[data-pid="lace-top"]', 900));
+  await tapAt(P, '#ctxbar .ctxbar'); await P.waitForTimeout(900); await P.waitForSelector('.sheet .pcell[data-pid="lace-skirt-cream"]');
   await tapAt(P, '.sheet .pcell[data-pid="lace-skirt-cream"]'); await P.waitForTimeout(300);
   rows.push(await once(S, 'picker "Xong" (commit context)', '.sheet [data-act=pkdone]', 900));
   rows.push(await measure(S, 'COPY greeting card (2 products)', '#stage [data-card=greet] [data-act=cardcopy]'));

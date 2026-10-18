@@ -150,11 +150,11 @@ for (const [w, h, dark] of [[393, 852, false], [393, 852, true], [430, 932, fals
   await tap(page, '#stseg [data-v=size]'); await tap(page, '[data-act=stmore]'); await audit(page, 'Tư vấn size (Câu khác open)', tag);
   await tap(page, '#stseg [data-v=info]'); await audit(page, 'Xin thông tin', tag);
   await tap(page, '#stseg [data-v=out]'); await audit(page, 'Check out', tag);
-  await tap(page, '#stage [data-card=pay] .pv >> nth=0', 500); await audit(page, 'Sửa tin sheet (entry)', tag); await closeTop(page);
+  await tap(page, '#stage [data-card=pay] .pv >> nth=0', 300); await audit(page, 'Check out, in-place box focused', tag); await page.evaluate(() => document.activeElement.blur());
   await tap(page, '#stseg [data-v=order]'); await audit(page, 'Tạo đơn (2 lines, one without size)', tag);
   await tap(page, '[data-act=lnsize][data-v=M] >> nth=0'); await tap(page, '[data-act=lnsize][data-v=M] >> nth=1');
-  await tap(page, '[data-card=order] [data-act=cardedit] >> nth=0', 500); await tap(page, '.sheet .ddrow[data-lead=order]', 450); await audit(page, 'Câu mở đầu picker (order)', tag);
-  await tap(page, '.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-order-1"]', 650); await audit(page, 'Sửa tin sheet (order, strip)', tag); await closeTop(page);
+  await tap(page, '[data-card=order] [data-act=leadopen]', 650); await audit(page, 'Câu mở đầu picker (order)', tag);
+  await tap(page, '.sheet >> nth=-1 >> [data-act=leadpick][data-id="li-order-1"]', 650); await audit(page, 'Tạo đơn (order, strip in the box)', tag);
   await audit(page, 'Tạo đơn (ready, strip)', tag);
   await tap(page, '[data-act=shipopen]', 500); await audit(page, 'Phí ship sheet', tag); await closeTop(page);
   await tap(page, '[data-act=oadd2]', 600); await audit(page, 'Picker · order', tag); await closeTop(page);
