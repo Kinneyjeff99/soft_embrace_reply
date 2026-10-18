@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inline src/app.css, src/app.js and src/data.json into dist/index.html and write dist/manifest.webmanifest."""
+"""Inline src/app.css, src/compose.js, src/app.js and src/data.json into dist/index.html and write dist/manifest.webmanifest."""
 import json, re, pathlib, gzip, hashlib
 
 ROOT = pathlib.Path(__file__).resolve().parent
@@ -91,7 +91,7 @@ def min_js(src):
 html = (SRC / "index.src.html").read_text(encoding="utf-8")
 data = json.dumps(json.loads((SRC / "data.json").read_text(encoding="utf-8")), ensure_ascii=False, separators=(",", ":"))
 data = data.replace("</", "<\\/").replace("<!--", "<\\!--")
-js = min_js((SRC / "app.js").read_text(encoding="utf-8")).replace("</script", "<\\/script")
+js = min_js((SRC / "compose.js").read_text(encoding="utf-8") + "\n" + (SRC / "app.js").read_text(encoding="utf-8")).replace("</script", "<\\/script")
 css = min_css((SRC / "app.css").read_text(encoding="utf-8"))
 for k, v in (("/*__CSS__*/", css), ("__DATA__", data), ("/*__JS__*/", js)):
     assert k in html, k
@@ -101,18 +101,18 @@ for k, v in (("/*__CSS__*/", css), ("__DATA__", data), ("/*__JS__*/", js)):
 manifest = {
     "name": "Soft Embrace CS", "short_name": "Soft Embrace", "description": "Soạn nhanh tin nhắn tư vấn Instagram cho Soft Embrace",
     "start_url": "./?source=pwa", "scope": "./", "display": "standalone", "orientation": "portrait",
-    "background_color": "#FAF6F0", "theme_color": "#FAF6F0", "lang": "vi",
+    "background_color": "#FCFBF5", "theme_color": "#FCFBF5", "lang": "vi",
     "icons": [
         {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
         {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
         {"src": "icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png"},
-        {"src": "icons/favicon.svg", "sizes": "any", "type": "image/svg+xml"},
+        {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
     ],
 }
 (DIST / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
 # --- service worker: cache-first app shell, cache name = content hash (bumps automatically) --------
-SHELL = ["./", "index.html", "manifest.webmanifest", "icons/favicon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"]
+SHELL = ["./", "index.html", "manifest.webmanifest", "icons/favicon.png", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"]
 h = hashlib.sha1()
 for rel in ["index.html", "manifest.webmanifest"] + [p for p in SHELL if p.startswith("icons/")]:
     h.update((DIST / rel).read_bytes())
