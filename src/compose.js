@@ -228,6 +228,16 @@
     STAGES.forEach(function (g) { g.cards.concat(g.more).forEach(function (c) { if (c.id === id || (c.alts && c.alts.some(function (a) { return a[0] === id; }))) r = g.id; }); });
     return r;
   }
+  /* ---------- product list: newest first, category filter, collection sections, photos (round 4) ----------
+     `released` is the sheet order (one number per product, higher = newer); `collection` is a label that is INFERRED from the Instagram posts. */
+  var CATS = ['top', 'skirt', 'dress', 'pants'], CATL = { top: 'Áo', skirt: 'Váy', dress: 'Đầm', pants: 'Quần' };
+  function newest(list) { return list.map(function (p, i) { return [p, i]; }).sort(function (a, b) { return (b[0].released || 0) - (a[0].released || 0) || a[1] - b[1]; }).map(function (x) { return x[0]; }); }
+  function byCat(list, c) { return c && c !== 'all' ? list.filter(function (p) { return p.category === c; }) : list; }
+  function catCounts(list) { var o = { all: list.length }; CATS.forEach(function (c) { o[c] = list.filter(function (p) { return p.category === c; }).length; }); return o; }
+  function collections(list) { var out = [], by = {}; list.forEach(function (p) { var n = p.collection || ''; if (!by[n]) { by[n] = { name: n, items: [] }; out.push(by[n]); } by[n].items.push(p); }); return out; }
+  function imgOf(p, big) { return p && p.img ? 'img/' + p.img + (big ? '-320' : '-168') + '.webp' : ''; }
+  var PS = newest(PL);
+
   /* editable boxes: text she typed over the generated text */
   function isEdited(gen, cur) { return cur !== undefined && cur !== null && clean(cur) !== clean(gen); }
   function stripLead(text, lead) { text = String(text); lead = clean(lead || ''); if (lead && text.indexOf(lead) === 0) return text.slice(lead.length).replace(/^\s+/, ''); return text; }
@@ -243,6 +253,7 @@
   }
 
   return {
+    PS: PS, CATS: CATS, CATL: CATL, newest: newest, byCat: byCat, catCounts: catCounts, collections: collections, imgOf: imgOf,
     STAGES: STAGES, stageOf: stageOf, isEdited: isEdited, stripLead: stripLead, stripEnd: stripEnd, untemplate: untemplate,
     VAR: VAR, PL: PL, PM: PM, FL: FL, FM: FM, nfV: nfV, nfE: nfE,
     pv: pv, clean: clean, other: other, money: money, moneyP: moneyP, colorOf: colorOf, colorEn: colorEn, pname: pname, pitem: pitem, psizes: psizes,

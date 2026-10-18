@@ -16,7 +16,11 @@
    "sizeVi": "• S fit ngực 80-84, eo 62-66\n• M fit ngực 84-88, eo 66-70",
    "sizeEn": "• S: bust 80–84 cm, waist 62–66 cm\n• M: bust 84–88 cm, waist 66–70 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "soft-halter-white",
+   "tint": "#AE9783",
+   "released": 1,
+   "collection": "Fall 25"
   },
   {
    "id": "soft-halter-top-blue",
@@ -34,7 +38,11 @@
    "sizeVi": "• S fit ngực 78-82, eo 62-66\n• M fit ngực 82-86, eo 66-70",
    "sizeEn": "• S: bust 78–82 cm, waist 62–66 cm\n• M: bust 82–86 cm, waist 66–70 cm",
    "noteVi": "Áo Soft xanh dày dặn, chắc form hơn áo Soft trắng nên:\n- Nếu >50kg và >1m6 dù số đo có size S thì nên cân nhắc upsize lên size M",
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "soft-halter-blue",
+   "tint": "#776E5F",
+   "released": 1,
+   "collection": "Fall 25"
   },
   {
    "id": "noir-dotty-top",
@@ -52,7 +60,11 @@
    "sizeVi": "• S fit ngực 78-82, eo 62-66\n• M fit ngực 82-86, eo 64-70",
    "sizeEn": "• S: bust 78–82 cm, waist 60–66 cm\n• M: bust 82–86 cm, waist 64–70 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "noir-dotty-top",
+   "tint": "#655D57",
+   "released": 2,
+   "collection": "Fall 25"
   },
   {
    "id": "ivory-dot-blouse",
@@ -70,7 +82,11 @@
    "sizeVi": "• S fit ngực 78-82, eo 62-66\n• M fit ngực 82-86, eo 66-72",
    "sizeEn": "• S: bust 78–82 cm, waist 62–68 cm\n• M: bust 82–86 cm, waist 68–72 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "ivory-dot-blouse",
+   "tint": "#705031",
+   "released": 3,
+   "collection": "Fall 25"
   },
   {
    "id": "ivory-dot-midi-skirt",
@@ -89,7 +105,11 @@
    "sizeVi": "• S: fit eo 66-70, mông 88\n• M: fit eo 70-74, mông 92\n• L: fit eo 74-78, mông 96",
    "sizeEn": "• S: waist 66–70 cm, hips around 88 cm\n• M: waist 70–74 cm, hips around 92 cm\n• L: waist 74–78 cm, hips around 96 cm",
    "noteVi": null,
-   "madeToOrder": true
+   "madeToOrder": true,
+   "img": "ivory-dot-midi-skirt",
+   "tint": "#837864",
+   "released": 4,
+   "collection": "Fall 25"
   },
   {
    "id": "noir-midi-skirt",
@@ -108,7 +128,11 @@
    "sizeVi": "• S: fit eo 66-70, mông 88\n• M: fit eo 70-74, mông 92\n• L: fit eo 74-78, mông 96",
    "sizeEn": "• S: waist 66–70 cm, hips around 88 cm\n• M: waist 70–74 cm, hips around 92 cm\n• L: waist 74–78 cm, hips around 96 cm",
    "noteVi": null,
-   "madeToOrder": true
+   "madeToOrder": true,
+   "img": "noir-midi-skirt",
+   "tint": "#6E5945",
+   "released": 5,
+   "collection": "Fall 25"
   },
   {
    "id": "shimmer-top",
@@ -127,7 +151,11 @@
    "sizeVi": "• S: ngực 78-82, eo 62-66\n• M: ngực 82-86, eo 66-70\n• L: ngực 86-90, eo 70-74",
    "sizeEn": "• S: bust 78–82 cm, waist 62–66 cm\n• M: bust 82–86 cm, waist 66–70 cm\n• L: bust 86–90 cm, waist 70–74 cm",
    "noteVi": "v1 80 - v2 68\n84 - 72\n88 - 76",
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "shimmer-top",
+   "tint": "#A76757",
+   "released": 6,
+   "collection": "Spring 26"
   },
   {
    "id": "lace-top",
@@ -147,7 +175,11 @@
    "sizeEn": "• S: bust 78–82 cm, waist 62–66 cm \n• M: bust 82–86 cm, waist 66–70 cm \n• L: bust 86–90 cm, waist 70–74 cm",
    "noteVi": null,
    "madeToOrder": false,
-   "postUrl": "https://instagram.com/softembrace.made/p/DUQkDk6kTDg/"
+   "postUrl": "https://instagram.com/softembrace.made/p/DUQkDk6kTDg/",
+   "img": "lace-top",
+   "tint": "#D6B7AC",
+   "released": 7,
+   "collection": "Spring 26"
   },
   {
    "id": "lace-skirt-cream",
@@ -166,7 +198,11 @@
    "sizeVi": "• S: eo ngang rốn 68-72, mông 86-90\n• M: eo ngang rốn 72-76, mông 90-94\n• L: eo ngang rốn 76-80, mông 94-98",
    "sizeEn": "• S: waist at navel 68–72 cm, hips 86–90 cm \n• M: waist at navel 72–76 cm, hips 90–94 cm \n• L: waist at navel 76–80 cm, hips 94–98 cm",
    "noteVi": "Xin số đo eo ngang rốn và vòng 3. \n\nƯu tiên chọn size theo số đo vòng mông",
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "lace-skirt-cream",
+   "tint": "#CCA79A",
+   "released": 8,
+   "collection": "Spring 26"
   },
   {
    "id": "lace-skirt-black",
@@ -185,7 +221,11 @@
    "sizeVi": "• S: eo ngang rốn 68-72, mông 86-90\n• M: eo ngang rốn 72-76, mông 90-94\n• L: eo ngang rốn 76-80, mông 94-98",
    "sizeEn": "• S: waist at navel 68–72 cm, hips 86–90 cm\n• M: waist at navel 72–76 cm, hips 90–94 cm\n• L: waist at navel 76–80 cm, hips 94–98 cm",
    "noteVi": "Xin số đo eo ngang rốn và vòng 3. \n\nƯu tiên chọn size theo số đo vòng mông",
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "lace-skirt-black",
+   "tint": "#211C1A",
+   "released": 8,
+   "collection": "Spring 26"
   },
   {
    "id": "still-cami-top-white",
@@ -203,7 +243,11 @@
    "sizeVi": "• S: ngực 78-82, eo dưới 68\n• M: ngực 82-86, eo dưới 72",
    "sizeEn": "• S: bust 78–82 cm, lower waist up to 68 cm\n• M: bust 82–86 cm, lower waist up to 72 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "still-cami-white",
+   "tint": "#AD9180",
+   "released": 9,
+   "collection": "Summer 26"
   },
   {
    "id": "still-cami-top-taupe",
@@ -221,7 +265,11 @@
    "sizeVi": "• S: ngực 78-82, eo dưới 68\n• M: ngực 82-86, eo dưới 72",
    "sizeEn": "• S: bust 78–82 cm, lower waist up to 68 cm\n• M: bust 82–86 cm, lower waist up to 72 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "still-cami-taupe",
+   "tint": "#81604B",
+   "released": 9,
+   "collection": "Summer 26"
   },
   {
    "id": "flowy-skirt-taupe",
@@ -239,7 +287,11 @@
    "sizeVi": "• S: cạp dưới rốn 68-72, mông 86-92\n• M: cạp dưới rốn 72-76, mông 93-98",
    "sizeEn": "• S: low waist 70–74 cm, hips 86–92 cm\n• M: low waist 74–78 cm, hips 93–98 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "flowy-skirt-taupe",
+   "tint": "#A88292",
+   "released": 10,
+   "collection": "Summer 26"
   },
   {
    "id": "flowy-skirt-cream",
@@ -257,7 +309,11 @@
    "sizeVi": "• S: cạp dưới rốn 70-74, mông 86-92\n• M: cạp dưới rốn 74-78, mông 93-98",
    "sizeEn": "• S: low waist 70–74 cm, hips 86–92 cm\n• M: low waist 74–78 cm, hips 93–98 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "flowy-skirt-cream",
+   "tint": "#C7B8A4",
+   "released": 10,
+   "collection": "Summer 26"
   },
   {
    "id": "lace-trim-blouse-cream",
@@ -275,7 +331,11 @@
    "sizeVi": "• S: 40kg-55kg, dài áo 52cm\n• M: 50kg-65kg, dài áo 54cm",
    "sizeEn": "• S: 40–55 kg, length 52 cm \n• M: 50–65 kg, length 54 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "lace-trim-blouse-cream",
+   "tint": "#C9AA86",
+   "released": 11,
+   "collection": "Summer 26"
   },
   {
    "id": "lace-trim-blouse-blue",
@@ -293,7 +353,11 @@
    "sizeVi": "• S: 40kg-55kg, dài áo 52cm\n• M: 50kg-65kg, dài áo 54cm",
    "sizeEn": "• S: 40–50 kg, height 155–163 cm, length 52 cm\n• M: 50–60 kg, height 163–170 cm, length 54 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "lace-trim-blouse-blue",
+   "tint": "#88817A",
+   "released": 11,
+   "collection": "Summer 26"
   },
   {
    "id": "embroidery-pants",
@@ -312,7 +376,11 @@
    "sizeVi": "• S: eo 66-74, mông 88-94\ndài quần 94cm (chiều cao <1m6)\ndài quần 97cm (chiều cao >1m6)\n• M: eo 70-78, mông 94-100, dài 99cm\n• L: eo 74-82, mông 98-106, dài 100cm",
    "sizeEn": "• S: waist 66–74 cm, hips 88–94 cm, length 97 cm\n• M: waist 70–78 cm, hips 94–100 cm, length 99 cm\n• L: waist 74–82 cm, hips 98–106 cm, length 100 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "embroidery-pants",
+   "tint": "#A7A0A2",
+   "released": 12,
+   "collection": "Summer 26"
   },
   {
    "id": "fleur-slip-dress-blue",
@@ -331,7 +399,11 @@
    "sizeVi": "• S: ngực 78-82, eo 62-68\n• M: ngực 83-87, eo 66-72\n• L: ngực 88-92, eo 70-76",
    "sizeEn": "• S: bust 78–82 cm, waist 62–68 cm \n• M: bust 83–87 cm, waist 66–72 cm \n• L: bust 88–92 cm, waist 70–76 cm",
    "noteVi": "Chiều dài đầm tính từ điểm nối dây:\n\n• S: tà trước 106cm, tà sau 118cm \n• M: tà trước 108cm, tà sau 120cm \n• L: tà trước 108cm, tà sau 120cm",
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "fleur-slip-blue",
+   "tint": "#95A29B",
+   "released": 13,
+   "collection": "Summer 26"
   },
   {
    "id": "fleur-slip-dress-yellow",
@@ -350,7 +422,11 @@
    "sizeVi": "• S: ngực 78-82, eo 62-68\n• M: ngực 83-87, eo 66-72\n• L: ngực 88-92, eo 70-76",
    "sizeEn": "• S: bust 78–82 cm, waist 62–68 cm\n• M: bust 83–87 cm, waist 66–72 cm\n• L: bust 88–92 cm, waist 70–76 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "fleur-slip-yellow",
+   "tint": "#AE9779",
+   "released": 13,
+   "collection": "Summer 26"
   },
   {
    "id": "butter-top",
@@ -369,7 +445,11 @@
    "sizeVi": "• S: ngực 78-82, eo 62-68\n• M: ngực 82-86, eo 66-72\n• L: ngực 86-90, eo 70-76",
    "sizeEn": "• S: bust 78–82 cm, waist 62–68 cm\n• M: bust 82–86 cm, waist 66–72 cm\n• L: bust 86–90 cm, waist 70–76 cm",
    "noteVi": null,
-   "madeToOrder": false
+   "madeToOrder": false,
+   "img": "butter-top",
+   "tint": "#B6A68A",
+   "released": 14,
+   "collection": "Summer 26"
   }
  ],
  "flow": [

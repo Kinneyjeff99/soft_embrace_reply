@@ -248,3 +248,55 @@ Product swatch dots keep each product's real colour (taupe #A8968A in `compose.j
 - The 5-button stage switcher with Dynamic Type larger text; the stage badge.
 - Home-screen icon on Jet, the splash, and the header mask logomark at 18 px in dark mode.
 - Haptics, clipboard permission in standalone mode, service worker update and offline start (unchanged from earlier rounds).
+
+## Round 4
+
+Scope: founder feedback after testing round 3 on her iPhone: (1) one floating navigation capsule and a Home screen, (2) gear icon and the real logo in the header, (3) contextual subtitles on every screen, (4) set rows that show the two products, (5) newest-first product order with collections, (6) no more swipeable carousels, (7) a clearer product list with photos and category filters, (8) lighter icon, splash and chrome. No commit made. `shots/` holds the current screens only (29 per size plus `icon-preview.png`).
+
+### Changes
+- **Navigation.** The docked two-level bars are gone. There is one `<nav id="fbar">`: a translucent, blurred capsule floating above the home indicator (64 pt, fully rounded ends, 16/20 pt side margins, `Trang chủ · Trả lời nhanh · Sản phẩm`) and a separate 64 pt round button on its right that opens Tạo đơn and carries the item-count badge. 3 items in the capsule + 1 round button = 4 targets. The stage switcher moved into the Trả lời nhanh header as a 5-column segmented control (equal columns, words wrap whole, no scrolling, sticky under the title, badge on Tạo đơn). The old "Xem đơn" bar is replaced by the round button; in Tạo đơn the total + Chép đơn footer is a floating card sitting just above the capsule (it never hides behind it). The keyboard hides the capsule as before.
+- **Home** (first screen, always): greeting by time of day, then 5 large stage tiles (2 columns, Check out full width; each has a number, name and a short description) and 2 product tiles with photo pairs (Theo mẫu, Theo set). No lists. Any function is reachable with 1 tap; the tiles and the capsule are the same one-tap targets from everywhere.
+- **Header.** Real logo (`dist/img/logo.webp`, wordmark only, 405x84 px, 7.0 KB, shown 28 pt tall; a single black-on-transparent file, inverted by CSS in dark mode), VI/EN switch, and a gear icon button (44 pt, `aria-label="Tuỳ chỉnh"`) replacing the text button.
+- **Subtitles.** A one-line helper text under every screen title: Home "Chạm một ô để bắt đầu nhé.", each stage keeps its existing line ("Khách vừa nhắn lần đầu hoặc quay lại." ... "Chọn món, phí ship, rồi chép tin chốt đơn."), Theo mẫu "Chọn mẫu, rồi chạm Chép thông tin hoặc size.", Theo set "Ghép hai món thành một set cho khách.", picker and settings sheets too. The first-run hint "Chọn bước, chạm tin nhắn, rồi chạm Chép." stays (dismissible).
+- **Theo set.** Every set row (saved and suggested) shows two overlapping 56 pt photos, both names on two lines and the combined price (suggestions: sum, marked "gợi ý"). The set sheet opens with the two 320 px photos, names and prices side by side with a "+" between.
+- **Theo mẫu.** Default order is newest first by an explicit `released` field; `collection` gives quiet section headers ("Summer 26 · 10", "Spring 26 · 4", "Fall 25 · 6"). Variants of one product share a `released` value and keep their sheet order (Fleur Xanh before Vàng).
+- **Carousels removed everywhere.** `.chips` and the lead-in chip rows now wrap; no element in the app has `overflow-x: auto/scroll` (asserted on all three screens). The greeting and size chooser shows 3 product chips + "Mẫu khác…", which opens the picker sheet (photos, search, Tất cả/Áo/Váy/Đầm/Quần). Lead-in chips wrap to full width and read as a short pick list. No `touch-action: pan-x` scroller was needed, so a vertical swipe starting on any chip scrolls the page or sheet (tested with a real CDP touch sequence), and a horizontal swipe on the chip row moves nothing.
+- **Product list.** Instagram-follower style row: 56 pt round photo, bold name, grey "price · colour" line, quiet category tag (Áo/Váy/Đầm/Quần) and chevron. Filter chips `Tất cả 20 · Áo 11 · Váy 6 · Đầm 2 · Quần 1` (one row at 393 and 430, 44 pt, search respects the filter). Variant rows show the base name and the colour in the grey line.
+- **Photos.** `tools/make_images.py` maps all 20 files in `assets/product-images/` to product ids (soft-halter-white to soft-halter-top-white, still-cami-taupe to still-cami-top-taupe, fleur-slip-blue to fleur-slip-dress-blue, and so on; the script asserts the map covers all 20 exactly once), crops a square with a per-garment vertical bias (about 0.45 to 0.62 of the height, so garments show and faces mostly fall out) and writes 168 px (3.1 KB average, 5.5 KB max) and 320 px (8.2 KB average, 19 KB max) WebP. Images are `<img loading="lazy" decoding="async" width height>` inside a fixed-size circle with the photo's average colour behind it. The 320 size is used in the product sheet header, set sheets and the picker/order thumbnails use 168. Photos are never inlined.
+- **Light chrome.** Light surfaces are brighter (grouped #F8F6F0, cells #FFFEFB, sheet #FBFAF5), separators and fills softer, bar and row icons use a soft grey (#7B7C79 light, #A2A29E dark) or the accent, and the near-black toast is now a light card in light mode (dark mode unchanged). No brown token was added (the unit test still greps the sources).
+
+### Decisions made on her behalf
+1. The app always opens on Home (not on the last screen); the last stage is still remembered and reopened by "Trả lời nhanh".
+2. The order bar became the round button; the total is on the button's accessible label, not shown as text. The Tạo đơn footer carries the live total.
+3. Capsule label "Trả lời nhanh" and "Sản phẩm" (short for Thông tin sản phẩm); the Home section keeps the longer name.
+4. 3 recent/newest product chips + "Mẫu khác…" instead of 4 chips (wrapping would be too tall). The default chips are now the newest products (Butter Top, Fleur Xanh, Fleur Vàng) until she uses others.
+5. Lead-in chips wrap instead of scrolling; each long chip may take a full line.
+6. Variant rows in the list show "Fleur Slip Dress" twice, distinguished by photo and colour; sheet, picker, order and set names still use "Fleur Slip Dress · Xanh".
+7. Wordmark only for the logo (the stacked monogram would be unreadable at 28 pt).
+8. `released` is one number per product in sheet order (14 values); newest first means descending.
+9. Search results ignore collection headers and respect the category filter.
+
+### Inferred collections (she should correct these)
+Inferred from `docs/ig-reference/instagram-posts.json` (post dates and captions) and the sheet row order; the data field is `collection` in `src/data.json`:
+- **Fall 25**: Soft Halter Top (white, blue), Noir Dotty Top, Ivory Dot Blouse, Ivory Dot Midi Skirt, Noir Midi Skirt (posts from Oct to Nov 2025).
+- **Spring 26**: Shimmer Top, Lace Top, Lace Skirt (cream, black) (Feb 2026 posts "mùa xuân").
+- **Summer 26**: Still Cami Top (white, taupe), Flowy Skirt (cream, taupe), Lace Trim Blouse (cream, blue), Embroidery Pants, Fleur Slip Dress (blue, yellow), Butter Top ("Our first summer ... new pieces, coming this June").
+The Soft Halter Top and Lace Skirt also appear in an April 2026 post, so Halter could be argued as Spring. Her sheet order was used for `released`, so only the labels would change.
+
+### Icon candidates (shots/icon-preview.png, viewed at 180 / 120 / 60 / 29 px, on light and dark wallpaper, maskable and splash)
+A Old Rose #CC8C87 + Jet (picked), B Vanilla #F2E7AB + Jet (runner-up), C Baby powder + Old Rose dark, D Old Rose + Baby powder, E Vanilla + Old Rose dark, F Dun + Jet (reads brownish, rejected). Why A: Jet on Old Rose has about 5:1 contrast so the thin double ring survives at 60 px and still reads at 29 px; it is clearly warmer than the old Jet tile; Baby-powder-on-rose (D) is the weakest (about 2.6:1). Runner-up B is brighter and more summery but yellow-cream next to the white wallpaper looks washed out. Thin lines are thickened slightly at small sizes (before downscaling). Manifest `background_color` is now #CC8C87 (matches icon and splash), `theme_color` stays Baby powder; the apple-touch icon is 180 px without alpha. To switch: change `PICK` in `tools/make_icons.py` and `background_color` in `build.py`.
+
+### Numbers
+- Unit tests: 45 pass (new: image map covers all 20 and files exist, newest-first sort and collections, category counts and filter, no inlined bitmaps, SW precache list, manifest brightness).
+- `tests/ui/ui.mjs` 333/333, `tests/ui/round4.mjs` 202/202 (393x852 and 430x932, light and dark: Home, one floating bar with 3+1 items and no docked bars, rounded translucent capsule, logo loaded and 28 pt, gear opens settings, subtitle on every screen, Home to any stage or product view in 1 tap, set rows with two photos, newest-first order, section headers, filter counts and tags, all 20 photos load with no 404 at 168 and 320, CLS below 0.01, no horizontal scrollers, vertical swipe starting on a chip row scrolls the page and a lead-in chip scrolls the sheet, horizontal swipe moves nothing, zero console errors), `tests/ui/list.mjs` 46/46.
+- Tap counts (asserted, from Home): greeting 3 (tile, card, Chép), 2 inside Chào hỏi; product info in Chào hỏi 2 (chip, Chép); Theo mẫu info 2 from the list (row, Chép), 3 from Home; size chart 3 from Home (tile, chip, Chép); order created and message generated 2 (Tạo đơn tile, size chip), Chép đơn is the 3rd. The count is honest: the extra tap to leave Home is included.
+- Performance at 4x CPU: copy handler median 1.6 to 2.7 ms (first click up to 9 ms); typing median 0.9 ms; list scroll with photos 171 frames, 0 frames over 33 ms, 0 over 50 ms, p95 16.8 ms; search handler median under 2 ms.
+- Sizes: dist/index.html 177.7 KB raw (49.9 KB gzip: css 35.0, js 99.2, data 30.3); dist/img 41 files, 234 KB precached (168 px: 63 KB for 20, 320 px: 164 KB for 20, logo 7 KB). Service worker installs all of it (offline start shows the photos, tested). The G.8 size budgets are still missed for the same reason as before.
+
+### Needs a real iPhone
+- Whether the capsule's blur and the order footer card above it feel light enough over the list; the 64 pt capsule height against the home indicator on 15 Pro Max.
+- Lazy image decoding while flinging on a real GPU; photo crops (a few show a face edge or a skirt hem: Flowy Skirt taupe appears mauve in the source photo).
+- The wordmark logo at 28 pt on a retina screen in light and dark.
+- The new home-screen icon and splash on the real wallpaper; iOS caches icons, remove and re-add the app to see it.
+- Lead-in chips as a wrapped list in the product sheet (is it too long?) and the 5-column stage control at larger Dynamic Type.
+- Everything listed under Round 3 (IME in textareas, keyboard layout, nested scroll feel, clipboard permission, SW update).

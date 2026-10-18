@@ -191,30 +191,51 @@ function guardPass(s, key, btn, msg) {
 }
 
 /* ---------- shell: header, dock (stages + two top-level views), pages ---------- */
-var UI = { top: 'qr', view: 'p', more: {}, ordOpen: -1, oq: '' };
+var UI = { top: 'home', view: 'p', more: {}, ordOpen: -1, oq: '', filt: 'all' };
 var PAGE = { kind: 'page', state: { ed: {}, sel: {}, edit: null }, el: $('#stage') };
-var qrEl = $('#qr'), piEl = $('#pi');
+var homeEl = $('#home'), qrEl = $('#qr'), piEl = $('#pi');
+var PS = C.PS;
 var GLBL = { greet: 'Chào hỏi', size: 'Tư vấn size', info: 'Xin thông tin', order: 'Tạo đơn', out: 'Check out' };
+var TILEDESC = { greet: 'Khách mới hoặc cũ', size: 'Số đo, bảng size', info: 'Tên, SĐT, địa chỉ', order: 'Món, ship, chốt đơn', out: 'Cảm ơn, mã vận đơn' };
 function entryHidden(e) { return !entryText(e, 'vi').text.trim() && !entryText(e, 'en').text.trim(); }
 function groupOf(id) { return GLBL[C.stageOf(id)] || ''; }
 function stageDef(id) { return C.STAGES.filter(function (g) { return g.id === id; })[0] || C.STAGES[0]; }
-function paintDock() {
-  $('#stages').innerHTML = C.STAGES.map(function (g) {
+/* product photo: fixed-size box with a content colour behind it, so nothing shifts when the image decodes */
+function avatar(p, sz, big) {
+  var u = C.imgOf(p, big);
+  return '<span class="av" style="width:' + sz + 'px;height:' + sz + 'px;background:' + (p && p.tint || 'var(--fill-3)') + '">' + (u ? '<img src="' + u + '" width="' + sz + '" height="' + sz + '" alt="" loading="lazy" decoding="async">' : '') + '</span>';
+}
+function pairHtml(ps, sz) { return '<span class="pair">' + ps.map(function (p) { return avatar(p, sz); }).join('') + '</span>'; }
+function paintStages() {
+  $('#stseg').innerHTML = C.STAGES.map(function (g) {
     var n = g.id === 'order' ? calc().qty : 0;
-    return '<button class="stb" data-act="stage" data-v="' + g.id + '" aria-pressed="' + (g.id === st.ui.stage) + '"' + (n ? ' data-n="' + n + '" aria-label="' + esc(g.lab[0].join(' ')) + ', ' + n + ' món"' : '') + '>' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
+    return '<button class="sg" data-act="stage" data-v="' + g.id + '" aria-pressed="' + (g.id === st.ui.stage) + '"' + (n ? ' data-n="' + n + '" aria-label="' + esc(g.lab[0].join(' ')) + ', ' + n + ' món"' : '') + '>' + g.lab[0].map(function (w) { return '<span>' + esc(w) + '</span>'; }).join(' ') + '</button>';
   }).join('');
 }
+function paintDock() { paintStages(); updateOrderBar(); }
 function paintLang() { $$('#lsw button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === lang); }); }
+function greetWord() { var h = new Date().getHours(); return h < 11 ? 'Chào buổi sáng' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'; }
+function renderHomeScreen() {
+  var tiles = C.STAGES.map(function (g, i) {
+    return '<button class="tile' + (i === 4 ? ' wide' : '') + '" data-act="stage" data-v="' + g.id + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(g.lab[0].join(' ')) + '</span><span class="td">' + esc(TILEDESC[g.id]) + '</span></button>';
+  }).join('');
+  var sg = suggestions()[0];
+  homeEl.innerHTML = '<div class="ttl"><h1 id="hgreet">' + greetWord() + '</h1><p class="sub" id="hsub">Chạm một ô để bắt đầu nhé.</p></div>' +
+    '<h2 class="cap">Trả lời khách</h2><div class="tiles">' + tiles + '</div>' +
+    '<h2 class="cap">Thông tin sản phẩm</h2><div class="tiles">' +
+    '<button class="tile pt" data-act="pgo" data-v="p"><span class="pc">' + pairHtml(PS.slice(0, 3), 40) + '</span><span class="tt">Theo mẫu</span><span class="td">Giá, mô tả, bảng size</span></button>' +
+    '<button class="tile pt" data-act="pgo" data-v="s"><span class="pc">' + pairHtml(sg ? [PM[sg[0]], PM[sg[1]]] : PS.slice(3, 5), 40) + '</span><span class="tt">Theo set</span><span class="td">Ghép 2 món thành set</span></button></div>';
+}
 function setTop(v) {
-  UI.top = v; qrEl.hidden = v !== 'qr'; piEl.hidden = v !== 'pi';
-  document.body.classList.toggle('pi', v === 'pi');
-  $$('#tabs .tbb').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === v); });
-  if (v === 'pi') renderPI(); else renderStage();
-  paintDock(); updateOrderBar();
+  UI.top = v; homeEl.hidden = v !== 'home'; qrEl.hidden = v !== 'qr'; piEl.hidden = v !== 'pi';
+  document.body.dataset.top = v;
+  $$('#fbar .fb').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === v); });
+  if (v === 'pi') renderPI(); else if (v === 'qr') renderStage(); else { var g = $('#hgreet'); if (g) g.textContent = greetWord(); }
+  paintDock();
 }
 function gotoStage(id) {
   closeAllSheets(); st.ui.stage = id; save();
-  if (UI.top !== 'qr') setTop('qr'); else { renderStage(); paintDock(); updateOrderBar(); }
+  if (UI.top !== 'qr') setTop('qr'); else { renderStage(); paintDock(); }
   qrEl.scrollTop = 0;
 }
 function entrySub(e) {
@@ -222,15 +243,17 @@ function entrySub(e) {
   var tx = mtext(e, lang).text, x = tx.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
   return x || entryText(e, 'vi').text.replace(/\{\{(\w+)\}\}/g, '…').replace(/\s+/g, ' ').trim();
 }
+/* product chips: a short wrapping grid (no sideways scrolling) and "Mẫu khác…" that opens the picker with photos */
 function qcard(c) {
   if (c.kind === 'info' || c.kind === 'size') {
-    return '<div class="qc chipc"><span class="qt"><span class="t">' + esc(c.t) + '</span><span class="s">' + esc(c.s) + '</span></span><div class="chips">' + candidates().map(function (id) { return '<button class="chip" data-act="pchip" data-id="' + id + '" data-v="' + c.kind + '">' + esc(pname(PM[id], 'vi')) + '</button>'; }).join('') + '</div></div>';
+    return '<div class="qc chipc"><span class="qt"><span class="t">' + esc(c.t) + '</span><span class="s">' + esc(c.s) + '</span></span><div class="chips">' + candidates().slice(0, 3).map(function (id) { return '<button class="chip" data-act="pchip" data-id="' + id + '" data-v="' + c.kind + '">' + esc(pname(PM[id], 'vi')) + '</button>'; }).join('') + '<button class="chip ghost" data-act="pchoose" data-v="' + c.kind + '">Mẫu khác…</button></div></div>';
   }
   var e = FM[c.id]; if (!e) return '';
   return '<button class="qc" data-open="f:' + c.id + '"><span class="qt"><span class="t">' + esc(c.t) + '</span><span class="s">' + esc(entrySub(e)) + '</span></span>' + ic('chev', 's13') + '</button>';
 }
 function renderStage() {
-  var g = stageDef(st.ui.stage), h = '<p class="sdesc">' + esc(g.desc) + '</p>';
+  var g = stageDef(st.ui.stage), h = '';
+  $('#qrsub').textContent = g.desc;
   if (g.id === 'order') h += orderStageHtml();
   else {
     h += '<div class="qlist">' + g.cards.map(qcard).join('') + '</div>';
@@ -240,28 +263,35 @@ function renderStage() {
     }
   }
   PAGE.el.innerHTML = h; qrEl.classList.toggle('o', g.id === 'order');
+  paintStages();
   if (g.id === 'order') growAll(PAGE.el);
 }
 /* product tab */
 var homeHtml = '';
 function renderPI() {
   $$('.sub2 button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === UI.view); });
-  $('#sfield').style.display = UI.view === 'p' ? '' : 'none';
-  if (UI.view === 'p') renderHome(); else $('#hbody').innerHTML = setsViewHtml();
+  var isP = UI.view === 'p';
+  $('#sfield').style.display = isP ? '' : 'none'; $('#pfilt').style.display = isP ? '' : 'none';
+  $('#pisub').textContent = isP ? 'Chọn mẫu, rồi chạm Chép thông tin hoặc size.' : 'Ghép hai món thành một set cho khách.';
+  if (isP) renderList(); else $('#hbody').innerHTML = setsViewHtml();
+}
+function setRow(items, attrs, sub) {
+  var ps = items.map(function (id) { return PM[id]; }).filter(Boolean);
+  return '<button class="row setrow" ' + attrs + ' aria-label="' + esc(ps.map(function (p) { return pname(p, 'vi'); }).join(' + ') + ', ' + sub) + '">' + pairHtml(ps, 56) +
+    '<span class="rtxt"><span class="t">' + ps.map(function (p, i) { return (i ? '+ ' : '') + esc(pname(p, 'vi')); }).join('</span><span class="t">') + '</span><span class="sub s13 num">' + esc(sub) + '</span></span>' + ic('chev', 's13') + '</button>';
 }
 function setsViewHtml() {
   var h = '<h2 class="cap">Set đã lưu</h2><div class="grp">' + st.sets.map(function (x) {
-    return '<button class="row plain" data-open="s:' + x.id + '"><span class="rtxt"><span class="t">' + esc(C.setLabel(x)) + '</span><span class="sub s13">' + money(C.setPrice(x), 'vi') + '</span></span>' + ic('chev', 's13') + '</button>';
+    return setRow(x.items, 'data-open="s:' + x.id + '"', money(C.setPrice(x), 'vi') + (x.checked === false ? ' · chưa kiểm giá' : ''));
   }).join('') + '<button class="row plain" data-act="setnew"><span class="rtxt"><span class="t">Tạo set mới</span><span class="sub s13">Chọn 2 mẫu</span></span>' + ic('plus', 's15') + '</button></div>';
   var sg = suggestions();
-  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return '<button class="row plain" data-act="setsugg" data-a="' + x[0] + '" data-b="' + x[1] + '"><span class="rtxt"><span class="t">' + esc(C.setLabel({ items: x })) + '</span><span class="sub s13">kiểm tra giá trước khi gửi</span></span>' + ic('chev', 's13') + '</button>'; }).join('') + '</div>';
+  if (sg.length) h += '<h2 class="cap">Gợi ý ghép từ bài đăng</h2><div class="grp">' + sg.map(function (x) { return setRow(x, 'data-act="setsugg" data-a="' + x[0] + '" data-b="' + x[1] + '"', money(C.setSum({ items: x }), 'vi') + ' · gợi ý'); }).join('') + '</div>';
   return h;
 }
 function pRow(p) {
-  var c = p.variant ? '' : colorOf(p), sw = swatch(p);
-  return '<button class="row" data-open="p:' + p.id + '" aria-label="' + esc(pname(p) + ', ' + money(pv(p, 'price'), 'vi')) + '">' +
-    '<span class="disc">' + esc(pv(p, 'emoji')) + '</span><span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">' +
-    (sw ? '<i class="dot"' + ' style="background:' + sw + '"></i>' : '') + '<span class="num" style="flex:none">' + money(pv(p, 'price'), 'vi') + '</span>' + (c ? '<span class="st2">&nbsp;· ' + esc(c) + '</span>' : '') + '</span></span>' + ic('chev', 's13') + '</button>';
+  var c = colorOf(p);
+  return '<button class="row prow" data-open="p:' + p.id + '" aria-label="' + esc(pname(p) + ', ' + money(pv(p, 'price'), 'vi')) + '">' + avatar(p, 56) +
+    '<span class="rtxt"><span class="t">' + esc(pv(p, 'name')) + '</span><span class="sub"><span class="num" style="flex:none">' + money(pv(p, 'price'), 'vi') + '</span>' + (c ? '<span class="st2">&nbsp;· ' + esc(c) + '</span>' : '') + '</span></span><span class="ctag">' + esc(C.CATL[p.category] || '') + '</span>' + ic('chev', 's13') + '</button>';
 }
 function grp(items, fn) {
   if (items.length <= 20) return '<div class="grp">' + items.map(fn).join('') + '</div>';
@@ -269,36 +299,41 @@ function grp(items, fn) {
   for (var i = 0; i < items.length; i += 20) out += '<div class="chunk">' + items.slice(i, i + 20).map(fn).join('') + '</div>';
   return out + '</div>';
 }
-function renderHome() {
-  homeHtml = '<h2 class="cap">Mẫu · ' + PL.length + '</h2>' + grp(PL, pRow);
+function paintFilt() {
+  var cc = C.catCounts(PS);
+  $('#pfilt').innerHTML = ['all'].concat(C.CATS.filter(function (c) { return cc[c]; })).map(function (c) {
+    return '<button class="fc" data-act="pfilt" data-v="' + c + '" aria-pressed="' + (UI.filt === c) + '">' + (c === 'all' ? 'Tất cả' : C.CATL[c]) + ' <span class="n">' + cc[c] + '</span></button>';
+  }).join('');
+}
+function renderList() {
+  paintFilt();
+  homeHtml = C.collections(C.byCat(PS, UI.filt)).map(function (g) { return '<h2 class="cap">' + esc(g.name) + ' · ' + g.items.length + '</h2>' + grp(g.items, pRow); }).join('');
   if ($('#q').value.trim()) doSearch(); else $('#hbody').innerHTML = homeHtml;
 }
 
 /* ---------- order bar: shortcut to the "Tạo đơn" stage ---------- */
 function updateOrderBar() {
-  var c = calc(), b = $('#obar'), txt = 'Đơn · ' + c.qty + ' món · ' + money(c.total, 'vi');
-  var show = c.count > 0 && !(UI.top === 'qr' && st.ui.stage === 'order');
-  document.body.classList.toggle('has-order', show);
-  if (!show) { b.hidden = true; return; }
-  if (b.hidden || !b.firstChild) { b.innerHTML = '<span class="ot">' + esc(txt) + '</span><button class="btn sm" data-act="openorder">Xem đơn</button>'; b.hidden = false; }
-  else b.firstChild.textContent = txt;
+  var c = calc(), b = $('#obtn2'), bd = b.querySelector('.bd');
+  bd.hidden = !c.qty; bd.textContent = c.qty;
+  b.setAttribute('aria-label', c.count ? 'Đơn hàng, ' + c.qty + ' món, ' + money(c.total, 'vi') : 'Đơn hàng');
+  b.classList.toggle('on', UI.top === 'qr' && st.ui.stage === 'order');
 }
-function bump() { var b = $('#obar'); if (b.animate && !reduce && !b.hidden) b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 300 }); }
+function bump() { var b = $('#obtn2'); if (b.animate && !reduce) b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 300 }); }
 function addLine(pid, size, qty) {
   var d = st.draft, f = d.lines.find(function (L) { return L.pid === pid && L.size === size; });
   if (f) f.qty = Math.min(9, f.qty + (qty || 1)); else d.lines.push({ pid: pid, size: size, qty: qty || 1 });
   setCtxQuiet(pid, size); save(); orderChanged(); bump();
 }
 function lineQty(pid, size) { var f = st.draft.lines.filter(function (L) { return L.pid === pid && L.size === size; })[0]; return f ? f.qty : 0; }
-function orderChanged() { updateOrderBar(); paintDock(); if (UI.top === 'qr' && st.ui.stage === 'order') redrawOrder(); }
+function orderChanged() { paintDock(); if (UI.top === 'qr' && st.ui.stage === 'order') redrawOrder(); }
 
 /* ---------- order composer (stage "Tạo đơn") ---------- */
 function oresHtml() {
-  var q = norm(UI.oq || ''), ids = q ? PL.filter(function (p) { return norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1; }).map(function (p) { return p.id; }).slice(0, 8) : candidates().slice(0, 4);
+  var q = norm(UI.oq || ''), ids = q ? PS.filter(function (p) { return norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1; }).map(function (p) { return p.id; }).slice(0, 8) : candidates().slice(0, 4);
   if (!ids.length) return '<p class="foot">Chưa tìm thấy mẫu nào.</p>';
   return (q ? '' : '<h3 class="h2" style="margin-top:4px">Mẫu gần đây</h3>') + '<div class="grp">' + ids.map(function (id) {
     var p = PM[id];
-    return '<div class="row" style="flex-direction:column;align-items:stretch;gap:2px;padding:8px 16px 10px"><span class="rtxt" style="padding:0"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span><span class="chips">' + psizes(p).map(function (z) {
+    return '<div class="row orow"><span class="rtxt" style="padding:0">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></span><span class="chips">' + psizes(p).map(function (z) {
       var n = lineQty(id, z);
       return '<button class="chip tall" data-act="oadd" data-id="' + id + '" data-v="' + z + '" aria-label="Thêm ' + esc(pname(p, 'vi')) + ' size ' + z + '">' + z + (n ? '<span class="n"> · ' + n + '</span>' : '') + '</button>';
     }).join('') + '</span></div>';
@@ -308,7 +343,7 @@ function olinesHtml() {
   var d = st.draft, rows = '';
   d.lines.forEach(function (L, i) {
     var p = PM[L.pid]; if (!p) return;
-    rows += '<div class="row lrow' + (UI.ordOpen === i ? ' open' : '') + '" data-act="lineopen" data-i="' + i + '"><div class="lm"><span class="disc">' + esc(pv(p, 'emoji')) + '</span><span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">Size ' + L.size + ' · SL ' + L.qty + '</span></span><span class="pr">' + money(pv(p, 'price') * L.qty, 'vi') + '</span></div>' +
+    rows += '<div class="row lrow' + (UI.ordOpen === i ? ' open' : '') + '" data-act="lineopen" data-i="' + i + '"><div class="lm">' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub">Size ' + L.size + ' · SL ' + L.qty + '</span></span><span class="pr">' + money(pv(p, 'price') * L.qty, 'vi') + '</span></div>' +
       '<div class="lexp"><div class="chips wrapc">' + psizes(p).map(function (z) { return '<button class="chip" data-act="linesize" data-i="' + i + '" data-v="' + z + '" aria-pressed="' + (z === L.size) + '">' + z + '</button>'; }).join('') + '</div>' +
       '<span class="step"><button data-act="qty" data-i="' + i + '" data-d="-1" aria-label="Giảm">' + ic('minus') + '</button><span class="v num">' + L.qty + '</span><button data-act="qty" data-i="' + i + '" data-d="1" aria-label="Tăng">' + ic('plus') + '</button></span>' +
       '<button class="txtbtn dest" data-act="linedel" data-i="' + i + '">Xoá</button></div></div>';
@@ -462,8 +497,8 @@ document.addEventListener('keydown', function (e) {
     if (e.shiftKey && i <= 0) { f[f.length - 1].focus(); e.preventDefault(); } else if (!e.shiftKey && i === f.length - 1) { f[0].focus(); e.preventDefault(); }
   }
 });
-function shHead(title, sub, extra) {
-  return '<div class="drag"><i class="grab"></i><div class="shh"><div class="tw"><h2>' + esc(title) + '</h2>' + (sub ? '<div class="st">' + sub + '</div>' : '') + '</div>' + (extra || '') +
+function shHead(title, sub, extra, lead) {
+  return '<div class="drag"><i class="grab"></i><div class="shh">' + (lead || '') + '<div class="tw"><h2>' + esc(title) + '</h2>' + (sub ? '<div class="st">' + sub + '</div>' : '') + '</div>' + (extra || '') +
     '<button class="iconbtn" data-act="shclose" aria-label="Đóng"><span class="c">' + ic('x', 's15') + '</span></button></div></div>';
 }
 function segHtml(items, cur, act, cls) {
@@ -701,7 +736,7 @@ function altRow(a, id) {
 function renderProd(s) {
   var id = s.state.id, p = PM[id], l = lang, open = s.state.open, c = colorOf(p), note = pv(p, 'noteVi'), h = '', foot = '';
   var dt = ptrunc(p, 'desc', l), zt = ptrunc(p, 'size', l);
-  h += shHead(pv(p, 'emoji') + ' ' + pname(p, 'vi'), money(pv(p, 'price'), 'vi') + (c ? ' · ' + esc(c) : '') + ' · ' + psizes(p).join(' '), langSeg());
+  h += shHead(pname(p, 'vi'), money(pv(p, 'price'), 'vi') + (c ? ' · ' + esc(c) : '') + ' · ' + psizes(p).join(' '), langSeg(), avatar(p, 48, true));
   h += '<div class="shb ebody">';
   if (dt || zt) h += '<div class="qwarn">' + (dt && zt ? 'Thông tin và bảng size' : dt ? 'Thông tin' : 'Bảng size') + ' bị cắt ở sheet gốc — <button class="txtbtn" data-act="editp" data-id="' + id + '">Sửa</button></div>';
   ['info', 'size', 'both'].forEach(function (a) {
@@ -774,7 +809,7 @@ function candidates() {
   var out = [], c = ctx();
   if (c && c.itemId) out.push(c.itemId);
   st.recents.forEach(function (r) { var m = /^p:([^:]+):/.exec(r.k); if (m && PM[m[1]] && out.indexOf(m[1]) < 0) out.push(m[1]); });
-  PL.forEach(function (p) { if (out.indexOf(p.id) < 0) out.push(p.id); });
+  PS.forEach(function (p) { if (out.indexOf(p.id) < 0) out.push(p.id); });
   return out;
 }
 function fillRow(k, fills, s, opt) {
@@ -804,25 +839,29 @@ function msgCopy(s, t) {
 function openPicker(mode, cb, o) {
   o = o || {};
   pushSheet({
-    kind: 'picker', det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, from: o.from, skip: o.skip || [], first: null },
+    kind: 'picker', det: 'l', fixed: true, state: { q: '', mode: mode, cb: cb, title: o.title, sub: o.sub, from: o.from, skip: o.skip || [], first: null },
     render: function (s) {
-      return shHead(s.state.title || (mode === 'order' ? 'Thêm món' : 'Chọn mẫu')) +
+      return shHead(s.state.title || (mode === 'order' ? 'Thêm món' : 'Chọn mẫu'), s.state.sub || (mode === 'order' ? 'Chạm size để thêm vào đơn' : 'Chạm một mẫu để chọn')) +
         '<div style="padding:0 20px 8px"><div class="sfield" style="margin:0;height:36px;background:var(--fill-4)">' + ic('search') + '<input data-pq type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu" style="height:36px" aria-label="Tìm mẫu"></div></div>' +
-        '<div class="shb" id="plist" style="padding-bottom:calc(var(--safe-bottom) + 16px)">' + pickerList(s) + '</div>';
+        '<div class="fchips pkf" id="pkf">' + pkFilt(s) + '</div><div class="shb" id="plist" style="padding-bottom:calc(var(--safe-bottom) + 16px)">' + pickerList(s) + '</div>';
     }
   });
 }
+function pkFilt(s) {
+  var cc = C.catCounts(PS), cur = s.state.cat || 'all';
+  return ['all'].concat(C.CATS.filter(function (c) { return cc[c]; })).map(function (c) { return '<button class="fc" data-act="pkfilt" data-v="' + c + '" aria-pressed="' + (cur === c) + '">' + (c === 'all' ? 'Tất cả' : C.CATL[c]) + '</button>'; }).join('');
+}
 function pickerList(s) {
   var q = norm(s.state.q || ''), skip = s.state.skip, from = s.state.from && PM[s.state.from];
-  var ps = PL.filter(function (p) { return skip.indexOf(p.id) < 0 && (!q || norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1); });
+  var ps = PS.filter(function (p) { return skip.indexOf(p.id) < 0 && (!s.state.cat || s.state.cat === 'all' || p.category === s.state.cat) && (!q || norm(pname(p, 'vi') + ' ' + colorOf(p)).indexOf(q) > -1); });
   if (from) {
     var sg = function (p) { return isSugg(from.id, p.id); };
     ps = ps.filter(sg).concat(ps.filter(function (p) { return !sg(p) && p.category !== from.category; }), ps.filter(function (p) { return !sg(p) && p.category === from.category; }));
   }
   if (!ps.length) return '<div class="empty"><div class="tt">Chưa tìm thấy</div><p>Thử một tên ngắn hơn nhé.</p></div>';
   return '<div class="grp" style="margin:0">' + ps.map(function (p) {
-    if (s.state.mode === 'order') return '<div class="row"><span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span><span class="chips" style="padding:0">' + psizes(p).map(function (z) { return '<button class="chip tall" data-act="pickadd" data-id="' + p.id + '" data-v="' + z + '">' + z + '</button>'; }).join('') + '</span></div>';
-    return '<button class="row" data-act="pickone" data-id="' + p.id + '"' + (s.state.first === p.id ? ' style="background:var(--accent-tint)"' : '') + '><span class="disc">' + esc(pv(p, 'emoji')) + '</span><span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + (from && isSugg(from.id, p.id) ? ' · hay ghép' : '') + '</span></span></button>';
+    if (s.state.mode === 'order') return '<div class="row orow"><span class="rtxt" style="padding:0">' + avatar(p, 44) + '<span class="rw"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + '</span></span></span><span class="chips" style="padding:0">' + psizes(p).map(function (z) { return '<button class="chip tall" data-act="pickadd" data-id="' + p.id + '" data-v="' + z + '">' + z + '</button>'; }).join('') + '</span></div>';
+    return '<button class="row prow sm" data-act="pickone" data-id="' + p.id + '"' + (s.state.first === p.id ? ' style="background:var(--accent-tint)"' : '') + '>' + avatar(p, 44) + '<span class="rtxt"><span class="t">' + esc(pname(p, 'vi')) + '</span><span class="sub num">' + money(pv(p, 'price'), 'vi') + (from && isSugg(from.id, p.id) ? ' · hay ghép' : '') + '</span></span></button>';
   }).join('') + '</div>';
 }
 
@@ -860,7 +899,7 @@ function nextLabel(s) { var vis = C.SETB.filter(function (b) { return C.setBubbl
 function renderSet(s) {
   var set = SM(s.state.id), l = lang, h = '', i = 0, vis = C.SETB.filter(function (b) { return C.setBubble(set, b, l); });
   var next = vis.indexOf(s.state.next) > -1 ? s.state.next : vis[0]; s.state.next = next;
-  h += shHead(C.setLabel(set), 'Set · ' + money(C.setPrice(set), 'vi'), langSeg()) + '<div class="shb pad ebody">';
+  h += shHead(C.setLabel(set), 'Set · ' + money(C.setPrice(set), 'vi'), langSeg()) + '<div class="shb pad ebody"><div class="setpic" aria-label="Các món trong set">' + C.setItems(set).map(function (p, i) { return (i ? '<span class="plus">+</span>' : '') + '<span class="sp">' + avatar(p, 96, true) + '<span class="n1">' + esc(pname(p, 'vi')) + '</span><span class="n2 num">' + money(pv(p, 'price'), 'vi') + '</span></span>'; }).join('') + '</div>';
   if (set.checked === false) h += '<div class="qwarn">Gợi ý từ bài đăng, chưa kiểm tra giá — <button class="txtbtn" data-act="setok">Đã kiểm tra</button></div>';
   h += '<div class="foot" id="pline" style="margin-top:0">' + esc(setLine(set)) + '</div>' +
     '<h3 class="cap sm" style="padding-bottom:0">Giá set (để trống = tổng giá lẻ)</h3><div class="lf" style="margin-top:6px"><textarea rows="1" data-sprice inputmode="numeric" placeholder="' + nfV.format(C.setSum(set)) + '" aria-label="Giá set">' + (set.price != null && set.price !== '' ? set.price : '') + '</textarea></div>' +
@@ -991,7 +1030,7 @@ function settingsPage(s) {
       '<h3 class="h2">Nội dung</h3><div class="slist">' + srow('spage', 'data-p="list:p"', 'Mẫu', needCheck() ? needCheck() + ' cần kiểm tra' : PL.length) + srow('spage', 'data-p="leads"', 'Câu đệm') + srow('spage', 'data-p="sets"', 'Set', st.sets.length) + srow('spage', 'data-p="list:f"', 'Câu trả lời', FL.filter(function (e) { return !!groupOf(e.id); }).length) + srow('spage', 'data-p="ord"', 'Mẫu tóm tắt đơn') + '</div>' +
       '<h3 class="h2">Dữ liệu</h3><div class="slist">' + srow('export', '', 'Xuất bản sao lưu (.json)', null, false) + srow('import', '', 'Nhập bản sao lưu', null, false) + srow('resetall', '', 'Khôi phục nội dung gốc', null, false).replace('class="srw"', 'class="srw dest"') + '</div>' +
       '<p class="foot" style="text-align:center;margin-top:24px">Soft Embrace · 2.0<br>Làm bằng sự dịu dàng.</p>';
-    return sNav('Tuỳ chỉnh', false) + '<div class="shb pad">' + body + '</div>';
+    return sNav('Tuỳ chỉnh', false) + '<div class="shb pad"><p class="foot csub">Chỉnh một lần, dùng mãi nhé.</p>' + body + '</div>';
   }
   var title;
   if (pg === 'ship') { title = 'Phí ship'; body = field('Phí ship (đ)', '__set', 'fee', st.set.fee, 'num') + '<p class="foot">Dùng khi chọn mức phí cố định trong đơn hàng.</p>'; }
@@ -1018,7 +1057,7 @@ function settingsPage(s) {
     body = st.sets.length ? '<div class="slist" style="margin-top:8px">' + st.sets.map(function (x) { return srow('setopen', 'data-id="' + x.id + '"', esc(C.setLabel(x)), money(C.setPrice(x), 'vi')); }).join('') + '</div>' : '<p class="foot" style="margin-top:8px">Chưa có set nào. Mở một mẫu rồi chạm “Ghép với mẫu khác”.</p>';
   } else if (parts[0] === 'list') {
     title = parts[1] === 'p' ? 'Mẫu' : 'Câu trả lời';
-    var list = parts[1] === 'p' ? PL.map(function (p) { return srow('spage', 'data-p="edit:p:' + p.id + '"', esc(pv(p, 'emoji') + ' ' + pname(p, 'vi')), p.truncated && p.truncated.some(function (f) { return !ov(p.id)[f]; }) ? 'Cần kiểm tra' : null); }) :
+    var list = parts[1] === 'p' ? PS.map(function (p) { return srow('spage', 'data-p="edit:p:' + p.id + '"', esc(pname(p, 'vi')), p.truncated && p.truncated.some(function (f) { return !ov(p.id)[f]; }) ? 'Cần kiểm tra' : null); }) :
       FL.filter(function (e) { return !!groupOf(e.id) || e.id === 'order-recap'; }).map(function (e) { return srow('spage', 'data-p="edit:f:' + e.id + '"', esc(eLabel(e)), st.ov[e.id] ? 'Đã sửa' : null); });
     body = '<div class="slist" style="margin-top:8px">' + list.join('') + '</div>';
   } else if (parts[0] === 'edit') {
@@ -1055,12 +1094,12 @@ function onOvInput(el) {
   save(); clearTimeout(ovT);
   ovT = setTimeout(function () { refreshAll(); flashSaved(); }, 400);
 }
-function refreshAll() { IDX = null; renderHome(); if (UI.top === 'pi' && UI.view === 's') renderPI(); if (UI.top === 'qr') renderStage(); updateOrderBar(); paintDock(); }
+function refreshAll() { IDX = null; renderList(); renderHomeScreen(); if (UI.top === 'pi' && UI.view === 's') renderPI(); if (UI.top === 'qr') renderStage(); paintDock(); }
 
 /* ---------- search (product tab, "Theo mẫu") ---------- */
 var IDX = null;
 function buildIndex() {
-  IDX = PL.map(function (p) { return { id: p.id, name: norm(pname(p, 'vi') + ' ' + pname(p, 'en')), title: norm(colorOf(p)), text: norm(ptext(p, 'desc', 'vi') + ' ' + ptext(p, 'desc', 'en')) }; });
+  IDX = PS.map(function (p) { return { id: p.id, name: norm(pname(p, 'vi') + ' ' + pname(p, 'en')), title: norm(colorOf(p)), text: norm(ptext(p, 'desc', 'vi') + ' ' + ptext(p, 'desc', 'en')) }; });
 }
 var lastRaw = null;
 function doSearch(soft) {
@@ -1075,7 +1114,8 @@ function doSearch(soft) {
     if (r > -1) hits.push([r, x]);
   });
   hits.sort(function (x, y) { return x[0] - y[0]; });
-  box.innerHTML = hits.length ? '<h2 class="cap">Mẫu</h2><div class="grp">' + hits.map(function (x) { return pRow(PM[x[1].id]); }).join('') + '</div>' : '<div class="empty">' + ic('search', 's34') + '<div class="tt">Chưa tìm thấy “' + esc(raw.trim()) + '”</div><p>Thử một tên ngắn hơn nhé.</p></div>';
+  hits = hits.filter(function (x) { return UI.filt === 'all' || PM[x[1].id].category === UI.filt; });
+  box.innerHTML = hits.length ? '<h2 class="cap">Kết quả · ' + hits.length + '</h2><div class="grp">' + hits.map(function (x) { return pRow(PM[x[1].id]); }).join('') + '</div>' : '<div class="empty">' + ic('search', 's34') + '<div class="tt">Chưa tìm thấy “' + esc(raw.trim()) + '”</div><p>Thử một tên ngắn hơn nhé.</p></div>';
 }
 (function () {
   var vv = window.visualViewport, pend = 0;
@@ -1109,10 +1149,14 @@ document.addEventListener('click', function (e) {
   var s = scopeOf(t), A = t.dataset.a;
   switch (a) {
     case 'lang': setLang(v); break;
-    case 'top': if (v !== UI.top) setTop(v); break;
+    case 'top': if (v !== UI.top) setTop(v); else if (v !== 'home') { var sc0 = v === 'qr' ? qrEl : piEl; if (sc0.scrollTop > 0) sc0.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } break;
     case 'stage': gotoStage(v); break;
     case 'stmore': UI.more[st.ui.stage] = !UI.more[st.ui.stage]; renderStage(); break;
     case 'pview': UI.view = v; renderPI(); break;
+    case 'pgo': UI.view = v; setTop('pi'); piEl.scrollTop = 0; break;
+    case 'pfilt': UI.filt = v; renderList(); break;
+    case 'pkfilt': s.state.cat = v; $('#pkf', s.el).innerHTML = pkFilt(s); $('#plist', s.el).innerHTML = pickerList(s); break;
+    case 'pchoose': { var kind = v; openPicker('pick', function (pid) { openProduct(pid, kind); }, { title: 'Chọn mẫu', sub: kind === 'size' ? 'Chạm một mẫu để gửi bảng size' : 'Chạm một mẫu để gửi thông tin' }); break; }
     case 'pchip': openProduct(id, v); break;
     case 'variant': { var snap0 = takeEdits(s); s.state.id = v; rerender(s); editsToast(s, snap0); break; }
     case 'qclear': $('#q').value = ''; $('#q').focus(); doSearch(); break;
@@ -1260,7 +1304,7 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.t
 
 /* ---------- boot ---------- */
 $('#hint').hidden = !!st.hintDone;
-paintLang(); paintDock(); renderStage(); renderPI(); updateOrderBar();
+paintLang(); renderHomeScreen(); renderStage(); renderPI(); setTop('home');
 idle(function () { if (!IDX) buildIndex(); idle(measureSafe); });
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   addEventListener('load', function () {
@@ -1269,5 +1313,5 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) toast('Có bản mới — đóng và mở lại app nhé', { icon: 'sparkle', ms: 4000 }); had = true; });
   });
 }
-window.__SE = { boot: performance.now() - T0, st: st, calc: calc, composeCopy: C.composeCopy, STAGES: C.STAGES };
+window.__SE = { boot: performance.now() - T0, st: st, calc: calc, PS: PS, composeCopy: C.composeCopy, STAGES: C.STAGES };
 })();

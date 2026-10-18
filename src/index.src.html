@@ -16,6 +16,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="apple-touch-startup-image" href="icons/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="icons/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="preload" as="image" href="img/logo.webp" type="image/webp">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 /*__CSS__*/
@@ -38,34 +39,46 @@
 <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5c.6 4.4 2.1 5.9 6.5 6.5-4.4.6-5.9 2.1-6.5 6.5-.6-4.4-2.1-5.9-6.5-6.5 4.4-.6 5.9-2.1 6.5-6.5z"/></symbol>
 <symbol id="i-clip" viewBox="0 0 24 24"><path d="M19 11.5l-7 7a4.2 4.2 0 0 1-6-6l7.5-7.5a2.8 2.8 0 0 1 4 4L10 15.5a1.4 1.4 0 0 1-2-2l6.5-6.5"/></symbol>
 <symbol id="i-paste" viewBox="0 0 24 24"><rect x="5.5" y="5" width="13" height="16" rx="2.5"/><path d="M9 5V4.2c0-.7.5-1.2 1.2-1.2h3.6c.7 0 1.2.5 1.2 1.2V5M9 11h6M9 14.5h4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.5H9v5.5H5.5A1.5 1.5 0 0 1 4 19z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M6 5h12a2.5 2.5 0 0 1 2.5 2.5v7A2.5 2.5 0 0 1 18 17h-5.5L8 20.5V17H6a2.5 2.5 0 0 1-2.5-2.5v-7A2.5 2.5 0 0 1 6 5z"/></symbol>
+<symbol id="i-hanger" viewBox="0 0 24 24"><path d="M12 9V8a2.2 2.2 0 1 0-2.2-2.2"/><path d="M12 9l8.2 5.6a1.5 1.5 0 0 1-.85 2.75H4.65A1.5 1.5 0 0 1 3.8 14.6z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4v10M12 18.5v.01"/></symbol>
 </defs></svg>
 
 <div id="app" class="app">
   <header id="nav">
     <div class="bar">
-      <span class="brand"><i class="logo" aria-hidden="true"></i>Soft Embrace</span>
+      <img class="logo" src="img/logo.webp" width="135" height="28" alt="Soft Embrace" decoding="async">
       <div class="lsw" role="group" aria-label="Ngôn ngữ" id="lsw"><button data-act="lang" data-v="vi" aria-pressed="true"><span>VI</span></button><button data-act="lang" data-v="en" aria-pressed="false"><span>EN</span></button></div>
-      <button class="nbtn" data-act="settings">Tuỳ chỉnh</button>
+      <button class="iconbtn gear" data-act="settings" aria-label="Tuỳ chỉnh"><svg class="i s22" aria-hidden="true"><use href="#i-gear"/></svg></button>
     </div>
   </header>
   <main>
-    <section id="qr" class="tab" aria-label="Câu trả lời nhanh">
+    <section id="home" class="tab" aria-label="Trang chủ"></section>
+    <section id="qr" class="tab" aria-label="Trả lời nhanh" hidden>
+      <div class="ttl"><h1>Trả lời nhanh</h1><p class="sub" id="qrsub"></p></div>
       <div class="hint" id="hint" hidden><span>Chọn bước, chạm tin nhắn, rồi chạm Chép.</span><button class="iconbtn" data-act="hintx" aria-label="Ẩn gợi ý"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
+      <div id="stseg" role="group" aria-label="Các bước trò chuyện"></div>
       <div id="stage"></div>
     </section>
-    <section id="pi" class="tab" aria-label="Thông tin sản phẩm" hidden>
+    <section id="pi" class="tab" aria-label="Sản phẩm" hidden>
+      <div class="ttl"><h1>Sản phẩm</h1><p class="sub" id="pisub"></p></div>
       <div class="pitop">
         <div class="sub2" role="group" aria-label="Xem theo"><button data-act="pview" data-v="p">Theo mẫu</button><button data-act="pview" data-v="s">Theo set</button></div>
         <div class="sfield" id="sfield"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tìm mẫu…" aria-label="Tìm mẫu"><button class="iconbtn" data-act="qclear" aria-label="Xoá" style="margin-right:-4px"><span class="c bare"><svg class="i s15"><use href="#i-x"/></svg></span></button></div>
+        <div class="fchips" id="pfilt" role="group" aria-label="Loại sản phẩm"></div>
       </div>
       <div id="hbody"></div>
     </section>
-    <div id="obar" hidden></div>
   </main>
-  <nav id="dock" aria-label="Điều hướng">
-    <div id="stages" role="group" aria-label="Các bước trò chuyện"></div>
-    <div id="tabs" role="group"><button class="tbb" data-act="top" data-v="qr" aria-pressed="true">Câu trả lời nhanh</button><button class="tbb" data-act="top" data-v="pi" aria-pressed="false">Thông tin sản phẩm</button></div>
+  <nav id="fbar" aria-label="Điều hướng">
+    <div class="capsule" role="group">
+      <button class="fb" data-act="top" data-v="home" aria-pressed="true"><svg class="i s22" aria-hidden="true"><use href="#i-home"/></svg><span>Trang chủ</span></button>
+      <button class="fb" data-act="top" data-v="qr" aria-pressed="false"><svg class="i s22" aria-hidden="true"><use href="#i-chat"/></svg><span>Trả lời nhanh</span></button>
+      <button class="fb" data-act="top" data-v="pi" aria-pressed="false"><svg class="i s22" aria-hidden="true"><use href="#i-hanger"/></svg><span>Sản phẩm</span></button>
+    </div>
+    <button class="rbtn" id="obtn2" data-act="openorder" aria-label="Đơn hàng"><svg class="i s22" aria-hidden="true"><use href="#i-bag"/></svg><b class="bd" hidden></b></button>
   </nav>
 </div>
 <div id="sheets"></div>

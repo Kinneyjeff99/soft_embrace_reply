@@ -281,3 +281,64 @@ test('no brown token left in the sources (Liver #5F3E31 and its tints)', () => {
   const css = readFileSync(new URL('../src/app.css', import.meta.url), 'utf8') + readFileSync(new URL('../src/index.src.html', import.meta.url), 'utf8') + readFileSync(new URL('../build.py', import.meta.url), 'utf8');
   assert.ok(!/5F3E31|95,\s*62,\s*49|#5E5048|#6F635B|#4A3E37|20,\s*14,\s*10|#181716/i.test(css));
 });
+
+// ---------- Round 4: newest-first order, collections, category filter, product photos, icons ----------
+import { existsSync, statSync, readdirSync } from 'node:fs';
+const DIST = new URL('../dist/', import.meta.url);
+test('every product has released, collection and a photo slug; released is shared by the variants of one product', () => {
+  const byName = {};
+  for (const p of SEED.products) {
+    assert.ok(Number.isInteger(p.released) && p.released > 0, p.id + ' released');
+    assert.ok(['Fall 25', 'Spring 26', 'Summer 26'].includes(p.collection), p.id + ' collection');
+    assert.ok(p.img && /^[a-z0-9-]+$/.test(p.img), p.id + ' img');
+    assert.ok(/^#[0-9A-F]{6}$/.test(p.tint), p.id + ' tint');
+    (byName[p.name] = byName[p.name] || new Set()).add(p.released);
+  }
+  for (const [n, set] of Object.entries(byName)) assert.equal(set.size, 1, n + ' variants share one release');
+});
+test('default sort is newest first: Summer 26 (Butter, Fleur, Embroidery, Lace Trim, Flowy, Still Cami), then Spring 26, then Fall 25', () => {
+  const { C } = mk(); const names = [], seen = new Set();
+  C.PS.forEach(p => { if (!seen.has(p.name)) { seen.add(p.name); names.push(p.name); } });
+  assert.equal(names[0], 'Butter Top'); assert.equal(names[names.length - 1], 'Soft Halter Top');
+  assert.deepEqual(names, ['Butter Top', 'Fleur Slip Dress', 'Embroidery Pants', 'Lace Trim Blouse', 'Flowy Skirt', 'Still Cami Top', 'Lace Skirt', 'Lace Top', 'Shimmer Top', 'Noir Midi Skirt', 'Ivory Dot Midi Skirt', 'Ivory Dot Blouse', 'Noir Dotty Top', 'Soft Halter Top']);
+  const colls = C.collections(C.PS).map(g => g.name + ':' + g.items.length);
+  assert.deepEqual(colls, ['Summer 26:10', 'Spring 26:4', 'Fall 25:6']);
+  const ids = C.PS.map(p => p.id); assert.equal(ids.indexOf('fleur-slip-dress-blue') < ids.indexOf('fleur-slip-dress-yellow'), true, 'variants keep their sheet order');
+  assert.equal(new Set(ids).size, 20);
+});
+test('category filter + counts: Tất cả 20 · Áo 11 · Váy 6 · Đầm 2 · Quần 1', () => {
+  const { C } = mk(); const cc = C.catCounts(C.PS);
+  assert.deepEqual(cc, { all: 20, top: 11, skirt: 6, dress: 2, pants: 1 });
+  assert.deepEqual(C.CATL, { top: 'Áo', skirt: 'Váy', dress: 'Đầm', pants: 'Quần' });
+  assert.deepEqual(C.byCat(C.PS, 'dress').map(p => p.id).sort(), ['fleur-slip-dress-blue', 'fleur-slip-dress-yellow']);
+  assert.deepEqual(C.byCat(C.PS, 'pants').map(p => p.id), ['embroidery-pants']);
+  for (const id of ['lace-trim-blouse-cream', 'butter-top', 'shimmer-top']) assert.equal(C.PM[id].category, 'top');
+  assert.equal(C.byCat(C.PS, 'skirt').every(p => /Skirt/.test(p.name)), true);
+  assert.equal(C.byCat(C.PS, 'all').length, 20);
+});
+test('image mapping covers all 20 products, one photo each, files exist at 168 and 320, thumbnails stay small', () => {
+  const { C } = mk(); const slugs = new Set(); let total = 0;
+  for (const p of SEED.products) {
+    assert.ok(!slugs.has(p.img), 'duplicate ' + p.img); slugs.add(p.img);
+    assert.ok(existsSync(new URL('../assets/product-images/' + p.img + '.webp', import.meta.url)), 'source photo for ' + p.id);
+    for (const big of [false, true]) { const u = C.imgOf(p, big); assert.match(u, /^img\/[a-z0-9-]+-(168|320)\.webp$/); const f = new URL(u, DIST); assert.ok(existsSync(f), u); const n = statSync(f).size; total += n; assert.ok(n < (big ? 24000 : 10000), u + ' ' + n); }
+  }
+  assert.equal(slugs.size, 20); assert.ok(total < 250 * 1024, 'thumbnails total ' + total);
+  const mapping = { 'soft-halter-white': 'soft-halter-top-white', 'still-cami-taupe': 'still-cami-top-taupe', 'fleur-slip-blue': 'fleur-slip-dress-blue' };
+  for (const [s, id] of Object.entries(mapping)) assert.equal(C.PM[id].img, s);
+});
+test('thumbnails are never inlined and the app has no emoji disc images', () => {
+  const html = readFileSync(new URL('index.html', DIST), 'utf8');
+  assert.ok(!/data:image\/(webp|jpeg|png)/.test(html.replace(/mask:url\(data:image\/png[^)]*\)/g, '')), 'no inlined bitmap');
+});
+test('logo wordmark <= 8 KB; service worker precaches every photo and the logo; manifest and icons are light', () => {
+  assert.ok(statSync(new URL('img/logo.webp', DIST)).size <= 8 * 1024);
+  const sw = readFileSync(new URL('sw.js', DIST), 'utf8');
+  const files = readdirSync(new URL('img/', DIST));
+  assert.equal(files.length, 41);
+  for (const f of files) assert.ok(sw.includes('img/' + f), f);
+  const man = JSON.parse(readFileSync(new URL('manifest.webmanifest', DIST), 'utf8'));
+  const lum = h => { const [r, g, b] = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255); return .2126 * r + .7152 * g + .0722 * b; };
+  assert.ok(lum(man.background_color) > .35 && lum(man.theme_color) > .8, man.background_color + ' ' + man.theme_color);
+  assert.notEqual(man.background_color.toUpperCase(), '#2A2B2A');
+});

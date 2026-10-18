@@ -7,10 +7,15 @@ const clicks = p => p.evaluate(() => window.__clicks);
 const norm = s => s.replace(/\s+/g, ' ').trim();
 const val = (p, sel) => p.$eval(sel, e => e.value);
 const prev = p => val(p, '.acard [data-eta]');          // the open product box
-async function fresh(opts = {}) { const o = await newPage(b, opts); await o.page.goto(url); await o.page.waitForTimeout(300); return o; }
+// fresh(): app open on Home. By default it taps the Chào hỏi tile (not counted) so the older scenario tests start inside Quick replies; { home: true } stays on Home.
+async function fresh(opts = {}) {
+  const o = await newPage(b, opts); await o.page.goto(url); await o.page.waitForTimeout(300);
+  if (!opts.home) { await o.page.tap('[data-act=stage][data-v=greet] >> visible=true'); await o.page.waitForTimeout(120); await o.page.evaluate(() => { window.__clicks = 0; }); }
+  return o;
+}
 const closeSheet = async p => { await p.tap('.sheet >> nth=-1 >> [data-act=shclose]'); await p.waitForTimeout(450); };
 const toPI = async p => { await p.tap('[data-act=top][data-v=pi]'); await p.waitForTimeout(150); };
-const stage = async (p, id) => { await p.tap(`[data-act=stage][data-v=${id}]`); await p.waitForTimeout(150); };
+const stage = async (p, id) => { await p.tap(`[data-act=stage][data-v=${id}] >> visible=true`); await p.waitForTimeout(150); };
 const openProd = async (p, id) => { await toPI(p); await p.tap(`[data-open="p:${id}"]`); await p.waitForTimeout(450); };
 const STAGE_LABELS = ['Chào hỏi', 'Tư vấn size', 'Xin thông tin', 'Tạo đơn', 'Check out'];
 
@@ -19,12 +24,11 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
   // --- first screen, switcher, one stage at a time
   {
     const { page, errors } = await fresh({ w, h, dark });
-    ok(`${tag} first screen is Câu trả lời nhanh, stage Chào hỏi`, await page.isVisible('#qr') && !(await page.isVisible('#pi')) && /Chào hỏi/.test(await page.textContent('.stb[aria-pressed=true]')) && /Câu trả lời nhanh/.test(await page.textContent('.tbb[aria-pressed=true]')));
-    const labels = await page.$$eval('.stb', e => e.map(x => x.textContent));
+    ok(`${tag} Quick replies: stage Chào hỏi selected`, await page.isVisible('#qr') && !(await page.isVisible('#pi')) && /Chào hỏi/.test(await page.textContent('.sg[aria-pressed=true]')));
+    const labels = await page.$$eval('.sg', e => e.map(x => x.textContent));
     ok(`${tag} stage labels exact, in sales-flow order`, JSON.stringify(labels) === JSON.stringify(STAGE_LABELS), labels.join('|'));
-    const fit = await page.$eval('#stages', e => [e.scrollWidth, e.clientWidth]);
-    ok(`${tag} 5 stage buttons fit without scrolling`, fit[0] <= fit[1], fit.join('/'));
-    ok(`${tag} top-level tabs exact`, JSON.stringify(await page.$$eval('.tbb', e => e.map(x => x.textContent))) === JSON.stringify(['Câu trả lời nhanh', 'Thông tin sản phẩm']));
+    const fit = await page.$eval('#stseg', e => [e.scrollWidth, e.clientWidth]);
+    ok(`${tag} 5 stage buttons fit without scrolling (header segmented)`, fit[0] <= fit[1], fit.join('/'));
     const seen = [];
     for (const [i, id] of ['greet', 'size', 'info', 'order', 'out'].entries()) {
       await stage(page, id);
@@ -42,10 +46,10 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
     await stage(page, 'out');
     ok(`${tag} check out stage has IG03/IG04 variants/tracking/feedback`, (await page.$$eval('#stage .qc .t', e => e.map(x => x.textContent))).join('|') === 'Đã nhận thanh toán|Cảm ơn · gói đơn|Gửi mã vận đơn · tin 1|Mã vận đơn · tin 2|Xin hình feedback');
     // targets
-    const small = await page.evaluate(() => [...document.querySelectorAll('#nav button, #dock button, #stage button, #stage input, #stage textarea, #hint button')].filter(e => e.offsetParent).filter(e => { const r = e.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; }).map(e => (e.className || e.tagName) + ':' + e.textContent.slice(0, 10)));
-    ok(`${tag} 44pt targets (header, dock, stage)`, small.length === 0, small.join('|'));
+    const small = await page.evaluate(() => [...document.querySelectorAll('#nav button, #fbar button, #stseg button, #stage button, #stage input, #stage textarea, #hint button')].filter(e => e.offsetParent).filter(e => { const r = e.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; }).map(e => (e.className || e.tagName) + ':' + e.textContent.slice(0, 10)));
+    ok(`${tag} 44pt targets (header, floating bar, stages)`, small.length === 0, small.join('|'));
     await toPI(page);
-    const small2 = await page.evaluate(() => [...document.querySelectorAll('#pi button, #pi input')].filter(e => e.offsetParent).filter(e => { const r = e.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; }).map(e => (e.className || e.tagName) + ':' + e.textContent.slice(0, 10)));
+    const small2 = await page.evaluate(() => [...document.querySelectorAll('#pi button, #pi input, #home button')].filter(e => e.offsetParent).filter(e => { const r = e.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; }).map(e => (e.className || e.tagName) + ':' + e.textContent.slice(0, 10)));
     ok(`${tag} 44pt targets (product tab)`, small2.length === 0, small2.join('|'));
     ok(`${tag} product tab: Theo mẫu (20 rows) / Theo set`, (await page.$$('#hbody [data-open^="p:"]')).length === 20 && (await page.$$eval('.sub2 button', e => e.map(x => x.textContent))).join('|') === 'Theo mẫu|Theo set');
     await page.tap('[data-act=pview][data-v=s]');
@@ -107,10 +111,10 @@ for (const [w, h] of [[393, 852], [430, 932]]) for (const dark of [false, true])
     await page.close();
     const o = await fresh({ w, h, dark, fakeVV: true });
     await stage(o.page, 'order'); await o.page.focus('[data-eta=order]'); await o.page.evaluate(k => window.__setKb(k), KB); await o.page.waitForTimeout(250);
-    const q = await o.page.evaluate(() => { const f = document.querySelector('#ofoot').getBoundingClientRect(), d = document.querySelector('#dock'); return { bottom: f.bottom, ih: innerHeight, dock: getComputedStyle(d).display, vis: f.height > 30 }; });
-    ok(`${tag} keyboard: order footer (total + Chép đơn) above the keyboard, dock hidden`, q.bottom <= q.ih - KB + 1 && q.vis && q.dock === 'none', JSON.stringify(q));
+    const q = await o.page.evaluate(() => { const f = document.querySelector('#ofoot').getBoundingClientRect(), d = document.querySelector('#fbar'); return { bottom: f.bottom, ih: innerHeight, dock: getComputedStyle(d).display, vis: f.height > 30 }; });
+    ok(`${tag} keyboard: order footer (total + Chép đơn) above the keyboard, floating bar hidden`, q.bottom <= q.ih - KB + 1 && q.vis && q.dock === 'none', JSON.stringify(q));
     await o.page.evaluate(() => window.__setKb(0)); await o.page.waitForTimeout(300);
-    ok(`${tag} keyboard closed: dock back`, await o.page.isVisible('#dock'));
+    ok(`${tag} keyboard closed: floating bar back`, await o.page.isVisible('#fbar'));
     await o.page.context().close();
   }
 }
@@ -135,14 +139,14 @@ for (const [w, h] of [[393, 852], [430, 932]]) {
     ok(`${tag} greeting = 2 taps from app open; clipboard == box`, (await clicks(page)) - s === 2 && /^Soft Embrace chào bạn/.test(g) && !/\{\{/.test(g) && g === (await val(page, '[data-eta=msg]')), g.slice(0, 30));
     await page.waitForTimeout(900);
     s = await clicks(page);
-    await page.tap('[data-act=pchip][data-id="noir-midi-skirt"][data-v=info]'); await page.waitForTimeout(450); await page.tap('.shf [data-act=pcopy][data-a=info]'); await page.waitForTimeout(100);
+    await page.tap('[data-act=pchip][data-id="butter-top"][data-v=info]'); await page.waitForTimeout(450); await page.tap('.shf [data-act=pcopy][data-a=info]'); await page.waitForTimeout(100);
     ok(`${tag} product info = 2 taps from app open (Chào hỏi chips)`, (await clicks(page)) - s === 2 && (await clip(page)).length === 2);
     await closeSheet(page);
     await stage(page, 'size'); s = await clicks(page);
-    await page.tap('[data-act=pchip][data-id="noir-midi-skirt"][data-v=size]'); await page.waitForTimeout(450);
+    await page.tap('[data-act=pchip][data-id="butter-top"][data-v=size]'); await page.waitForTimeout(450);
     ok(`${tag} size chart sheet opens on the size action`, /Bảng size/.test(await page.textContent('.acard h3')));
     await page.tap('.shf [data-act=pcopy][data-a=size]'); await page.waitForTimeout(100);
-    ok(`${tag} size chart = 2 taps once on Tư vấn size (3 from app open incl. the stage tap)`, (await clicks(page)) - s === 2 && /^Noir Midi Skirt/.test((await clip(page)).slice(-1)[0]) || (await clip(page)).length === 3);
+    ok(`${tag} size chart = 2 taps once on Tư vấn size (3 from app open incl. the stage tap)`, (await clicks(page)) - s === 2 && /^• S: ngực 78-82/.test((await clip(page)).slice(-1)[0]));
     await closeSheet(page);
     // product tab path
     await toPI(page); s = await clicks(page);
@@ -157,9 +161,9 @@ for (const [w, h] of [[393, 852], [430, 932]]) {
     ok(`${tag} info+size copy works`, cl2.slice(-1)[0].includes('\n\n') && (await clicks(page)) - s2 === 1);
     await page.tap('[data-act=addline][data-v=M]'); await page.waitForTimeout(100);
     await closeSheet(page);
-    ok(`${tag} add to order from product: bar visible`, await page.isVisible('#obar') && /1 món/.test(await page.textContent('#obar')));
+    ok(`${tag} add to order from product: round order button shows the count`, await page.isVisible('#obtn2 .bd') && (await page.textContent('#obtn2 .bd')) === '1' && /1 món/.test(await page.getAttribute('#obtn2', 'aria-label')));
     await page.tap('[data-act=openorder]'); await page.waitForTimeout(300);
-    ok(`${tag} order bar jumps to Tạo đơn stage (first-class, no sheet)`, !(await page.isVisible('#obar')) && (await page.$eval('.stb[aria-pressed=true]', e => e.textContent)) === 'Tạo đơn' && (await page.isVisible('#qr')) && !(await page.$('.sheet')));
+    ok(`${tag} round order button jumps to Tạo đơn stage (first-class, no sheet)`, (await page.$eval('.sg[aria-pressed=true]', e => e.textContent)) === 'Tạo đơn' && (await page.isVisible('#qr')) && !(await page.$('.sheet')));
     ok(`${tag} line shows in composer and message has the line`, /Noir Midi Skirt/.test(await page.textContent('#olines')) && /Noir Midi Skirt – size M/.test(await val(page, '[data-eta=order]')));
     await page.context().close();
   }
@@ -196,7 +200,9 @@ for (const [w, h] of [[393, 852], [430, 932]]) {
   {   // stage memory + first screen
     const { page } = await fresh({ w, h });
     await stage(page, 'info'); await page.waitForTimeout(400); await page.reload(); await page.waitForTimeout(300);
-    ok(`${tag} last used stage remembered; first screen still Câu trả lời nhanh`, (await page.$eval('.stb[aria-pressed=true]', e => e.textContent)) === 'Xin thông tin' && await page.isVisible('#qr'));
+    ok(`${tag} last used stage remembered; the app still opens on Home`, await page.isVisible('#home') && !(await page.isVisible('#qr')));
+    await page.tap('[data-act=top][data-v=qr]'); await page.waitForTimeout(150);
+    ok(`${tag} Trả lời nhanh reopens on the last used stage`, (await page.$eval('.sg[aria-pressed=true]', e => e.textContent)) === 'Xin thông tin');
     await page.context().close();
   }
   {   // message sheet: save as template, product slot in greeting, fills
@@ -461,7 +467,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) {
     await page.tap('[data-open="f:open-first"]'); await page.waitForTimeout(450);
     ok(`${tag} header language switch (EN) applies to messages`, /Hi lovely/.test(await val(page, '[data-eta=msg]')));
     await closeSheet(page); await page.tap('[data-act=settings]'); await page.waitForTimeout(450);
-    ok(`${tag} settings behind one text button`, /Tuỳ chỉnh/.test(await page.textContent('.sheet')));
+    ok(`${tag} gear icon button opens settings`, /Tuỳ chỉnh/.test(await page.textContent('.sheet')));
     await page.context().close();
   }
   // --- reduced motion
@@ -476,7 +482,7 @@ for (const [w, h] of [[393, 852], [430, 932]]) {
 {
   const { page, ctx } = await fresh();
   const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-  await page.tap('[data-act=pchip][data-id="noir-midi-skirt"][data-v=info]'); await page.waitForTimeout(800);
+  await page.tap('[data-act=pchip][data-id="butter-top"][data-v=info]'); await page.waitForTimeout(800);
   const m = await page.evaluate(async () => {
     const out = [];
     const btn = document.querySelector('.shf [data-act=pcopy][data-a=info]');
